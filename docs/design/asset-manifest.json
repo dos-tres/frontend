@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "reference": {
+    "status": "provisional",
+    "path": "src/assets/joy.png",
+    "note": "npm install로 복원되는 v1 이미지. 최종 기준 자료는 별도 확정."
+  },
+  "assets": [
+    {
+      "id": "joy-default",
+      "targetPath": "src/assets/characters/joy-default.png",
+      "status": "using-existing",
+      "fallback": "src/assets/joy.png",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "id": "joy-greeting",
+      "targetPath": "src/assets/characters/joy-greeting.png",
+      "status": "planned",
+      "fallback": "src/assets/joy.png",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "id": "joy-thinking",
+      "targetPath": "src/assets/characters/joy-thinking.png",
+      "status": "planned",
+      "fallback": "src/assets/joy.png",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "id": "joy-guide",
+      "targetPath": "src/assets/characters/joy-guide.png",
+      "status": "planned",
+      "fallback": "src/assets/joy.png",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "id": "joy-success",
+      "targetPath": "src/assets/characters/joy-success.png",
+      "status": "planned",
+      "fallback": "src/assets/joy.png",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "id": "joy-empty",
+      "targetPath": "src/assets/characters/joy-empty.png",
+      "status": "planned",
+      "fallback": "src/assets/joy.png",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "id": "paper-boat",
+      "targetPath": "src/assets/icons/paper-boat.svg",
+      "status": "planned",
+      "format": "svg"
+    },
+    {
+      "id": "bridge",
+      "targetPath": "src/assets/icons/bridge.svg",
+      "status": "planned",
+      "format": "svg"
+    },
+    {
+      "id": "island",
+      "targetPath": "src/assets/icons/island.svg",
+      "status": "planned",
+      "format": "svg"
+    }
+  ]
+}
