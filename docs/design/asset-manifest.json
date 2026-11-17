@@ -1,9 +1,10 @@
 {
   "version": 1,
   "reference": {
-    "status": "provisional",
-    "path": "src/assets/joy.png",
-    "note": "npm install로 복원되는 v1 이미지. 최종 기준 자료는 별도 확정."
+    "status": "approved",
+    "path": "docs/design/references/joy-style-master.png",
+    "guidelines": "docs/design/JOY_design_guidelines.md",
+    "note": "형태·질감·대표 아이콘 참고. UI 색상은 확정 문서 우선. 화면 레이아웃은 미확정."
   },
   "assets": [
     {
