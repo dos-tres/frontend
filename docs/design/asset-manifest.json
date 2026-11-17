@@ -1,10 +1,11 @@
 {
   "version": 1,
   "reference": {
-    "status": "approved",
-    "path": "docs/design/references/joy-style-master.png",
+    "status": "current-reference",
+    "path": "docs/design/references/joy-character-base.png",
     "guidelines": "docs/design/JOY_design_guidelines.md",
-    "note": "형태·질감·대표 아이콘 참고. UI 색상은 확정 문서 우선. 화면 레이아웃은 미확정."
+    "note": "기본 캐릭터 전체 참고 시트. 형태·얼굴·종이 질감·파란 스카프 유지. 팔레트는 변경 가능. 시트에서 분리한 개별 투명 PNG는 준비 예정. 화면 레이아웃 미확정.",
+    "additionalReference": "docs/design/references/joy-style-master.png"
   },
   "assets": [
     {

@@ -100,4 +100,4 @@ npm run preview
 - [기준 이미지·참고 자료 폴더](docs/design/references/README.md)
 - [로컬 Codex 작업 지침](AGENTS.md)
 
-현재 기존 v1 조이를 임시 기준으로 사용합니다. 새 포즈·전용 아이콘은 제작 예정이며 실제 생성 파일이 추가되면 에셋 목록을 갱신합니다.
+[기본 캐릭터 참고 시트](docs/design/references/joy-character-base.png)를 기준으로 형태·얼굴·종이 질감·파란 스카프를 유지합니다. 팔레트는 현재 작업용이며 변경 가능합니다. 인사·생각 포즈 SVG는 사용 가능하지만 기본 시트에서 분리한 개별 투명 PNG와 전용 아이콘 파일은 준비 예정입니다.
