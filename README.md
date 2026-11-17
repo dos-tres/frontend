@@ -92,3 +92,12 @@ npm run preview
 ## 브랜드 메모
 
 서비스명은 미정이므로 화면에 최종 서비스명을 넣지 않았습니다. `조이`는 캐릭터 이름으로 유지했습니다.
+
+## 디자인·이미지 작업
+
+- [캐릭터·아이콘 제작 및 적용 기준](docs/design/README.md)
+- [필요 이미지와 제작 상태](docs/design/asset-manifest.json)
+- [기준 이미지·참고 자료 폴더](docs/design/references/README.md)
+- [로컬 Codex 작업 지침](AGENTS.md)
+
+현재 기존 v1 조이를 임시 기준으로 사용합니다. 새 포즈·전용 아이콘은 제작 예정이며 실제 생성 파일이 추가되면 에셋 목록을 갱신합니다.
