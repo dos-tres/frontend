@@ -23,7 +23,7 @@
 .home-wordmark-symbol { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; background: var(--joy-lavender); color: var(--joy-ink); }
 .home-view .nav-link { border-radius: 12px; color: var(--joy-muted); }
 .home-view .nav-link.active, .home-view .nav-link:hover { background: var(--joy-lavender); color: var(--joy-ink); }
-.home-view .header-ask { background: var(--joy-blue); color: var(--joy-ink); box-shadow: none; min-height: 44px; }
+.home-view .header-ask { background: var(--joy-lavender); border-color: var(--joy-blue); color: var(--joy-ink); box-shadow: none; min-height: 44px; }
 .home-view button, .home-view input { -webkit-tap-highlight-color: transparent; }
 .home-view button:focus-visible, .home-view input:focus-visible { outline: 3px solid var(--joy-ink); outline-offset: 4px; }
 .home-view button { transition: background .16s ease, border-color .16s ease; }
@@ -83,6 +83,7 @@
 .home-pace, .home-next { padding: 32px; border-radius: var(--joy-radius); }
 .home-pace { background: var(--joy-paper); }
 .home-next { background: var(--joy-lavender); }
+.home-next p { color: var(--joy-ink); }
 .home-pace h2, .home-next h2 { font-size: 22px; letter-spacing: -.035em; margin: 12px 0; }
 .home-pace p, .home-next p { color: var(--joy-muted); font-size: 14px; line-height: 1.8; margin: 0 0 16px; }
 .home-text-link, .home-sub-link { display: inline-flex; align-items: center; justify-content: space-between; gap: 24px; font-size: 14px; font-weight: 650; min-height: 44px; border: none; padding: 0; color: var(--joy-ink); background: transparent; }
