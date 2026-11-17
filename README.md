@@ -100,4 +100,4 @@ npm run preview
 - [기준 이미지·참고 자료 폴더](docs/design/references/README.md)
 - [로컬 Codex 작업 지침](AGENTS.md)
 
-[기본 캐릭터 참고 시트](docs/design/references/joy-character-base.png)를 기준으로 형태·얼굴·종이 질감·파란 스카프를 유지합니다. 팔레트는 현재 작업용이며 변경 가능합니다. 인사·생각 포즈 SVG는 사용 가능하지만 기본 시트에서 분리한 개별 투명 PNG와 전용 아이콘 파일은 준비 예정입니다.
+[확정 캐릭터 참고 시트](docs/design/references/joy-character-sheet.png)를 기준으로 형태·얼굴·종이 질감·파란 스카프를 유지합니다. 팔레트는 현재 공통 기준으로 고정하며, 명시적인 변경 요청이 있을 때만 함께 갱신합니다. 인사·생각 포즈 SVG는 사용 가능하지만 기본 시트에서 분리한 개별 투명 PNG와 전용 아이콘 파일은 준비 예정입니다.
