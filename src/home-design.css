@@ -122,7 +122,11 @@
   .home-kicker { font-size: 13px; margin-bottom: 12px; }
   .home-lead { font-size: 15px; line-height: 1.8; }
   .home-journey-note { font-size: 12px; margin-top: 20px; gap: 6px; }
-  .home-joy-scene { position: absolute; right: 0; top: 30px; pointer-events: none; display: none; }
+  .home-joy-scene { display: flex; flex-direction: row; justify-content: center; gap: 12px; padding-top: 4px; }
+  .home-joy-window { width: 102px; height: 120px; margin: 0; flex-shrink: 0; }
+  .home-joy-window img { width: 278px; top: -72px; }
+  .home-joy-caption { font-size: 13px; background: var(--joy-lavender); border-radius: 12px 12px 0 12px; padding: 10px 14px; }
+  .home-joy-name { display: none; }
   .home-start { padding: 24px 16px; }
   .home-section-heading { margin-bottom: 20px; }
   .home-section-heading h2 { font-size: 22px; }
