@@ -2,7 +2,7 @@
 
 ## 시작
 - README.md와 docs/design/README.md, docs/design/JOY_design_guidelines.md를 먼저 읽는다.
-- docs/design/references/joy-character-sheet.png를 확정 캐릭터 참고 시트로 확인하고 joy-style-master.png는 추가 표정·아이콘 예시로 참고한다. 색상은 JOY_design_guidelines.md의 공통 HEX를 사용하며 임의로 다른 팔레트를 섞지 않는다.
+- docs/design/references/joy-character-sheet.png를 유일한 확정 캐릭터 참고 시트로 확인한다. 색상은 JOY_design_guidelines.md의 공통 HEX를 사용하며 임의로 다른 팔레트를 섞지 않는다.
 - 캐릭터 정체성을 유지하고 공통 팔레트를 일관되게 사용하며 화면 배치와 문구는 자율적으로 설계한다.
 - 사용자 요청 화면부터 하나씩 구체화한다. 요청 없이 모든 화면을 재설계하지 않는다.
 - 현재 브랜치와 git status를 확인하고 기존 사용자 변경을 보존한다.
