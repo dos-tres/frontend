@@ -9,6 +9,8 @@ import {
 } from 'lucide-react'
 import { programs, centers, initialApplications, type Program, type Center, type Application } from './data'
 
+import './home-design.css'
+import joyReferenceSheet from '../docs/design/references/joy-character-sheet.png'
 import joyImage from './assets/joy.png'
 import joyIslandImage from './assets/joy-island.png'
 import boatImage from './assets/boat.png'
@@ -100,9 +102,9 @@ function Header({ screen, onNavigate }: { screen: Screen; onNavigate: (screen: S
     <header className="topbar">
       <div className="topbar-inner">
         <button className="brand-button" onClick={() => onNavigate('home')} aria-label="홈으로">
-          <BrandMark />
+          {screen === 'home' ? <span className="home-wordmark"><span className="home-wordmark-symbol"><Plane size={24} strokeWidth={2} /></span><span>조이<small>청년 AI 비서</small></span></span> : <BrandMark />}
         </button>
-        <button className="mobile-menu" onClick={() => setMobileOpen(v => !v)} aria-label="메뉴 열기">
+        <button className="mobile-menu" onClick={() => setMobileOpen(v => !v)} aria-label={mobileOpen ? '메뉴 닫기' : '메뉴 열기'} aria-expanded={mobileOpen}>
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
         <nav className={`nav-links ${mobileOpen ? 'nav-open' : ''}`} aria-label="주요 메뉴">
@@ -136,85 +138,93 @@ function Footer({ onAbout }: { onAbout: () => void }) {
 function HomePage({ onNavigate, onSend }: { onNavigate: (s: Screen) => void; onSend: (text: string) => void }) {
   const [draft, setDraft] = useState('')
   const prompts = [
-    ['취업·진로 때문에 고민이에요', '지원받을 정책과 함께할 활동 찾기', 'briefcase'],
-    ['경제·주거가 걱정이에요', '현실적인 지원사업부터 확인하기', 'home'],
-    ['사람들과 교류할 기회가 필요해요', '부담 없는 가까운 활동부터 시작하기', 'people'],
+    { label: '취업·진로', text: '취업·진로 때문에 고민이에요', icon: Compass },
+    { label: '생활·주거', text: '경제·주거 지원이 궁금해요', icon: Home },
+    { label: '사람·활동', text: '부담 없이 사람들과 교류할 기회가 필요해요', icon: MessageCircle },
+    { label: '아직 모르겠어요', text: '뭐부터 해야 할지 모르겠어요. 선택하면서 이야기하고 싶어요.', icon: CircleHelp },
   ]
-  const submit = (e: FormEvent) => { e.preventDefault(); onSend(draft); setDraft('') }
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    if (!draft.trim()) return
+    onSend(draft.trim())
+    setDraft('')
+  }
   return (
-    <>
-      <PageTitle title="조이와 함께, 시작해볼까요?" description="혼자 시작하기 막막한 청년을 위한 사회참여 AI 비서 · 필요한 도움과 지역 활동을 함께 찾아드려요." />
-      <div className="home-grid">
-        <Panel tone="blue" className="home-agent">
-          <div className="agent-intro">
-            <div>
-              <span className="small-tag"><Sparkles size={13} /> AI 비서 조이</span>
-              <h2>안녕하세요!<br />저는 AI 비서 조이예요.</h2>
-              <p>어떤 고민이 있든 편하게 이야기해 주세요.<br />필요한 도움과 지역 활동을 함께 찾아드릴게요.</p>
-            </div>
-            <JoyAvatar size="lg" />
-          </div>
-          <div className="divider" />
-          <h3 className="section-label">어디서 시작할지 모르겠다면</h3>
-          <div className="prompt-list">
-            {prompts.map(([title, desc]) => (
-              <button key={title} className="prompt-card" onClick={() => onSend(title)}>
-                <span><strong>{title}</strong><small>{desc}</small></span>
-                <ArrowRight size={18} />
-              </button>
-            ))}
-          </div>
-          <form className="chat-entry" onSubmit={submit}>
-            <MessageCircle size={18} />
-            <input value={draft} onChange={e => setDraft(e.target.value)} placeholder="조이에게 자유롭게 이야기하기..." aria-label="조이에게 메시지 입력" />
-            <button type="submit" aria-label="메시지 보내기"><Send size={17} /></button>
-          </form>
-        </Panel>
-        <aside className="home-aside">
-          <Panel tone="lavender" className="status-card">
-            <div className="panel-heading">
-              <div>
-                <span className="mini-label">MY CONNECTION</span>
-                <h3>나의 연결 상태 살펴보기</h3>
-              </div>
-              <Sprout size={24} />
-            </div>
-            <p>최근 외부 활동, 사람들과의 교류, 새 활동에 대한 부담을 가볍게 돌아봐요.</p>
-            <p className="notice">※ 고립 여부를 진단하거나 점수화하지 않아요.</p>
-            <Button variant="secondary" onClick={() => onNavigate('profile')}>나에게 편한 활동 방식 알아보기 <ArrowRight size={15} /></Button>
-          </Panel>
-          <Panel tone="green" className="weekly-card">
-            <div className="weekly-copy">
-              <span className="mini-label">THIS WEEK</span>
-              <h3>이번 주의 연결</h3>
-              <p>관심 지역의 청년센터 프로그램과 저장한 일정을 확인해요.</p>
-              <Button variant="secondary" onClick={() => onNavigate('center-list')}>근처 참여 기회 살펴보기 <ArrowRight size={15} /></Button>
-            </div>
-            <img src={boatImage} alt="파란 깃발을 단 종이배" />
-          </Panel>
-        </aside>
-      </div>
-      <section className="journey-section">
-        <div className="journey-heading">
-          <div><span className="mini-label">MY JOURNEY</span><h2>나의 섬에서, 기회의 다리를 건너</h2><p>작은 관심이 실제 참여로 이어지고, 나만의 경험이 쌓여요.</p></div>
-          <span className="journey-caption">섬 → 다리 → 마을</span>
+    <div className="joy-home">
+      <div className="home-context"><span><span className="home-context-dot" /> 청년을 위한 AI 비서</span><span>나에게 맞는 속도로, 하나씩</span></div>
+      <section className="home-welcome" aria-labelledby="home-heading">
+        <div className="home-welcome-copy">
+          <p className="home-kicker">혼자 찾기 막막한 순간에</p>
+          <h1 id="home-heading">지금의 고민을,<br /><span>다음 한 걸음으로.</span></h1>
+          <p className="home-lead">필요한 지원부터 가볍게 참여할 활동까지.<br className="home-desktop-break" /> 조이와 함께 나에게 맞는 시작을 찾아봐요.</p>
+          <div className="home-journey-note"><Footprints size={16} /><span>잘 설명하지 않아도 괜찮아요. 선택하며 시작해요.</span></div>
         </div>
-        <div className="journey-grid">
-          <article className="journey-card island-step">
-            <img src={joyIslandImage} alt="초록 섬에 서 있는 조이" />
-            <div><span>01 · 나의 섬</span><h3>지금의 나를 이해해요</h3><p>관심사와 필요한 도움을 편하게 알려주세요.</p></div>
-          </article>
-          <article className="journey-card bridge-step">
-            <img src={bridgeVillageImage} alt="섬과 마을을 연결하는 다리" />
-            <div><span>02 · 기회의 다리</span><h3>나에게 맞는 기회를 찾아요</h3><p>정책과 프로그램을 비교하고 참여 방법을 살펴봐요.</p></div>
-          </article>
-          <article className="journey-card village-step">
-            <img src={bridgeVillageImage} alt="다리 너머의 작은 마을" />
-            <div><span>03 · 경험의 마을</span><h3>참여 경험을 쌓아가요</h3><p>신청과 참여를 기록하고 다음 기회로 이어가요.</p></div>
-          </article>
+        <div className="home-joy-scene">
+          <span className="home-joy-caption">같이 찾아볼까요?</span>
+          <div className="home-joy-window"><img src={joyReferenceSheet} alt="파란 스카프를 두른 종이접기 친구 조이" /></div>
+          <span className="home-joy-name">기회를 함께 찾는 친구, 조이</span>
         </div>
       </section>
-    </>
+
+      <section className="home-start" aria-labelledby="home-start-heading">
+        <div className="home-section-heading">
+          <div><span className="home-step-label">01 / 이야기 시작하기</span><h2 id="home-start-heading">어떤 도움이 필요해요?</h2></div>
+          <p>지금 마음에 가까운 것 하나만 골라봐요.</p>
+        </div>
+        <div className="home-topic-grid">
+          {prompts.map(({ label, text, icon: Icon }, index) => (
+            <button className="home-topic" key={label} onClick={() => onSend(text)}>
+              <span className="home-topic-icon"><Icon size={22} strokeWidth={2} /></span>
+              <span>{label}</span><ArrowRight size={18} className="home-topic-arrow" />
+              <span className="home-topic-number" aria-hidden="true">0{index + 1}</span>
+            </button>
+          ))}
+        </div>
+        <form className="home-composer" onSubmit={submit}>
+          <label htmlFor="home-message">직접 이야기해도 좋아요</label>
+          <div className="home-composer-field">
+            <MessageCircle size={20} aria-hidden="true" />
+            <input id="home-message" value={draft} onChange={e => setDraft(e.target.value)} placeholder="요즘 이런 게 고민이에요…" autoComplete="off" maxLength={2000} />
+            <button type="submit" disabled={!draft.trim()} aria-label="조이에게 메시지 보내기"><ArrowRight size={20} /></button>
+          </div>
+        </form>
+        <p className="home-demo-note"><CircleHelp size={14} /> 지금은 체험 화면이에요. 대화는 예시 응답으로 이어져요.</p>
+      </section>
+
+      <section className="home-explore" aria-labelledby="home-explore-heading">
+        <div className="home-section-heading">
+          <div><span className="home-step-label">02 / 직접 둘러보기</span><h2 id="home-explore-heading">찾고 싶은 게 있다면</h2></div>
+        </div>
+        <div className="home-destination-grid">
+          <button className="home-destination" onClick={() => onNavigate('policy-list')}>
+            <span className="home-destination-icon"><Search size={24} /></span>
+            <span><strong>정책·활동 찾기</strong><small>관심 있는 지원과 프로그램 살펴보기</small></span><ArrowRight size={19} />
+          </button>
+          <button className="home-destination" onClick={() => onNavigate('center-list')}>
+            <span className="home-destination-icon"><MapPin size={24} /></span>
+            <span><strong>주변 청년센터</strong><small>가까운 공간과 참여 기회 알아보기</small></span><ArrowRight size={19} />
+          </button>
+        </div>
+      </section>
+
+      <section className="home-bottom-grid" aria-label="나에게 맞는 활동과 일정">
+        <div className="home-pace">
+          <span className="home-step-label">나의 섬에서, 기회의 다리로</span>
+          <h2>작은 시작도 충분해요.</h2>
+          <p>온라인으로, 작은 모임으로, 또는 천천히.<br />나에게 편한 방식부터 찾아봐요.</p>
+          <button className="home-text-link" onClick={() => onNavigate('profile')}>내 관심사 살펴보기 <ArrowRight size={17} /></button>
+          <div className="home-connection-path" aria-hidden="true"><span>나의 섬</span><i /><span>기회의 다리</span><i /><span>경험의 마을</span></div>
+        </div>
+        <div className="home-next">
+          <CalendarDays size={24} />
+          <h2>기억할 일은 한곳에</h2>
+          <p>관심 있는 일정과 참여 준비를<br />달력에서 확인해요.</p>
+          <button className="home-text-link" onClick={() => onNavigate('calendar')}>내 일정 보기 <ArrowRight size={17} /></button>
+          <button className="home-sub-link" onClick={() => onNavigate('applications')}>신청 이력 확인 <ChevronRight size={15} /></button>
+        </div>
+      </section>
+      <div className="home-service-note"><span>고민 정리부터 기회 탐색, 참여 준비까지 함께해요.</span><button onClick={() => onNavigate('about')}>서비스 알아보기 <ArrowRight size={14} /></button></div>
+    </div>
   )
 }
 
@@ -725,7 +735,7 @@ export default function App() {
   }, [screen, messages, selectedProgram, selectedCenter, savedIds, applications, events])
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${screen === 'home' ? 'home-view' : ''}`}>
       <Header screen={screen} onNavigate={setScreen} />
       <main className="main-container">{page}</main>
       <Footer onAbout={() => setScreen('about')} />
