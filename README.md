@@ -1,18 +1,18 @@
-# Youth AI Agent · Frontend v1
+# 둘셋 (Dos Tres) · Frontend
 
-Figma의 `02 와이어프레임` 12개 화면을 기준으로 만든 React + TypeScript + Vite 프론트엔드 스타터입니다.
+둘셋은 청년정책과 지역 활동을 찾고 신청 준비까지 돕는 AI 비서 서비스입니다. 서비스 안의 AI 비서·캐릭터 이름은 조이(JOY)입니다. Figma의 `02 와이어프레임` 12개 화면을 기준으로 만든 React + TypeScript + Vite 프론트엔드입니다.
 
 ## 개발 환경
 
 - Node.js 22 LTS, npm
 - React 18 · TypeScript · Vite
-- 저장소: `youth-ai-agent/frontend`
+- 저장소: `dos-tres/frontend`
 - 기준 브랜치: `main`
 
 ## 처음 실행
 
 ```bash
-git clone https://github.com/youth-ai-agent/frontend.git
+git clone https://github.com/dos-tres/frontend.git
 cd frontend
 ```
 
@@ -43,6 +43,8 @@ npm run preview
 | `src/data.ts` | 시연용 정책·센터·일정 데이터 |
 | `src/styles.css` | 스타일·반응형 레이아웃 |
 | `src/main.tsx` | React 진입점 |
+| `public/brand/` | 확정 둘셋 로고 3종의 SVG·PNG 원본 |
+| `docs/design/BRAND.md` | 서비스명·영문명·공식 로고 기준 |
 | `assets/images.json` | PNG 원본 데이터 |
 | `scripts/restore-assets.mjs` | 이미지 자동 복원 |
 
@@ -88,15 +90,19 @@ npm run preview
 
 화면의 정책·센터·일정 정보는 동작 확인용 가상 예시입니다. 실제 모집 중인 정보가 아닙니다.
 
-## 브랜드 메모
+## 확정 브랜드
 
-서비스명은 미정이므로 화면에 최종 서비스명을 넣지 않았습니다. `조이`는 캐릭터 이름으로 유지했습니다.
+서비스명은 **둘셋**, 영문명은 **Dos Tres**입니다. **조이(JOY)**는 둘셋 안의 AI 비서·캐릭터 이름입니다.
+
+공식 로고는 초록색 **23 섬 심볼**입니다. `public/brand/`에 섬 심볼·둥근 사각형·원형의 SVG와 PNG 원본 6개를 보관합니다. 상단과 브라우저 탭 파비콘에는 동일한 투명 배경 섬 심볼을 사용합니다. Apple 홈 화면 바로가기 아이콘은 둥근 사각형 원본을 유지합니다. [브랜드 기준](docs/design/BRAND.md)에서 사용처와 정확한 색상을 확인합니다.
 
 ## 디자인·이미지 작업
 
+- [둘셋 이름·공식 로고 기준](docs/design/BRAND.md)
 - [캐릭터·아이콘 제작 및 적용 기준](docs/design/README.md)
 - [필요 이미지와 제작 상태](docs/design/asset-manifest.json)
 - [기준 이미지·참고 자료 폴더](docs/design/references/README.md)
 - [로컬 Codex 작업 지침](AGENTS.md)
 
 [확정 캐릭터 참고 시트](docs/design/references/joy-character-sheet.png)를 기준으로 형태·얼굴·종이 질감·파란 스카프를 유지합니다. 팔레트는 현재 공통 기준으로 고정하며, 명시적인 변경 요청이 있을 때만 함께 갱신합니다. 인사·생각 포즈 SVG는 사용 가능하지만 기본 시트에서 분리한 개별 투명 PNG와 전용 아이콘 파일은 준비 예정입니다.
+

@@ -44,20 +44,10 @@ function sectionFor(screen: Screen) {
 
 function BrandMark() {
   return (
-    <div className="brand-mark" aria-label="서비스 로고 임시 표시">
-      <svg viewBox="0 0 76 56" role="img" aria-hidden="true">
-        <ellipse cx="38" cy="43" rx="31" ry="7" fill="#DDF1FF" />
-        <path d="M9 39c5-12 17-18 30-17 11 1 20 6 27 17-10 7-44 8-57 0Z" fill="#8BCB6B" />
-        <path d="M22 34c5-7 12-10 19-10 8 0 15 4 19 10-10 5-27 6-38 0Z" fill="#A9DD82" />
-        <path d="M40 22V8" stroke="#294E84" strokeWidth="2.5" strokeLinecap="round" />
-        <path d="M42 9c8-2 13 1 17 5-6 5-12 6-18 4Z" fill="#4F83F0" />
-        <path d="M17 35h12l-6-7Z" fill="#FFFFFF" />
-        <path d="M17 35h12v8H17Z" fill="#FFFFFF" />
-        <path d="M17 33l6-5 7 5Z" fill="#F3B58B" />
-        <path d="M23 38v3" stroke="#3C6492" strokeWidth="2" />
-        <path d="M62 18l4-5M67 25l6-1" stroke="#FFD45F" strokeWidth="3" strokeLinecap="round" />
-      </svg>
-    </div>
+    <span className="brand-mark" aria-hidden="true">
+      <img src={`${import.meta.env.BASE_URL}brand/dulset-island-symbol.svg`} width="56" height="56" alt="" />
+      <span className="brand-name">둘셋</span>
+    </span>
   )
 }
 
@@ -99,7 +89,7 @@ function Header({ screen, onNavigate }: { screen: Screen; onNavigate: (screen: S
   return (
     <header className="topbar">
       <div className="topbar-inner">
-        <button className="brand-button" onClick={() => onNavigate('home')} aria-label="홈으로">
+        <button className="brand-button" onClick={() => navigate('assistant')} aria-label="둘셋 홈으로">
           <BrandMark />
         </button>
         <button className="mobile-menu" onClick={() => setMobileOpen(v => !v)} aria-label="메뉴 열기">
@@ -127,8 +117,8 @@ function Header({ screen, onNavigate }: { screen: Screen; onNavigate: (screen: S
 function Footer({ onAbout }: { onAbout: () => void }) {
   return (
     <footer className="footer">
-      <span>청년의 고민과 정책, 지역 활동을 연결하는 AI 비서</span>
-      <button onClick={onAbout}>서비스 안내 <ArrowRight size={13} /></button>
+      <span>둘셋 · 청년의 고민과 정책, 지역 활동을 연결하는 AI 비서</span>
+      <button onClick={onAbout}>둘셋 소개 <ArrowRight size={13} /></button>
     </footer>
   )
 }
@@ -143,7 +133,7 @@ function HomePage({ onNavigate, onSend }: { onNavigate: (s: Screen) => void; onS
   const submit = (e: FormEvent) => { e.preventDefault(); onSend(draft); setDraft('') }
   return (
     <>
-      <PageTitle title="조이와 함께, 시작해볼까요?" description="혼자 시작하기 막막한 청년을 위한 사회참여 AI 비서 · 필요한 도움과 지역 활동을 함께 찾아드려요." />
+      <PageTitle title="둘셋과 함께, 시작해볼까요?" description="혼자 시작하기 막막한 청년을 위한 사회참여 AI 비서 · 필요한 도움과 지역 활동을 함께 찾아드려요." />
       <div className="home-grid">
         <Panel tone="blue" className="home-agent">
           <div className="agent-intro">
@@ -617,7 +607,7 @@ function RecordsPage() {
 function AboutPage() {
   return (
     <>
-      <PageTitle title="서비스 안내 · 조이와 함께하는 청년 지원" description="청년의 고민과 지원제도, 지역사회 활동을 연결하고 실제 참여를 돕는 AI 비서 서비스입니다." />
+      <PageTitle title="둘셋 소개" description="둘셋은 청년의 고민과 지원제도, 지역사회 활동을 연결하고 실제 참여를 돕는 AI 비서 서비스예요." />
       <div className="about-layout">
         <Panel tone="blue" className="about-main">
           <div className="about-hero">
@@ -734,3 +724,4 @@ export default function App() {
     </div>
   )
 }
+

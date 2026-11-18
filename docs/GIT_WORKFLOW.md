@@ -1,4 +1,4 @@
-# Git 협업 규칙 — youth-ai-agent/frontend
+# Git 협업 규칙 — dos-tres/frontend
 
 프론트엔드 저장소의 브랜치·커밋·Pull Request 운영 기준입니다. 디자인 결정 사항은 [JOY 디자인 가이드](design/JOY_design_guidelines.md)에서 별도로 관리합니다.
 
@@ -58,3 +58,4 @@ PR 본문에 **목적 / 변경 내용 / 검증 / 화면 캡처(UI 변경 시) / 
 3. PR 승인·검증 후 **Squash and merge**를 기본으로 사용합니다. 병합 권한자의 명시적 결정 없이 자동 병합하지 않습니다.
 4. 병합된 브랜치 삭제는 관련 PR과 로컬 작업에 의존성이 없는지 확인한 후 처리합니다.
 5. 과거 통합·브랜딩 변경은 PR #2로 `main`에 포함되었습니다. 중복 PR을 만들지 않으며, 진행 중인 `feat/home-design`과 Draft PR #1은 보존합니다.
+
