@@ -89,7 +89,7 @@ function Header({ screen, onNavigate }: { screen: Screen; onNavigate: (screen: S
   return (
     <header className="topbar">
       <div className="topbar-inner">
-        <button className="brand-button" onClick={() => onNavigate('home')} aria-label="둘셋 홈으로">
+        <button className="brand-button" onClick={() => navigate('assistant')} aria-label="둘셋 홈으로">
           <BrandMark />
         </button>
         <button className="mobile-menu" onClick={() => setMobileOpen(v => !v)} aria-label="메뉴 열기">
