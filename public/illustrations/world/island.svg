@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440" fill="none" aria-label="둘셋의 나의 섬 — 초록 깃발, 나무와 꽃이 있는 작은 섬"><title>둘셋의 나의 섬 — 초록 깃발, 나무와 꽃이 있는 작은 섬</title><defs>
+ <linearGradient id="grass" x1="0" y1="0" x2="0.85" y2="1"><stop stop-color="#E0F1B4"/><stop offset=".5" stop-color="#A8CC85"/><stop offset="1" stop-color="#91AE72"/></linearGradient>
+ <linearGradient id="leaves" x1="0" x2="1" y2="1"><stop stop-color="#C6E3A0"/><stop offset="1" stop-color="#689A65"/></linearGradient>
+ <linearGradient id="water" x1="0" y1="0" x2=".3" y2="1"><stop stop-color="#D5E9FC"/><stop offset=".55" stop-color="#9FCAF0"/><stop offset="1" stop-color="#7799E2"/></linearGradient>
+ <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFEFC"/><stop offset="1" stop-color="#F5DFB9"/></linearGradient>
+ <linearGradient id="wood" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#FDE9C5"/><stop offset=".62" stop-color="#E9B983"/><stop offset="1" stop-color="#C99B70"/></linearGradient>
+ <linearGradient id="roof" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FBC1AF"/><stop offset="1" stop-color="#E78B80"/></linearGradient>
+ <filter id="shadow" x="-20%" y="-40%" width="140%" height="190%"><feGaussianBlur stdDeviation="9"/></filter>
+ <filter id="tinyPaper" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency=".4" numOctaves="2" seed="4" stitchTiles="stitch" result="noise"/>
+  <feColorMatrix in="noise" type="saturate" values="0" result="mono"/>
+  <feComponentTransfer in="mono"><feFuncA type="linear" slope=".055"/></feComponentTransfer>
+ </filter>
+</defs>
+<ellipse cx="360" cy="389" rx="236" ry="18" fill="#393653" opacity=".075" filter="url(#shadow)"/>
+<path d="M62 323C62 289 132 278 185 266C256 254 289 267 357 259C445 247 508 264 577 292C631 314 654 334 636 359C616 385 511 407 359 403C210 405 92 382 68 354C61 345 60 333 62 323Z" fill="url(#water)"/>
+<path d="M90 323C166 315 214 299 319 300C425 287 544 308 618 326C596 351 489 376 359 377C222 376 130 359 90 323Z" fill="#D6E9FA" opacity=".6"/>
+<path d="M147 339c28 8 52 8 83 5m277 10c24-2 40-5 60-15m-238 44c36 7 74 4 114-3" stroke="#FFFEFC" stroke-width="7" opacity=".72" stroke-linecap="round"/>
+<path d="M103 303C113 292 144 282 182 273C222 265 248 267 289 269C360 261 406 257 475 276C529 291 580 307 614 326C603 342 560 353 506 361C431 373 289 371 221 363C170 356 121 344 103 329C98 322 98 313 103 303Z" fill="url(#sand)"/>
+<path d="M123 292C137 249 181 224 222 217C258 167 322 159 371 188C423 175 458 187 485 216C535 226 567 262 590 305C542 334 462 344 365 346C256 348 175 332 123 310Z" fill="url(#grass)"/>
+<path d="M150 305C206 334 303 335 382 335C461 336 523 329 570 309" stroke="#8BAE6A" stroke-width="5" opacity=".45" stroke-linecap="round"/>
+<path d="M426 232c-18-35-11-74 10-99 23-26 70-24 91 5 33-3 56 24 50 50 19 30-3 64-33 68-24 19-55 11-69-2-23 7-39-6-49-22Z" fill="url(#leaves)"/>
+<path d="M476 270V203m0 29-27-20m28-14 25-21" stroke="#B78562" stroke-width="14" stroke-linecap="round"/>
+<path d="M188 286c-12-24-7-49 17-62 3-24 28-37 48-29 20-18 48-11 58 10 28 2 39 36 22 55-21 14-96 29-145 26Z" fill="#77A875"/>
+<path d="M515 294c-14-21-6-37 14-43 11-21 36-23 51-5 21 2 30 22 17 40-12 11-60 17-82 8Z" fill="#7CAA78"/>
+<path d="M360 207V91" stroke="#A77C58" stroke-width="14" stroke-linecap="round"/>
+<circle cx="360" cy="91" r="11" fill="#D7AA7C"/>
+<path d="M369 102C408 80 432 112 466 92L466 149C434 169 404 139 369 158Z" fill="#426B4A"/>
+<path d="M375 109C405 96 434 119 459 106" stroke="#91AE72" stroke-width="5" opacity=".45" stroke-linecap="round"/>
+<g fill="#FFFEFC"><circle cx="270" cy="286" r="15"/><circle cx="255" cy="295" r="15"/><circle cx="284" cy="296" r="15"/><circle cx="268" cy="306" r="15"/><circle cx="332" cy="291" r="13"/><circle cx="319" cy="302" r="13"/><circle cx="347" cy="304" r="13"/></g>
+<circle cx="269" cy="296" r="9" fill="#F5AB9D"/><circle cx="332" cy="300" r="8" fill="#FFD05C"/>
+<path d="M389 299c4-13 6-12 10-2m11 4c2-10 7-13 10-2m14 3c4-11 9-12 10-3" stroke="#65965B" stroke-width="6" stroke-linecap="round"/>
+<path d="M555 135l9-16m8 39 16-9m-63-32-6-14" stroke="#FFD05C" stroke-width="9" stroke-linecap="round"/>
+<path d="M154 233c20-17 41-25 53-29" stroke="#FFFEFC" stroke-width="7" opacity=".3" stroke-linecap="round"/>
+<path d="M125 228c39-54 103-77 171-72" stroke="#FFFEFC" stroke-width="4" opacity=".4" stroke-linecap="round"/>
+</svg>
