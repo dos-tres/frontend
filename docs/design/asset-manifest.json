@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "reference": {
     "status": "approved-reference",
     "path": "docs/design/references/joy-character-sheet.png",
@@ -158,6 +158,39 @@
       "width": 1024,
       "height": 1024,
       "usage": "프로필·공유용 아이콘"
+    },
+    {
+      "id": "dulset-world-island",
+      "targetPath": "public/illustrations/world/island.svg",
+      "status": "available",
+      "source": "original-brand-vector-illustration",
+      "format": "svg",
+      "transparentBackground": true,
+      "width": 720,
+      "height": 440,
+      "usage": "home journey first place; no face or Joy character; navigates to profile"
+    },
+    {
+      "id": "dulset-world-bridge",
+      "targetPath": "public/illustrations/world/bridge.svg",
+      "status": "available",
+      "source": "original-brand-vector-illustration",
+      "format": "svg",
+      "transparentBackground": true,
+      "width": 720,
+      "height": 440,
+      "usage": "home journey second place; navigates to policy list"
+    },
+    {
+      "id": "dulset-world-village",
+      "targetPath": "public/illustrations/world/village.svg",
+      "status": "available",
+      "source": "original-brand-vector-illustration",
+      "format": "svg",
+      "transparentBackground": true,
+      "width": 720,
+      "height": 440,
+      "usage": "home journey third place; navigates to participation records"
     }
   ],
   "brand": {
@@ -173,5 +206,6 @@
       "lightGreen": "#91AE72",
       "white": "#FFFFFF"
     }
-  }
+  },
+  "illustrationGuide": "docs/design/WORLD_illustrations.md"
 }
