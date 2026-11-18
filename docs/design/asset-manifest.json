@@ -102,7 +102,7 @@
       "transparentBackground": true,
       "width": 1024,
       "height": 1024,
-      "usage": "상단 로고·서비스 소개"
+      "usage": "상단 로고·서비스 소개·브라우저 탭 파비콘"
     },
     {
       "id": "dulset-logo-symbol-png",
@@ -113,7 +113,7 @@
       "transparentBackground": true,
       "width": 1024,
       "height": 1024,
-      "usage": "상단 로고·서비스 소개"
+      "usage": "상단 로고·서비스 소개·브라우저 탭 파비콘"
     },
     {
       "id": "dulset-logo-square-svg",
@@ -124,7 +124,7 @@
       "transparentBackground": true,
       "width": 1024,
       "height": 1024,
-      "usage": "파비콘·앱 아이콘·홈 화면 바로가기"
+      "usage": "둥근 사각형 공식 로고 보관"
     },
     {
       "id": "dulset-logo-square-png",
@@ -135,7 +135,7 @@
       "transparentBackground": true,
       "width": 1024,
       "height": 1024,
-      "usage": "파비콘·앱 아이콘·홈 화면 바로가기"
+      "usage": "Apple 홈 화면 바로가기 아이콘"
     },
     {
       "id": "dulset-logo-round-svg",
