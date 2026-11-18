@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440" fill="none" aria-label="둘셋의 경험의 마을 — 세 채의 작은 집과 나무가 있는 마을"><title>둘셋의 경험의 마을 — 세 채의 작은 집과 나무가 있는 마을</title><defs>
+ <linearGradient id="grass" x1="0" y1="0" x2="0.85" y2="1"><stop stop-color="#E0F1B4"/><stop offset=".5" stop-color="#A8CC85"/><stop offset="1" stop-color="#91AE72"/></linearGradient>
+ <linearGradient id="leaves" x1="0" x2="1" y2="1"><stop stop-color="#C6E3A0"/><stop offset="1" stop-color="#689A65"/></linearGradient>
+ <linearGradient id="water" x1="0" y1="0" x2=".3" y2="1"><stop stop-color="#D5E9FC"/><stop offset=".55" stop-color="#9FCAF0"/><stop offset="1" stop-color="#7799E2"/></linearGradient>
+ <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFEFC"/><stop offset="1" stop-color="#F5DFB9"/></linearGradient>
+ <linearGradient id="wood" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#FDE9C5"/><stop offset=".62" stop-color="#E9B983"/><stop offset="1" stop-color="#C99B70"/></linearGradient>
+ <linearGradient id="roof" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FBC1AF"/><stop offset="1" stop-color="#E78B80"/></linearGradient>
+ <filter id="shadow" x="-20%" y="-40%" width="140%" height="190%"><feGaussianBlur stdDeviation="9"/></filter>
+ <filter id="tinyPaper" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency=".4" numOctaves="2" seed="4" stitchTiles="stitch" result="noise"/>
+  <feColorMatrix in="noise" type="saturate" values="0" result="mono"/>
+  <feComponentTransfer in="mono"><feFuncA type="linear" slope=".055"/></feComponentTransfer>
+ </filter>
+</defs>
+<ellipse cx="360" cy="389" rx="233" ry="18" fill="#393653" opacity=".07" filter="url(#shadow)"/>
+<path d="M62 315C76 273 150 260 217 255C266 218 322 219 362 237C424 212 491 241 537 267C590 279 624 308 636 338C608 366 496 379 361 377C218 379 103 360 62 336Z" fill="url(#grass)"/>
+<path d="M282 375C293 339 307 332 345 318C385 304 406 288 430 263" stroke="#F7F1EB" stroke-width="36" stroke-linecap="round"/>
+<path d="M292 372C305 338 325 333 348 323C386 307 406 291 427 267" stroke="#FFE4B8" stroke-width="7" stroke-linecap="round" opacity=".6"/>
+<path d="M103 297c-23-19-14-48 4-54-8-26 10-53 37-53 15-30 56-33 73-9 29-4 50 24 47 48 21 21 11 52-10 65Z" fill="url(#leaves)"/>
+<path d="M145 323v-70m0 26-28-19m28-14 26-23" stroke="#B78562" stroke-width="15" stroke-linecap="round"/>
+<path d="M505 281c-16-25-1-51 20-53 7-31 45-43 67-23 33-3 54 36 31 61 17 27-14 48-39 42Z" fill="url(#leaves)"/>
+<path d="M567 330v-65m0 25-20-16m20-13 22-15" stroke="#B78562" stroke-width="14" stroke-linecap="round"/>
+<path d="M272 201V116L350 64L422 115V258H272Z" fill="url(#sand)" stroke="#E6D8C8" stroke-width="3"/>
+<path d="M252 124L347 59C350 57 355 58 359 61L445 125C451 130 446 140 438 140L351 84L258 141C252 144 244 133 252 124Z" fill="url(#roof)"/>
+<rect x="318" y="151" width="21" height="24" rx="5" fill="#BECCEA"/><rect x="353" y="151" width="21" height="24" rx="5" fill="#BECCEA"/>
+<rect x="330" y="206" width="34" height="52" rx="17" fill="#CCA17B"/><circle cx="355" cy="236" r="3" fill="#F7F1EB"/>
+<path d="M176 239V171L237 131L299 171V322H176Z" fill="#FFFEFC" stroke="#E6D8C8" stroke-width="3"/>
+<path d="M164 172L233 126C237 123 240 123 243 127L310 173C316 181 310 192 303 187L236 146L171 187C164 192 156 180 164 172Z" fill="#7799E2"/>
+<rect x="217" y="203" width="20" height="20" rx="3" fill="#C2D6F6"/><rect x="243" y="203" width="20" height="20" rx="3" fill="#C2D6F6"/>
+<path d="M189 322v-42a21 21 0 0 1 42 0v42" fill="#D1A983"/>
+<path d="M415 254V195L472 155L535 195V322H415Z" fill="#FFFEFC" stroke="#E6D8C8" stroke-width="3"/>
+<path d="M404 196L466 151C470 148 473 148 477 152L542 197C548 203 543 215 533 211L470 172L412 211C402 216 399 202 404 196Z" fill="#FFD05C"/>
+<rect x="443" y="225" width="19" height="20" rx="3" fill="#CDD5F3"/><rect x="469" y="225" width="19" height="20" rx="3" fill="#CDD5F3"/>
+<path d="M498 323v-40a19 19 0 0 0-38 0v40" fill="#F5AB9D"/>
+<path d="M99 345c-12-29 7-49 24-44 17-29 48-21 58 2 29-2 44 33 26 46Z" fill="#91AE72"/>
+<path d="M518 348c-13-27 4-47 25-42 15-26 45-22 57 1 26 7 28 32 10 45Z" fill="#8FB879"/>
+<g fill="#FFFEFC"><circle cx="247" cy="339" r="10"/><circle cx="257" cy="330" r="10"/><circle cx="268" cy="339" r="10"/><circle cx="502" cy="349" r="10"/><circle cx="512" cy="338" r="10"/><circle cx="522" cy="349" r="10"/></g>
+<circle cx="257" cy="341" r="6" fill="#F5AB9D"/><circle cx="511" cy="348" r="6" fill="#FFD05C"/>
+<path d="M572 125l8-17m13 35 17-8m-65-28-7-14" stroke="#FFD05C" stroke-width="9" stroke-linecap="round"/>
+</svg>
