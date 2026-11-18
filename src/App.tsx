@@ -125,42 +125,83 @@ function Footer({ onAbout }: { onAbout: () => void }) {
 
 function HomePage({ onNavigate, onSend }: { onNavigate: (s: Screen) => void; onSend: (text: string) => void }) {
   const [draft, setDraft] = useState('')
-  const prompts = [
-    ['취업·진로 때문에 고민이에요', '지원받을 정책과 함께할 활동 찾기', 'briefcase'],
-    ['경제·주거가 걱정이에요', '현실적인 지원사업부터 확인하기', 'home'],
-    ['사람들과 교류할 기회가 필요해요', '부담 없는 가까운 활동부터 시작하기', 'people'],
+  const [isFocused, setIsFocused] = useState(false)
+  const suggestions = [
+    ['취업 지원을 찾아보고 싶어요', '제가 받을 수 있는 취업 지원 정책이 궁금해요.'],
+    ['청년센터에서는 뭘 할 수 있나요?', '지금 참여할 수 있는 청년센터 프로그램을 알려줘.'],
+    ['무엇부터 해야 할지 모르겠어요', '막막해서 무엇부터 시작해야 할지 모르겠어요. 함께 정리해줘.'],
   ]
-  const submit = (e: FormEvent) => { e.preventDefault(); onSend(draft); setDraft('') }
+  const sendDraft = () => {
+    const value = draft.trim()
+    if (!value) return
+    onSend(value)
+    setDraft('')
+  }
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    sendDraft()
+  }
+
   return (
     <>
-      <PageTitle title="둘셋과 함께, 시작해볼까요?" description="혼자 시작하기 막막한 청년을 위한 사회참여 AI 비서 · 필요한 도움과 지역 활동을 함께 찾아드려요." />
-      <div className="home-grid">
-        <Panel tone="blue" className="home-agent">
-          <div className="agent-intro">
-            <div>
-              <span className="small-tag"><Sparkles size={13} /> AI 비서 조이</span>
-              <h2>안녕하세요!<br />저는 AI 비서 조이예요.</h2>
-              <p>어떤 고민이 있든 편하게 이야기해 주세요.<br />필요한 도움과 지역 활동을 함께 찾아드릴게요.</p>
+      <section className="home-landing" aria-labelledby="home-landing-title">
+        <div className="home-landing-content">
+          <div className="home-landing-header">
+            <div className="home-landing-copy">
+              <span className="home-landing-kicker"><Sparkles size={15} /> AI 비서 조이와 함께</span>
+              <h1 id="home-landing-title">지금 어떤 도움이 필요하세요?</h1>
+              <p>취업·주거·일상의 고민부터 청년정책과 지역 활동까지, 편하게 이야기해 주세요.</p>
             </div>
-            <JoyAvatar size="lg" />
+            <div className="home-landing-joy"><JoyAvatar size="lg" /></div>
           </div>
-          <div className="divider" />
-          <h3 className="section-label">어디서 시작할지 모르겠다면</h3>
-          <div className="prompt-list">
-            {prompts.map(([title, desc]) => (
-              <button key={title} className="prompt-card" onClick={() => onSend(title)}>
-                <span><strong>{title}</strong><small>{desc}</small></span>
-                <ArrowRight size={18} />
+
+          <form className="home-prompt-box" onSubmit={submit}>
+            <label htmlFor="home-prompt" className="home-prompt-label">조이에게 이야기하기</label>
+            <div className="home-prompt-editor">
+              <textarea
+                id="home-prompt"
+                rows={2}
+                value={draft}
+                onChange={event => setDraft(event.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                onKeyDown={event => {
+                  if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+                    event.preventDefault()
+                    sendDraft()
+                  }
+                }}
+                aria-describedby="home-prompt-description"
+              />
+              {!draft && !isFocused && (
+                <span className="home-input-visual-placeholder" aria-hidden="true">
+                  고민이나 궁금한 점을 입력해 보세요<span className="home-blinking-caret" />
+                </span>
+              )}
+            </div>
+            <div className="home-prompt-actions">
+              <small id="home-prompt-description">짧게 적어도 괜찮아요 · Enter로 보내기, Shift+Enter로 줄바꿈</small>
+              <button type="submit" disabled={!draft.trim()} aria-label="조이에게 메시지 보내기">
+                <ArrowRight size={20} />
               </button>
-            ))}
-          </div>
-          <form className="chat-entry" onSubmit={submit}>
-            <MessageCircle size={18} />
-            <input value={draft} onChange={e => setDraft(e.target.value)} placeholder="조이에게 자유롭게 이야기하기..." aria-label="조이에게 메시지 입력" />
-            <button type="submit" aria-label="메시지 보내기"><Send size={17} /></button>
+            </div>
           </form>
-        </Panel>
-        <aside className="home-aside">
+
+          <div className="home-example-area">
+            <p>이렇게 시작해 보세요</p>
+            <div className="home-example-chips">
+              {suggestions.map(([label, text]) => (
+                <button type="button" key={label} onClick={() => onSend(text)}>
+                  <span>{label}</span><ArrowRight size={15} />
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className="home-preview-note">현재 대화는 시연용 예시 응답이에요. 실제 정책과 신청 조건은 공식 정보를 확인해야 해요.</p>
+        </div>
+      </section>
+
+        <aside className="home-aside home-lower-grid">
           <Panel tone="lavender" className="status-card">
             <div className="panel-heading">
               <div>
@@ -183,7 +224,7 @@ function HomePage({ onNavigate, onSend }: { onNavigate: (s: Screen) => void; onS
             <img src={boatImage} alt="파란 깃발을 단 종이배" />
           </Panel>
         </aside>
-      </div>
+
       <section className="journey-section">
         <div className="journey-heading">
           <div><span className="mini-label">MY JOURNEY</span><h2>나의 섬에서, 기회의 다리를 건너</h2><p>작은 관심이 실제 참여로 이어지고, 나만의 경험이 쌓여요.</p></div>
