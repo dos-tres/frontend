@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "reference": {
     "status": "approved-reference",
     "path": "docs/design/references/joy-character-sheet.png",
@@ -92,6 +92,86 @@
       "targetPath": "src/assets/icons/island.svg",
       "status": "planned",
       "format": "svg"
+    },
+    {
+      "id": "dulset-logo-symbol-svg",
+      "targetPath": "public/brand/dulset-island-symbol.svg",
+      "status": "available",
+      "source": "user-provided-approved-logo",
+      "format": "svg",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024,
+      "usage": "상단 로고·서비스 소개"
+    },
+    {
+      "id": "dulset-logo-symbol-png",
+      "targetPath": "public/brand/dulset-island-symbol.png",
+      "status": "available",
+      "source": "user-provided-approved-logo",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024,
+      "usage": "상단 로고·서비스 소개"
+    },
+    {
+      "id": "dulset-logo-square-svg",
+      "targetPath": "public/brand/dulset-island-square.svg",
+      "status": "available",
+      "source": "user-provided-approved-logo",
+      "format": "svg",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024,
+      "usage": "파비콘·앱 아이콘·홈 화면 바로가기"
+    },
+    {
+      "id": "dulset-logo-square-png",
+      "targetPath": "public/brand/dulset-island-square.png",
+      "status": "available",
+      "source": "user-provided-approved-logo",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024,
+      "usage": "파비콘·앱 아이콘·홈 화면 바로가기"
+    },
+    {
+      "id": "dulset-logo-round-svg",
+      "targetPath": "public/brand/dulset-island-round.svg",
+      "status": "available",
+      "source": "user-provided-approved-logo",
+      "format": "svg",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024,
+      "usage": "프로필·공유용 아이콘"
+    },
+    {
+      "id": "dulset-logo-round-png",
+      "targetPath": "public/brand/dulset-island-round.png",
+      "status": "available",
+      "source": "user-provided-approved-logo",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024,
+      "usage": "프로필·공유용 아이콘"
     }
-  ]
+  ],
+  "brand": {
+    "serviceName": "둘셋",
+    "englishName": "Dos Tres",
+    "assistantName": "조이",
+    "assistantEnglishName": "JOY",
+    "status": "approved",
+    "approvedAt": "2026-11-18",
+    "guidelines": "docs/design/BRAND.md",
+    "colors": {
+      "green": "#426B4A",
+      "lightGreen": "#91AE72",
+      "white": "#FFFFFF"
+    }
+  }
 }
