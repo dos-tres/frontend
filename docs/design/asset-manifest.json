@@ -1,0 +1,97 @@
+{
+  "version": 2,
+  "reference": {
+    "status": "approved-reference",
+    "path": "docs/design/references/joy-character-sheet.png",
+    "guidelines": "docs/design/JOY_design_guidelines.md",
+    "note": "2026-11-18 선택한 단일 최우선 시트. 외형·얼굴·종이 질감·파란 스카프 유지. 과거 시트와 혼용 금지. UI 팔레트와 공통 규칙은 guidelines 참조. 개별 투명 PNG 준비 예정. 화면 구성은 자율 설계.",
+    "archivedReferences": [
+      "docs/design/references/joy-character-base.png",
+      "docs/design/references/joy-style-master.png"
+    ],
+    "uiImplementationStatus": "guidelines-defined-not-yet-applied"
+  },
+  "assets": [
+    {
+      "id": "joy-default",
+      "targetPath": "src/assets/characters/joy-default.png",
+      "status": "using-existing",
+      "fallback": "src/assets/joy.png",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024,
+      "note": " 기존 에셋이며 새 확정 시트와의 외형 일치가 검증된 것은 아님. 신규 제작 기준으로 사용하지 않는다."
+    },
+    {
+      "id": "joy-greeting",
+      "targetPath": "src/assets/characters/joy-greeting.svg",
+      "status": "available",
+      "fallback": "src/assets/joy.png",
+      "format": "svg-with-embedded-png",
+      "transparentBackground": true,
+      "width": 1536,
+      "height": 1024,
+      "note": "기존 생성 PNG 원본을 내장한 독립형 SVG 이미지. 외부 요청과 복원 과정 없이 img로 사용 가능. 기존 에셋이며 새 확정 시트와의 외형 일치가 검증된 것은 아님. 신규 제작 기준으로 사용하지 않는다."
+    },
+    {
+      "id": "joy-thinking",
+      "targetPath": "src/assets/characters/joy-thinking.svg",
+      "status": "available",
+      "fallback": "src/assets/joy.png",
+      "format": "svg-with-embedded-png",
+      "transparentBackground": true,
+      "width": 1254,
+      "height": 1254,
+      "note": "기존 생성 PNG 원본을 내장한 독립형 SVG 이미지. 외부 요청과 복원 과정 없이 img로 사용 가능. 기존 에셋이며 새 확정 시트와의 외형 일치가 검증된 것은 아님. 신규 제작 기준으로 사용하지 않는다."
+    },
+    {
+      "id": "joy-guide",
+      "targetPath": "src/assets/characters/joy-guide.png",
+      "status": "planned",
+      "fallback": "src/assets/joy.png",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "id": "joy-success",
+      "targetPath": "src/assets/characters/joy-success.png",
+      "status": "planned",
+      "fallback": "src/assets/joy.png",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "id": "joy-empty",
+      "targetPath": "src/assets/characters/joy-empty.png",
+      "status": "planned",
+      "fallback": "src/assets/joy.png",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1024,
+      "height": 1024
+    },
+    {
+      "id": "paper-boat",
+      "targetPath": "src/assets/icons/paper-boat.svg",
+      "status": "planned",
+      "format": "svg"
+    },
+    {
+      "id": "bridge",
+      "targetPath": "src/assets/icons/bridge.svg",
+      "status": "planned",
+      "format": "svg"
+    },
+    {
+      "id": "island",
+      "targetPath": "src/assets/icons/island.svg",
+      "status": "planned",
+      "format": "svg"
+    }
+  ]
+}
