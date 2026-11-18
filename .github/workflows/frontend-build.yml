@@ -1,9 +1,9 @@
 name: Frontend build
 on:
   push:
-    branches: [main, feat/v1, feat/home-design]
+    branches: [main, feat/home-design]
   pull_request:
-    branches: [main, feat/v1]
+    branches: [main]
 permissions:
   contents: read
 jobs:
