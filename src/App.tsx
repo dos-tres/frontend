@@ -199,31 +199,33 @@ function HomePage({ onNavigate, onSend }: { onNavigate: (s: Screen) => void; onS
           </div>
           <p className="home-preview-note">현재 대화는 시연용 예시 응답이에요. 실제 정책과 신청 조건은 공식 정보를 확인해야 해요.</p>
         </div>
-      </section>
-
-        <aside className="home-aside home-lower-grid">
-          <Panel tone="lavender" className="status-card">
-            <div className="panel-heading">
-              <div>
-                <span className="mini-label">MY CONNECTION</span>
-                <h3>나의 연결 상태 살펴보기</h3>
-              </div>
-              <Sprout size={24} />
-            </div>
-            <p>최근 외부 활동, 사람들과의 교류, 새 활동에 대한 부담을 가볍게 돌아봐요.</p>
-            <p className="notice">※ 고립 여부를 진단하거나 점수화하지 않아요.</p>
-            <Button variant="secondary" onClick={() => onNavigate('profile')}>나에게 편한 활동 방식 알아보기 <ArrowRight size={15} /></Button>
-          </Panel>
-          <Panel tone="green" className="weekly-card">
-            <div className="weekly-copy">
-              <span className="mini-label">THIS WEEK</span>
-              <h3>이번 주의 연결</h3>
-              <p>관심 지역의 청년센터 프로그램과 저장한 일정을 확인해요.</p>
-              <Button variant="secondary" onClick={() => onNavigate('center-list')}>근처 참여 기회 살펴보기 <ArrowRight size={15} /></Button>
-            </div>
-            <img src={boatImage} alt="파란 깃발을 단 종이배" />
-          </Panel>
+        <aside className="home-floating-banners" aria-label="둘셋 바로가기">
+          <button
+            type="button"
+            className="home-mini-banner home-mini-banner-connection"
+            onClick={() => onNavigate('profile')}
+          >
+            <span className="home-mini-banner-icon" aria-hidden="true"><Sprout size={22} /></span>
+            <span className="home-mini-banner-copy">
+              <strong>나의 연결 상태</strong>
+              <small>내게 편한 활동 방식 찾기</small>
+            </span>
+            <ArrowRight className="home-mini-banner-arrow" size={17} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="home-mini-banner home-mini-banner-weekly"
+            onClick={() => onNavigate('center-list')}
+          >
+            <span className="home-mini-banner-icon" aria-hidden="true"><CalendarDays size={22} /></span>
+            <span className="home-mini-banner-copy">
+              <strong>이번 주의 연결</strong>
+              <small>청년센터 활동 살펴보기</small>
+            </span>
+            <ArrowRight className="home-mini-banner-arrow" size={17} aria-hidden="true" />
+          </button>
         </aside>
+      </section>
 
       <section className="journey-section">
         <div className="journey-heading">
