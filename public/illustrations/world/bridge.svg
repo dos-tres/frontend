@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440" fill="none" aria-label="둘셋의 기회의 다리 — 푸른 물 위의 둥근 나무다리"><title>둘셋의 기회의 다리 — 푸른 물 위의 둥근 나무다리</title><defs>
+ <linearGradient id="grass" x1="0" y1="0" x2="0.85" y2="1"><stop stop-color="#E0F1B4"/><stop offset=".5" stop-color="#A8CC85"/><stop offset="1" stop-color="#91AE72"/></linearGradient>
+ <linearGradient id="leaves" x1="0" x2="1" y2="1"><stop stop-color="#C6E3A0"/><stop offset="1" stop-color="#689A65"/></linearGradient>
+ <linearGradient id="water" x1="0" y1="0" x2=".3" y2="1"><stop stop-color="#D5E9FC"/><stop offset=".55" stop-color="#9FCAF0"/><stop offset="1" stop-color="#7799E2"/></linearGradient>
+ <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFFEFC"/><stop offset="1" stop-color="#F5DFB9"/></linearGradient>
+ <linearGradient id="wood" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#FDE9C5"/><stop offset=".62" stop-color="#E9B983"/><stop offset="1" stop-color="#C99B70"/></linearGradient>
+ <linearGradient id="roof" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FBC1AF"/><stop offset="1" stop-color="#E78B80"/></linearGradient>
+ <filter id="shadow" x="-20%" y="-40%" width="140%" height="190%"><feGaussianBlur stdDeviation="9"/></filter>
+ <filter id="tinyPaper" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency=".4" numOctaves="2" seed="4" stitchTiles="stitch" result="noise"/>
+  <feColorMatrix in="noise" type="saturate" values="0" result="mono"/>
+  <feComponentTransfer in="mono"><feFuncA type="linear" slope=".055"/></feComponentTransfer>
+ </filter>
+</defs>
+<ellipse cx="354" cy="384" rx="238" ry="17" fill="#393653" opacity=".07" filter="url(#shadow)"/>
+<path d="M76 329C92 294 171 298 224 293C298 284 363 295 426 286C493 278 583 291 624 321C649 340 627 370 556 381C484 397 242 401 145 383C99 374 69 357 76 329Z" fill="url(#water)"/>
+<path d="M133 335c33 11 68 13 114 10m114 35 88-5m62-37 64 5" stroke="#FFFEFC" stroke-linecap="round" stroke-width="7" opacity=".68"/>
+<path d="M90 334C107 279 161 272 209 295L237 349C190 369 139 360 90 350Z" fill="url(#grass)"/>
+<path d="M507 294C547 260 612 283 638 332L626 354C592 361 544 367 493 349Z" fill="url(#grass)"/>
+<path d="M122 315C118 281 140 266 160 270C175 243 209 251 215 275C245 278 257 320 224 329L126 332Z" fill="url(#leaves)"/>
+<path d="M518 318c-16-26 3-50 25-46 15-27 49-24 60 1 23 1 33 39 9 51Z" fill="url(#leaves)"/>
+<path d="M173 286C233 224 269 204 356 197C444 197 493 222 553 283L553 324C483 264 435 245 356 243C280 244 232 270 172 327Z" fill="#CDA077"/>
+<path d="M178 266C236 214 277 187 356 186C436 186 489 216 550 266L550 284C492 233 444 208 356 207C273 208 232 232 178 285Z" fill="url(#wood)" stroke="#E9B983" stroke-width="5"/>
+<path d="M193 313C249 267 293 253 356 252C426 252 468 269 538 317L538 335C472 285 429 272 356 272C283 272 240 287 193 334Z" fill="url(#wood)"/>
+<path d="M187 270L187 321M529 273L529 321" stroke="#B88A63" stroke-width="20" stroke-linecap="round"/>
+<path d="M185 262C253 201 283 191 355 191C437 191 479 217 532 267" stroke="#FFE6BE" stroke-width="17" stroke-linecap="round"/>
+<path d="M191 304C258 252 303 247 355 247C414 247 461 262 529 307" stroke="#F6D5A7" stroke-width="13" stroke-linecap="round"/>
+<path d="M240 230v50m56-69v49m61-55v51m63-46v50m58-30v51" stroke="#D5A775" stroke-width="12" stroke-linecap="round"/>
+<path d="M164 240v96m385-96v96" stroke="url(#wood)" stroke-width="27" stroke-linecap="round"/>
+<circle cx="164" cy="235" r="19" fill="#F9D9A6"/><circle cx="549" cy="235" r="19" fill="#F9D9A6"/>
+<path d="M164 236c7-13 16-17 25-15m356 11c-8-12-17-16-26-15" stroke="#FFFEFC" stroke-width="6" stroke-linecap="round" opacity=".48"/>
+<path d="M151 341c-20-24-9-39 12-44 10-25 40-21 52-2 23 0 32 24 18 44" fill="#91AE72"/>
+<path d="M515 341c-13-25-3-44 22-45 14-27 48-19 56 4 23 8 24 28 12 40" fill="#8FB779"/>
+<g fill="#FFFEFC"><circle cx="131" cy="339" r="10"/><circle cx="142" cy="332" r="10"/><circle cx="149" cy="341" r="10"/><circle cx="575" cy="328" r="11"/><circle cx="586" cy="337" r="11"/><circle cx="562" cy="338" r="11"/></g><circle cx="140" cy="339" r="6" fill="#F5AB9D"/><circle cx="575" cy="337" r="6" fill="#FFD05C"/>
+<path d="M402 128l8-17m12 33 17-8m-62-23-7-13" stroke="#FFD05C" stroke-width="9" stroke-linecap="round"/>
+</svg>
