@@ -446,3 +446,38 @@ a { color: inherit; text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   .home-blinking-caret { animation: none; }
 }
+
+/* Right-side floating shortcuts — visually light, self-contained mini banners. */
+.home-landing { display: grid; grid-template-columns: minmax(0, 1fr) 228px; column-gap: 28px; }
+.home-landing-content { width: 100%; max-width: 860px; min-width: 0; }
+.home-floating-banners { display: grid; align-content: center; gap: 15px; width: 100%; }
+.home-mini-banner {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  width: calc(100% - 12px); min-height: 134px; padding: 17px; text-align: left;
+  border-radius: 21px; border: 1px solid rgba(89,100,142,.1); cursor: pointer;
+  box-shadow: 0 9px 24px rgba(57,54,83,.055);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.home-mini-banner:hover { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(57,54,83,.11); border-color: rgba(89,100,142,.25); }
+.home-mini-banner:focus-visible { outline: 3px solid #7799e2; outline-offset: 3px; }
+.home-mini-banner-connection { background: #f2f0ff; color: #393653; }
+.home-mini-banner-weekly { margin-left: 12px; background: #edf7eb; color: #30473c; }
+.home-mini-banner-icon { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 13px; background: rgba(255,255,255,.8); color: #8385dc; }
+.home-mini-banner-weekly .home-mini-banner-icon { color: #4e895d; }
+.home-mini-banner-copy { display: grid; gap: 4px; padding-right: 10px; }
+.home-mini-banner-copy strong { font-size: 15px; font-weight: 800; line-height: 1.3; letter-spacing: -.03em; }
+.home-mini-banner-copy small { font-size: 12px; line-height: 1.5; opacity: .8; word-break: keep-all; }
+.home-mini-banner-arrow { position: absolute; right: 17px; bottom: 19px; opacity: .6; }
+@media (max-width: 1010px) {
+  .home-landing { grid-template-columns: 1fr; row-gap: 28px; }
+  .home-landing-content { justify-self: center; }
+  .home-floating-banners { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 860px; justify-self: center; }
+  .home-mini-banner { width: 100%; min-height: 112px; }
+  .home-mini-banner-weekly { margin-left: 0; }
+}
+@media (max-width: 700px) {
+  .home-landing { row-gap: 16px; }
+  .home-floating-banners { display: flex; overflow-x: auto; gap: 12px; padding: 3px 3px 10px; scroll-snap-type: x mandatory; scrollbar-width: thin; }
+  .home-mini-banner { flex: 0 0 min(74%, 225px); min-height: 118px; scroll-snap-align: start; }
+  .home-mini-banner-copy strong { font-size: 14px; }
+}
