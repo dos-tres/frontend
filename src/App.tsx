@@ -10,6 +10,7 @@ import {
 import { programs, centers, initialApplications, type Program, type Center, type Application } from './data'
 
 import './home-design.css'
+import { GuidedStart } from './GuidedStart'
 import joyReferenceSheet from '../docs/design/references/joy-character-sheet.png'
 import joyImage from './assets/joy.png'
 import joyIslandImage from './assets/joy-island.png'
@@ -137,6 +138,7 @@ function Footer({ onAbout }: { onAbout: () => void }) {
 
 function HomePage({ onNavigate, onSend }: { onNavigate: (s: Screen) => void; onSend: (text: string) => void }) {
   const [draft, setDraft] = useState('')
+  const [checkOpen, setCheckOpen] = useState(false)
   const prompts = [
     { label: '취업·진로', text: '취업·진로 때문에 고민이에요', icon: Compass },
     { label: '생활·주거', text: '경제·주거 지원이 궁금해요', icon: Home },
@@ -180,6 +182,16 @@ function HomePage({ onNavigate, onSend }: { onNavigate: (s: Screen) => void; onS
             </button>
           ))}
         </div>
+        <div className="home-check-entry">
+          <div>
+            <strong>뭐라고 말할지 잘 모르겠다면?</strong>
+            <p>세 가지만 골라보면 조이와 대화를 시작할 수 있어요.</p>
+          </div>
+          <button type="button" aria-expanded={checkOpen} aria-controls="home-check-panel" onClick={() => setCheckOpen(value => !value)}>
+            {checkOpen ? '선택 접기' : '선택으로 시작'} <ChevronRight size={18} aria-hidden="true" />
+          </button>
+        </div>
+        {checkOpen && <div id="home-check-panel"><GuidedStart onSend={onSend} /></div>}
         <form className="home-composer" onSubmit={submit}>
           <label htmlFor="home-message">직접 이야기해도 좋아요</label>
           <div className="home-composer-field">
