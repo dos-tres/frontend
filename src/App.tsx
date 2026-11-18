@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent, type ReactNode, type ButtonHTMLAttributes } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type ButtonHTMLAttributes } from 'react'
 import {
   ArrowRight, Bot, Search, MapPin, CalendarDays, UserRound, Bookmark,
   MessageCircle, ChevronRight, ChevronLeft, Sparkles, Send, Plus, Check,
@@ -126,6 +126,33 @@ function Footer({ onAbout }: { onAbout: () => void }) {
 function HomePage({ onNavigate, onSend }: { onNavigate: (s: Screen) => void; onSend: (text: string) => void }) {
   const [draft, setDraft] = useState('')
   const [isFocused, setIsFocused] = useState(false)
+  const [journeyVisible, setJourneyVisible] = useState(false)
+  const journeyRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    const el = journeyRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      setJourneyVisible(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setJourneyVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.13 },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const worldPlaces: { id: string; title: string; description: string; action: Screen; actionLabel: string }[] = [
+    { id: 'island', title: '나의 섬', description: '내 관심사와 편한 활동 방식을 알아봐요.', action: 'profile', actionLabel: '나를 알아보기' },
+    { id: 'bridge', title: '기회의 다리', description: '내게 맞는 정책과 활동을 찾아봐요.', action: 'policy-list', actionLabel: '기회 찾기' },
+    { id: 'village', title: '경험의 마을', description: '내가 남긴 참여 경험을 살펴봐요.', action: 'records', actionLabel: '기록 살펴보기' },
+  ]
   const suggestions = [
     ['취업 지원을 찾아보고 싶어요', '제가 받을 수 있는 취업 지원 정책이 궁금해요.'],
     ['청년센터에서는 뭘 할 수 있나요?', '지금 참여할 수 있는 청년센터 프로그램을 알려줘.'],
@@ -227,24 +254,54 @@ function HomePage({ onNavigate, onSend }: { onNavigate: (s: Screen) => void; onS
         </aside>
       </section>
 
-      <section className="journey-section">
-        <div className="journey-heading">
-          <div><span className="mini-label">MY JOURNEY</span><h2>나의 섬에서, 기회의 다리를 건너</h2><p>작은 관심이 실제 참여로 이어지고, 나만의 경험이 쌓여요.</p></div>
-          <span className="journey-caption">섬 → 다리 → 마을</span>
+      <section
+        ref={journeyRef}
+        className={`journey-world${journeyVisible ? ' is-visible' : ''}`}
+        aria-labelledby="journey-world-heading"
+      >
+        <div className="journey-world-heading">
+          <div>
+            <span className="journey-world-eyebrow">DULSET WORLD</span>
+            <h2 id="journey-world-heading">섬에서 마을까지, 나만의 길을 찾아봐요</h2>
+            <p>궁금한 곳을 눌러 둘셋의 세계를 둘러보세요.</p>
+          </div>
+          <span className="journey-world-caption">나의 섬 · 기회의 다리 · 경험의 마을</span>
         </div>
-        <div className="journey-grid">
-          <article className="journey-card island-step">
-            <img src={joyIslandImage} alt="초록 섬에 서 있는 조이" />
-            <div><span>01 · 나의 섬</span><h3>지금의 나를 이해해요</h3><p>관심사와 필요한 도움을 편하게 알려주세요.</p></div>
-          </article>
-          <article className="journey-card bridge-step">
-            <img src={bridgeVillageImage} alt="섬과 마을을 연결하는 다리" />
-            <div><span>02 · 기회의 다리</span><h3>나에게 맞는 기회를 찾아요</h3><p>정책과 프로그램을 비교하고 참여 방법을 살펴봐요.</p></div>
-          </article>
-          <article className="journey-card village-step">
-            <img src={bridgeVillageImage} alt="다리 너머의 작은 마을" />
-            <div><span>03 · 경험의 마을</span><h3>참여 경험을 쌓아가요</h3><p>신청과 참여를 기록하고 다음 기회로 이어가요.</p></div>
-          </article>
+        <div className="journey-world-scene">
+          <span className="journey-world-cloud cloud-one" aria-hidden="true" />
+          <span className="journey-world-cloud cloud-two" aria-hidden="true" />
+          <div className="journey-world-water" aria-hidden="true">
+            <span className="journey-waterline waterline-one" />
+            <span className="journey-waterline waterline-two" />
+            <span className="journey-waterline waterline-three" />
+          </div>
+          <div className="journey-world-places">
+            {worldPlaces.map((place, index) => (
+              <button
+                key={place.id}
+                type="button"
+                className={`journey-world-place place-${place.id}`}
+                onClick={() => onNavigate(place.action)}
+                aria-label={`${place.title}: ${place.description} ${place.actionLabel}`}
+              >
+                <span className="journey-world-art">
+                  <img
+                    src={`${import.meta.env.BASE_URL}illustrations/world/${place.id}.svg`}
+                    alt=""
+                    loading="lazy"
+                    width="720"
+                    height="440"
+                  />
+                </span>
+                <span className="journey-world-label">
+                  <span className="journey-world-step">0{index + 1} / ${place.actionLabel}</span>
+                  <strong>{place.title}</strong>
+                  <span className="journey-world-desc">{place.description}</span>
+                  <span className="journey-world-arrow" aria-hidden="true"><ArrowRight size={18} /></span>
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </section>
     </>
