@@ -7,7 +7,7 @@ Figma의 `02 와이어프레임` 12개 화면을 기준으로 만든 React + Typ
 - Node.js 22 LTS, npm
 - React 18 · TypeScript · Vite
 - 저장소: `youth-ai-agent/frontend`
-- 기준 브랜치: `main` (`feat/v1`은 초기 통합을 위한 일회성 브랜치)
+- 기준 브랜치: `main`
 
 ## 처음 실행
 
@@ -48,7 +48,7 @@ npm run preview
 
 ## 협업
 
-`feat/v1`은 초기 코드 통합용으로만 유지합니다. 이후 기능은 최신 `main`에서 독립 브랜치를 생성하고 PR로 검토합니다. [브랜치·커밋·PR 규칙](docs/GIT_WORKFLOW.md)을 따릅니다. API 키와 `.env`, `node_modules`, `dist`는 커밋하지 않습니다.
+모든 신규 작업은 최신 `main`에서 독립 브랜치를 생성하고 `main` 대상 PR로 검토합니다. `main`에 직접 commit·push하지 않습니다. 진행 중인 홈 디자인은 기존 `feat/home-design`과 Draft PR #1에서 이어갑니다. [브랜치·커밋·PR 규칙](docs/GIT_WORKFLOW.md)을 따릅니다. API 키와 `.env`, `node_modules`, `dist`는 커밋하지 않습니다.
 
 ## 주요 화면
 
