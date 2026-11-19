@@ -1,0 +1,62 @@
+/* Settings use the same palette, cards, controls and typography as the app. */
+.profile-settings { color: var(--ink); font-size: 13px; line-height: 1.7; }
+.settings-back { margin-bottom: 16px; padding-left: 0; }
+.settings-editor { width: 100%; min-width: 0; }
+.settings-section { margin-bottom: 20px; }
+.settings-section h2 { margin: 0 0 8px; font-size: 17px; line-height: 1.5; }
+.settings-section h3 { margin: 0 0 12px; font-size: 14px; }
+.settings-section > p { color: var(--muted); }
+.settings-section-heading { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.settings-section-heading p { margin: 0; color: var(--muted); font-size: 13px; }
+.settings-input-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 32px; }
+.settings-input-grid .field-label { margin: 0 0 12px; font-size: 12px; }
+.settings-input-grid :is(input,select) { width: 100%; min-width: 0; min-height: 44px; }
+.settings-region-value { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--gray-soft); }
+.settings-region-value > svg { color: var(--blue); flex-shrink: 0; }
+.settings-region-value strong { flex: 1; font-size: 13px; font-weight: 500; overflow-wrap: anywhere; }
+.settings-region-picker { padding: 20px; border: 1px solid var(--line); border-radius: 12px; margin-top: 16px; }
+.settings-region-picker > label { display: block; margin-bottom: 8px; font-weight: 700; font-size: 12px; }
+.settings-search { display: flex; gap: 8px; align-items: center; border: 1px solid var(--line); padding: 0 12px; border-radius: 10px; color: var(--muted); background: var(--surface); }
+.settings-search input { border: 0; width: 100%; min-width: 0; background: transparent; color: var(--ink); font: inherit; min-height: 44px; padding: 12px 0; }
+.settings-help { font-size: 12px; color: var(--muted); margin: 12px 0; }
+.settings-region-results { list-style: none; padding: 0; margin: 12px 0; max-height: 300px; overflow: auto; border-block: 1px solid var(--line); overscroll-behavior: contain; }
+.settings-region-results button { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; padding: 12px; min-height: 44px; font: inherit; color: var(--ink); background: var(--surface); border: 0; border-bottom: 1px solid var(--line); text-align: left; }
+.settings-region-results button:hover, .settings-region-results button[aria-pressed=true] { background: var(--blue-soft); }
+.settings-region-results svg { flex-shrink: 0; color: var(--blue); }
+.settings-text-button { min-height: 44px; padding: 8px 0; color: var(--blue-dark); background: none; border: 0; text-decoration: underline; font: inherit; }
+.settings-region-picker small { display: block; color: var(--muted); font-size: 11px; margin-top: 8px; }
+.settings-fieldset { border: 0; padding: 0; margin: 20px 0 0; min-width: 0; }
+.settings-fieldset legend { padding: 0; margin-bottom: 12px; font-size: 12px; font-weight: 700; }
+.settings-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.settings-choice { display: flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; font-size: 13px; border-radius: 10px; }
+.settings-choice input { width: 16px; height: 16px; margin: 0; accent-color: var(--blue); flex-shrink: 0; }
+.settings-choice:focus-within { outline: 3px solid var(--blue); outline-offset: 2px; }
+.settings-experience { border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin: 20px 0 0; min-width: 0; }
+.settings-experience legend { padding: 0 8px; font-size: 12px; font-weight: 700; }
+.settings-save { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 20px 24px; }
+.settings-save p { margin: 0 0 4px; font-size: 12px; }
+.settings-save small { font-size: 11px; color: var(--muted); }
+.settings-save > div:last-child { display: flex; align-items: center; gap: 8px; }
+.settings-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.profile-check-panel { margin-top: 20px; }
+.profile-check-panel p { font-size: 12px; color: var(--muted); line-height: 1.6; margin: 8px 0 0; }
+.settings-progress { display: block; width: 100%; height: 6px; accent-color: var(--blue); margin: 16px 0 24px; }
+.settings-section .settings-question-title { font-size: 20px; margin: 0 0 20px; }
+.settings-survey-options { display: grid; gap: 10px; max-width: 720px; }
+.settings-survey-options .settings-choice { padding: 12px 16px; }
+.settings-survey-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+.profile-settings button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.profile-settings .record-entry { gap: 16px; overflow-wrap: anywhere; padding-inline: 0; }
+.profile-settings .record-entry small { font-size: 12px; }
+@media (max-width: 600px) {
+  .settings-input-grid { grid-template-columns: 1fr; gap: 4px; }
+  .settings-region-value { flex-wrap: wrap; }
+  .settings-region-value strong { flex-basis: calc(100% - 40px); }
+  .settings-region-value .btn { width: 100%; }
+  .settings-region-picker, .settings-experience { padding: 16px; }
+  .settings-save { padding: 17px; }
+  .settings-save > div:last-child { width: 100%; }
+  .settings-save .btn { flex: 1; }
+  .settings-section .section-head, .profile-check-panel .section-head { align-items: flex-start; flex-direction: column; }
+  .settings-section .settings-question-title { font-size: 18px; }
+}

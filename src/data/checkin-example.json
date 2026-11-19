@@ -1,0 +1,233 @@
+{
+  "notice": "서비스 자체 상태 체크예요. 진단이 아니고, 답하지 않아도 돼요. 언제든 다시 바꿀 수 있어요.",
+  "common_options": [
+    {
+      "code": "unknown",
+      "label": "모르겠어요"
+    },
+    {
+      "code": "skip",
+      "label": "답하지 않을래요"
+    },
+    {
+      "code": "later",
+      "label": "나중에 할게요"
+    }
+  ],
+  "domain_questions": [
+    {
+      "id": "economy",
+      "domain": "E",
+      "text": "요즘 생활비나 취업 준비 비용이 얼마나 부담돼요?",
+      "options": [
+        {
+          "code": "high",
+          "label": "많이 부담돼요"
+        },
+        {
+          "code": "mid",
+          "label": "조금 부담돼요"
+        },
+        {
+          "code": "low",
+          "label": "괜찮아요"
+        }
+      ]
+    },
+    {
+      "id": "participation",
+      "domain": "P",
+      "text": "최근 학교·일·모임처럼 정기적으로 하는 활동이 있나요?",
+      "options": [
+        {
+          "code": "high",
+          "label": "없어요"
+        },
+        {
+          "code": "mid",
+          "label": "가끔 있어요"
+        },
+        {
+          "code": "low",
+          "label": "있어요"
+        }
+      ]
+    },
+    {
+      "id": "outing",
+      "domain": "O",
+      "text": "요즘 필요한 일 외에도 밖에 나가는 편인가요?",
+      "options": [
+        {
+          "code": "high",
+          "label": "거의 안 나가요"
+        },
+        {
+          "code": "mid",
+          "label": "가끔 나가요"
+        },
+        {
+          "code": "low",
+          "label": "자주 나가요"
+        }
+      ]
+    },
+    {
+      "id": "conversation",
+      "domain": "C",
+      "text": "편하게 이야기 나누는 시간이 충분하다고 느껴요?",
+      "options": [
+        {
+          "code": "high",
+          "label": "부족해요"
+        },
+        {
+          "code": "mid",
+          "label": "보통이에요"
+        },
+        {
+          "code": "low",
+          "label": "충분해요"
+        }
+      ]
+    },
+    {
+      "id": "support",
+      "domain": "U",
+      "text": "곤란한 일이 생겼을 때 도움을 부탁할 사람이 있나요?",
+      "options": [
+        {
+          "code": "high",
+          "label": "없어요"
+        },
+        {
+          "code": "mid",
+          "label": "잘 모르겠어요"
+        },
+        {
+          "code": "low",
+          "label": "있어요"
+        }
+      ]
+    }
+  ],
+  "extra_questions": [
+    {
+      "id": "satisfaction",
+      "text": "지금 생활에 얼마나 만족해요?",
+      "multiple": false,
+      "options": [
+        {
+          "code": "good",
+          "label": "만족해요"
+        },
+        {
+          "code": "normal",
+          "label": "보통이에요"
+        },
+        {
+          "code": "bad",
+          "label": "아쉬워요"
+        }
+      ]
+    },
+    {
+      "id": "change_wishes",
+      "text": "바꾸고 싶은 부분이 있나요? (여러 개 선택)",
+      "multiple": true,
+      "options": [
+        {
+          "code": "E",
+          "label": "돈·일 걱정을 덜고 싶어요"
+        },
+        {
+          "code": "P",
+          "label": "꾸준히 하는 활동이 생겼으면 해요"
+        },
+        {
+          "code": "O",
+          "label": "밖에 더 나가고 싶어요"
+        },
+        {
+          "code": "C",
+          "label": "이야기 나눌 사람이 더 있었으면 해요"
+        },
+        {
+          "code": "U",
+          "label": "기댈 곳이 있었으면 해요"
+        },
+        {
+          "code": "none",
+          "label": "지금은 바꾸고 싶은 게 없어요"
+        }
+      ]
+    },
+    {
+      "id": "face_to_face",
+      "text": "사람을 직접 만나는 활동이 부담돼요?",
+      "multiple": false,
+      "options": [
+        {
+          "code": "high",
+          "label": "많이 부담돼요"
+        },
+        {
+          "code": "mid",
+          "label": "조금 부담돼요"
+        },
+        {
+          "code": "low",
+          "label": "괜찮아요"
+        }
+      ]
+    },
+    {
+      "id": "interests",
+      "text": "어떤 도움이 필요해요? (최대 3개)",
+      "multiple": true,
+      "max": 3,
+      "options": [
+        {
+          "code": "일자리·취업",
+          "label": "일자리·취업"
+        },
+        {
+          "code": "창업",
+          "label": "창업"
+        },
+        {
+          "code": "집·주거",
+          "label": "집·주거"
+        },
+        {
+          "code": "생활비·금융",
+          "label": "생활비·금융"
+        },
+        {
+          "code": "교육·자격증",
+          "label": "교육·자격증"
+        },
+        {
+          "code": "마음건강·상담",
+          "label": "마음건강·상담"
+        },
+        {
+          "code": "몸 건강·식사",
+          "label": "몸 건강·식사"
+        },
+        {
+          "code": "문화·여가",
+          "label": "문화·여가"
+        },
+        {
+          "code": "사람 만나기·모임",
+          "label": "사람 만나기·모임"
+        },
+        {
+          "code": "해외 경험",
+          "label": "해외 경험"
+        }
+      ]
+    }
+  ]
+}
