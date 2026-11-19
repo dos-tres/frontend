@@ -1,3 +1,5 @@
+import JoyConversation, { type ConversationEntry } from './JoyConversation'
+import { initialJoyProfile, type JoyProfile, type JoyTask } from './joy-demo'
 import { useMemo, useState, type FormEvent, type ReactNode, type ButtonHTMLAttributes } from 'react'
 import {
   ArrowRight, Bot, Search, MapPin, CalendarDays, UserRound, Bookmark,
@@ -23,7 +25,6 @@ type Screen =
   | 'calendar' | 'applications'
   | 'profile' | 'records' | 'about'
 
-type Message = { role: 'assistant' | 'user'; text: string }
 type CalendarEvent = { id: number; title: string; date: string; type: string }
 
 const navItems = [
@@ -208,50 +209,6 @@ function HomePage({ onNavigate, onSend }: { onNavigate: (s: Screen) => void; onS
   )
 }
 
-function ChatPage({ messages, onSend }: { messages: Message[]; onSend: (text: string) => void }) {
-  const [draft, setDraft] = useState('')
-  const submit = (e: FormEvent) => { e.preventDefault(); onSend(draft); setDraft('') }
-  return (
-    <>
-      <PageTitle title="조이 AI 비서 · 대화" description="시작 화면에서 채팅으로 전환하고, 이전 대화를 이어서 사용할 수 있어요." />
-      <div className="chat-layout">
-        <Panel tone="gray" className="chat-history">
-          <Button onClick={() => onSend('새로운 고민이 있어요.')}><Plus size={16} /> 새 대화</Button>
-          <div className="divider" />
-          <h3>최근 대화</h3>
-          {['취업 준비와 활동', '주거 지원 찾아보기', '센터 프로그램 문의'].map((title, i) => (
-            <button key={title} className={`history-item ${i === 0 ? 'selected' : ''}`} onClick={() => onSend(`${title}에 대해 이어서 이야기하고 싶어요.`)}>
-              <strong>{title}</strong><small>{['11/17 · 이어서 대화', '11/15 · 다시 열기', '11/13 · 신청 이력 연결'][i]}</small>
-            </button>
-          ))}
-          <button className="text-button">대화 삭제 · 관리</button>
-        </Panel>
-        <Panel className="chat-main">
-          <div className="chat-main-head"><JoyAvatar size="sm" /><div><strong>조이</strong><small>청년 지원 AI 비서</small></div><span className="online-dot">대화 예시</span></div>
-          <div className="chat-messages">
-            {messages.map((message, index) => (
-              <div key={`${index}-${message.role}`} className={`message-row ${message.role}`}>
-                {message.role === 'assistant' && <JoyAvatar size="sm" />}
-                <div className={`message-bubble ${message.role}`}>{message.text}</div>
-              </div>
-            ))}
-          </div>
-          <div className="quick-replies">
-            <span>답변 선택</span>
-            <button onClick={() => onSend('온라인으로 시작하고 싶어요')}>온라인으로 시작하고 싶어요</button>
-            <button onClick={() => onSend('작은 모임 정도는 괜찮아요')}>작은 모임 정도는 괜찮아요</button>
-          </div>
-          <form className="chat-entry" onSubmit={submit}>
-            <input value={draft} onChange={e => setDraft(e.target.value)} placeholder="메시지를 입력해 주세요..." aria-label="메시지 입력" />
-            <button type="submit" aria-label="보내기"><Send size={17} /></button>
-          </form>
-          <p className="muted-note">현재는 화면 확인을 위한 예시 응답입니다. 실제 AI 응답은 백엔드 API 연결 후 동작해요.</p>
-        </Panel>
-      </div>
-    </>
-  )
-}
-
 function ApplyPage({ program, onRecord, onOpenPolicy }: { program: Program; onRecord: () => void; onOpenPolicy: () => void }) {
   return (
     <>
@@ -361,7 +318,7 @@ function PolicyDetailPage({ program, onApply, onSave, isSaved }: { program: Prog
         <Panel className="steps-panel">
           <h3>이 정책을 신청하고 싶나요?</h3>
           <p>조이가 자격 조건을 비교하고 신청 과정을 안내해 드려요.</p>
-          <Button onClick={onApply}>조이에게 신청 도움 요청 <ArrowRight size={15} /></Button>
+          <Button onClick={onApply}>조이야, 나도 신청할 수 있어? <ArrowRight size={15} /></Button>
           <div className="divider" />
           <h4>신청을 마쳤다면</h4>
           <p>날짜·신청 방식·상태를 기록하고 마감 및 발표 일정을 내 일정과 연결해요.</p>
@@ -653,11 +610,8 @@ function AddEventModal({ date, onClose, onSave }: { date: string; onClose: () =>
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('home')
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', text: '안녕하세요! 저는 조이예요. 어떤 고민이든 편하게 이야기해 주세요.' },
-    { role: 'user', text: '취업 준비가 길어져서 사람도 잘 안 만나게 돼요.' },
-    { role: 'assistant', text: '현재 고민과 원하는 활동 방식을 먼저 확인할게요. 온라인과 작은 모임 중 어떤 게 더 편한가요?' },
-  ])
+  const [entry, setEntry] = useState<ConversationEntry>({ id: 0 })
+  const [joyProfile, setJoyProfile] = useState<JoyProfile>(initialJoyProfile)
   const [selectedProgramId, setSelectedProgramId] = useState(programs[0].id)
   const [selectedCenterId, setSelectedCenterId] = useState(centers[0].id)
   const [savedIds, setSavedIds] = useState<string[]>(['p2'])
@@ -675,11 +629,14 @@ export default function App() {
   const selectedCenter = centers.find(c => c.id === selectedCenterId) ?? centers[0]
 
   const notify = (message: string) => setToast(message)
-  const sendMessage = (text: string) => {
-    const value = text.trim()
-    if (!value) return
-    setMessages(prev => [...prev, { role: 'user', text: value }, { role: 'assistant', text: '이야기해 줘서 고마워요. 관심 지역과 원하는 참여 방식을 함께 확인한 뒤, 관련 정책과 프로그램을 찾아볼게요. 실제 공고와 신청 조건은 공식 출처로 확인할 수 있도록 안내할게요.' }])
+  const startConversation = (program?: Program, text?: string) => {
+    setEntry(prev => ({ id: prev.id + 1, program, text }))
     setScreen('chat')
+  }
+  const sendMessage = (text: string) => startConversation(undefined, text)
+  const recordJoyTask = (program: Program, task: JoyTask) => {
+    setApplications(prev => [{ id: `joy-${entry.id}`, title: program.title, status: '신청 전', date: new Date().toISOString().slice(0, 10).replaceAll('-', '.'), note: `시연용 예시 · ${task.kind} 준비 기록 · 실제 접수 아님` }, ...prev.filter(a => a.id !== `joy-${entry.id}`)])
+    notify('시연 준비 이력을 남겼어요. 실제 신청 기록이 아니에요.')
   }
   const toggleSave = (id: string) => setSavedIds(prev => prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id])
   const openProgram = (p: Program) => { setSelectedProgramId(p.id); setScreen('policy-detail') }
@@ -699,10 +656,10 @@ export default function App() {
   const page = useMemo(() => {
     switch (screen) {
       case 'home': return <HomePage onNavigate={setScreen} onSend={sendMessage} />
-      case 'chat': return <ChatPage messages={messages} onSend={sendMessage} />
+      case 'chat': return null
       case 'apply': return <ApplyPage program={selectedProgram} onRecord={recordApplication} onOpenPolicy={() => setScreen('policy-list')} />
       case 'policy-list': return <PolicyListPage onSelect={openProgram} onApply={p => { setSelectedProgramId(p.id); setScreen('apply') }} saved={savedIds} onToggleSave={toggleSave} />
-      case 'policy-detail': return <PolicyDetailPage program={selectedProgram} onApply={() => setScreen('apply')} onSave={() => toggleSave(selectedProgram.id)} isSaved={savedIds.includes(selectedProgram.id)} />
+      case 'policy-detail': return <PolicyDetailPage program={selectedProgram} onApply={() => startConversation(selectedProgram)} onSave={() => toggleSave(selectedProgram.id)} isSaved={savedIds.includes(selectedProgram.id)} />
       case 'center-list': return <CenterListPage onSelect={openCenter} />
       case 'center-detail': return <CenterDetailPage center={selectedCenter} onBack={() => setScreen('center-list')} onHelp={() => sendMessage(`${selectedCenter.name} 이용 방법과 문의할 내용을 정리해 줘.`)} />
       case 'calendar': return <CalendarPage events={events} onAddEvent={date => { setEventDate(date); setShowEventModal(true) }} onGoApplications={() => setScreen('applications')} />
@@ -712,12 +669,12 @@ export default function App() {
       case 'about': return <AboutPage />
       default: return <HomePage onNavigate={setScreen} onSend={sendMessage} />
     }
-  }, [screen, messages, selectedProgram, selectedCenter, savedIds, applications, events])
+  }, [screen, entry, joyProfile, selectedProgram, selectedCenter, savedIds, applications, events])
 
   return (
     <div className="app-shell">
       <Header screen={screen} onNavigate={setScreen} />
-      <main className="main-container">{page}</main>
+      <main className="main-container">{page}<div hidden={screen !== 'chat'}><JoyConversation key={entry.id} entry={entry} profile={joyProfile} onProfile={setJoyProfile} onNew={() => startConversation()} onRecord={recordJoyTask} onNavigate={setScreen} /></div></main>
       <Footer onAbout={() => setScreen('about')} />
       {toast && <div className="toast"><Check size={16} /> {toast}</div>}
       {showEventModal && <AddEventModal date={eventDate} onClose={() => setShowEventModal(false)} onSave={addEvent} />}
