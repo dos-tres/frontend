@@ -1,3 +1,6 @@
+import ProfileSettings, { initialPersonalInformation, profileRegionLabel, type PersonalInformation } from './ProfileSettings'
+import ActivityInformation, { initialActivityInformation, type ActivityInformationValue } from './ActivityInformation'
+import CurrentStateCheck, { initialCurrentState, type CurrentStateValue } from './CurrentStateCheck'
 import { useMemo, useState, type FormEvent, type ReactNode, type ButtonHTMLAttributes } from 'react'
 import {
   ArrowRight, Bot, Search, MapPin, CalendarDays, UserRound, Bookmark,
@@ -21,7 +24,7 @@ type Screen =
   | 'policy-list' | 'policy-detail'
   | 'center-list' | 'center-detail'
   | 'calendar' | 'applications'
-  | 'profile' | 'records' | 'about'
+  | 'profile' | 'profile-edit' | 'activity-edit' | 'state-check' | 'records' | 'about'
 
 type Message = { role: 'assistant' | 'user'; text: string }
 type CalendarEvent = { id: number; title: string; date: string; type: string }
@@ -31,7 +34,6 @@ const navItems = [
   { id: 'policies', label: '정책·활동 찾기', icon: Search },
   { id: 'centers', label: '주변센터', icon: MapPin },
   { id: 'schedule', label: '내 일정', icon: CalendarDays },
-  { id: 'profile', label: '마이페이지', icon: UserRound },
 ] as const
 
 function sectionFor(screen: Screen) {
@@ -106,8 +108,8 @@ function Header({ screen, onNavigate }: { screen: Screen; onNavigate: (screen: S
             )
           })}
         </nav>
-        <Button className="header-ask" onClick={() => onNavigate('chat')}>
-          <MessageCircle size={16} /> 조이에게 묻기
+        <Button className="header-ask" variant="secondary" aria-current={['profile', 'profile-edit', 'activity-edit', 'state-check'].includes(screen) ? 'page' : undefined} onClick={() => navigate('profile')}>
+          <UserRound size={18} /> 마이페이지
         </Button>
       </div>
     </header>
@@ -539,33 +541,34 @@ function ApplicationsPage({ applications, onChangeStatus, onCalendar }: { applic
   )
 }
 
-function ProfilePage({ onRecords }: { onRecords: () => void }) {
-  const [editing, setEditing] = useState(false)
-  const [region, setRegion] = useState('서울 마포구 (예시)')
-  const [interest, setInterest] = useState('취업·진로 / 지역 프로그램')
+function ProfilePage({ personal, activity, check, onEdit, onActivity, onCheck, onRecords }: {
+  personal: PersonalInformation; activity: ActivityInformationValue; check: CurrentStateValue;
+  onEdit: () => void; onActivity: () => void; onCheck: () => void; onRecords: () => void
+}) {
   return (
     <>
-      <PageTitle title="마이페이지 · 나의 연결" description="프로필과 참여 선호를 확인하고, 활동을 이어가며 연결 기록을 쌓아가는 곳이에요." />
+      <PageTitle title="마이페이지" description="내 정보와 활동을 관리하고, 지금 나에게 필요한 도움을 살펴봐요." />
       <div className="profile-top-grid">
         <Panel tone="gray" className="profile-info">
           <div className="section-head"><h3>내 정보</h3><UserRound size={20} /></div>
-          {editing ? <>
-            <label className="field-label">활동 지역<input value={region} onChange={e => setRegion(e.target.value)} /></label>
-            <label className="field-label">관심 분야<input value={interest} onChange={e => setInterest(e.target.value)} /></label>
-            <Button onClick={() => setEditing(false)}><Check size={15} /> 저장</Button>
-          </> : <>
-            <p>활동 지역　{region}</p><p>관심 분야　{interest}</p>
-            <p className="notice">로그인 방법은 추후 확정 (정부 서비스 연동 미확인)</p>
-            <Button variant="secondary" onClick={() => setEditing(true)}>프로필 및 활동 선호 수정</Button>
-          </>}
+          <p>이름　{personal.name || '이름을 등록해 주세요.'}</p>
+          <p>거주 지역　{profileRegionLabel(personal.regionCode)}</p>
+          <p>휴대전화　{personal.phone || '연락처를 등록할 수 있어요.'}</p>
+          <Button variant="secondary" onClick={onEdit}>내 정보 수정</Button>
         </Panel>
         <Panel className="profile-preference">
-          <h3>나에게 편한 사회참여 방식</h3>
-          <p>최근 활동, 교류, 참여 부담을 스스로 확인하는 간단한 질문이에요.</p>
-          <p className="notice">진단 점수나 고립 위험 판정은 제공하지 않아요.</p>
-          <Button variant="secondary" onClick={() => alert('활동 선호 질문 화면을 연결할 예정입니다.')}>내 활동 선호 점검하기 <ArrowRight size={15} /></Button>
+          <div className="section-head"><h3>내 상태 입력</h3><NotebookPen size={20} /></div>
+          <p>내가 해온 활동과 관심 분야, 편한 참여 방식을 직접 등록해요.</p>
+          <p>활동 경험 {activity.experiences.length}개 · 관심 분야 {activity.interests.length}개</p>
+          <p>{activity.participation ? `참여 방식: ${activity.participation}` : '원하는 참여 방식도 선택할 수 있어요.'}</p>
+          <Button variant="secondary" onClick={onActivity}>내 상태 입력·수정 <ArrowRight size={15} /></Button>
         </Panel>
       </div>
+      <Panel className="profile-check-panel">
+        <div className="section-head"><div><h3>자가진단</h3><p>일상과 관계에 대한 질문에 답하고, 어떤 도움이 필요한지 함께 살펴봐요.</p></div>
+          <Button variant="secondary" onClick={onCheck}>{check.completed ? '내 상태 점검 다시 보기' : '내 상태 점검하기'} <ArrowRight size={15} /></Button>
+        </div>
+      </Panel>
       <Panel tone="gray" className="island-progress-panel">
         <div className="section-head"><div><h3>나의 연결 기록 · 섬 → 다리 → 마을</h3><p>활동 계획과 실제 참여를 구분해 기록해요. 현재는 예시 진행도예요.</p></div><Button variant="secondary" onClick={onRecords}>이전 기록 보기</Button></div>
         <div className="island-progress">
@@ -653,6 +656,9 @@ function AddEventModal({ date, onClose, onSave }: { date: string; onClose: () =>
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('home')
+  const [personal, setPersonal] = useState<PersonalInformation>(initialPersonalInformation)
+  const [activity, setActivity] = useState<ActivityInformationValue>(initialActivityInformation)
+  const [stateCheck, setStateCheck] = useState<CurrentStateValue>(initialCurrentState)
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', text: '안녕하세요! 저는 조이예요. 어떤 고민이든 편하게 이야기해 주세요.' },
     { role: 'user', text: '취업 준비가 길어져서 사람도 잘 안 만나게 돼요.' },
@@ -707,12 +713,15 @@ export default function App() {
       case 'center-detail': return <CenterDetailPage center={selectedCenter} onBack={() => setScreen('center-list')} onHelp={() => sendMessage(`${selectedCenter.name} 이용 방법과 문의할 내용을 정리해 줘.`)} />
       case 'calendar': return <CalendarPage events={events} onAddEvent={date => { setEventDate(date); setShowEventModal(true) }} onGoApplications={() => setScreen('applications')} />
       case 'applications': return <ApplicationsPage applications={applications} onChangeStatus={changeApplication} onCalendar={() => setScreen('calendar')} />
-      case 'profile': return <ProfilePage onRecords={() => setScreen('records')} />
+      case 'profile': return <ProfilePage personal={personal} activity={activity} check={stateCheck} onEdit={() => setScreen('profile-edit')} onActivity={() => setScreen('activity-edit')} onCheck={() => setScreen('state-check')} onRecords={() => setScreen('records')} />
+      case 'profile-edit': return <ProfileSettings value={personal} onBack={() => setScreen('profile')} onSave={next => { setPersonal(next); setScreen('profile'); notify('기본 정보를 수정했어요.') }} />
+      case 'activity-edit': return <ActivityInformation value={activity} onBack={() => setScreen('profile')} onSave={next => { setActivity(next); setScreen('profile'); notify('활동·관심 정보를 저장했어요.') }} />
+      case 'state-check': return <CurrentStateCheck value={stateCheck} onSave={setStateCheck} onBack={() => setScreen('profile')} onExplore={() => setScreen('policy-list')} onChat={() => setScreen('chat')} />
       case 'records': return <RecordsPage />
       case 'about': return <AboutPage />
       default: return <HomePage onNavigate={setScreen} onSend={sendMessage} />
     }
-  }, [screen, messages, selectedProgram, selectedCenter, savedIds, applications, events])
+  }, [screen, personal, activity, stateCheck, messages, selectedProgram, selectedCenter, savedIds, applications, events])
 
   return (
     <div className="app-shell">
