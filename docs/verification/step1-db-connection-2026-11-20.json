@@ -1,0 +1,44 @@
+{
+  "checked_at_local": "2026-11-20 Asia/Seoul",
+  "scope": "1. 실제 연결 기준 확정",
+  "database": {
+    "container": "backend-db-1",
+    "health": "healthy",
+    "catalog": {
+      "policy": 2335,
+      "program": 169
+    },
+    "alembic": "0004"
+  },
+  "readiness": {
+    "url": "http://127.0.0.1:8000/readyz",
+    "status": 200,
+    "body": {
+      "status": "ok"
+    }
+  },
+  "direct": {
+    "status": "HTTP/1.1 200 OK",
+    "source": "db",
+    "policies": 6,
+    "programs": 4,
+    "candidates": {
+      "policy": 119,
+      "program": 133
+    },
+    "first_policy": "(농식품부) 농식품 바우처",
+    "first_program": "서울청년센터 관악 신림동쓰리룸 <26년 서울청년센터 관악 청년정책종합상담> 안내"
+  },
+  "via_vite": {
+    "status": "HTTP/1.1 200 OK",
+    "source": "db",
+    "policies": 6,
+    "programs": 4,
+    "candidates": {
+      "policy": 119,
+      "program": 133
+    },
+    "same_recommendations": true
+  },
+  "ui": "조건별 추천 10건; DB에 저장된 수집 데이터 기준 추천이에요."
+}

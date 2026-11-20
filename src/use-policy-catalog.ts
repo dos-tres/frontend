@@ -28,7 +28,7 @@ export function usePolicyCatalog(active: boolean, answers: Answers, profile: Pol
       if (controller.signal.aborted) return
       setResponse(result)
       setRecommended([...result.policies, ...result.programs].map(item => toProgram(item, catalog?.items.find(p => p.id === item.id))))
-      setNotice([result.notice, result.programs_notice?.message].filter(Boolean).join(' '))
+      setNotice([result.source === 'db' ? 'DB에 저장된 수집 데이터 기준 추천이에요.' : '서버 파일에 저장된 수집 데이터 기준 추천이에요. DB 조회 결과가 아니에요.', result.notice, result.programs_notice?.message].filter(Boolean).join(' '))
     }).catch((error: unknown) => {
       // Keep the browsable catalog and entered filters when the API is unavailable.
       if (!controller.signal.aborted) { setRecommended(undefined); setNotice(error instanceof Error && error.message.includes('422') ? '등록한 조건을 추천 서버에서 확인하지 못했어요. 현재는 수집된 정책과 공식 지원 안내를 보여드려요.' : '추천 서버에 연결되지 않아 수집된 정책과 공식 지원 안내를 보여드려요.') }
