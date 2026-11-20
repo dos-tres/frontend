@@ -20,7 +20,16 @@ export const typeInfo: Record<StateType, { title: string; description: string }>
   balance: { title: '지금의 일상을 이어가는 시기', description: '현재의 일상을 유지하면서 관심 있는 배움과 활동을 찾아보세요.' },
   explore: { title: '나에게 필요한 지원을 찾아보는 시기', description: '아직 확인하지 않은 영역이 있어요. 관심 있는 지원부터 살펴보세요.' },
 }
-export function buildStateResult(answers: Answers): StateResult {
+export function buildStateResult(answers: Answers, summary?: Summary): StateResult {
+  if (summary?.levels && summary.priority_domains) {
+    const domains: Record<string, StateType> = { E: 'economy', P: 'routine', O: 'routine', C: 'connection', U: 'support' }
+    const names: Record<string, string> = { E: '생활 부담', P: '정기 활동', O: '외부 활동', C: '대화와 교류', U: '도움받을 관계' }
+    const types = [...new Set(summary.priority_domains.map(domain => domains[domain]).filter(Boolean))]
+    if (summary.satisfaction === 'bad' || summary.face_to_face === 'high') types.push('wellbeing')
+    if (!types.length) types.push(summary.unanswered_domains?.length ? 'explore' : 'balance')
+    const status = { high: '지금 먼저 살펴볼 도움 영역이에요', mid: '함께 살펴볼 도움 영역이에요', low: '현재 우선순위가 높지 않은 영역이에요' }
+    return { ...typeInfo[types[0]], types, areas: Object.entries(names).map(([domain, name]) => ({ name, status: summary.levels?.[domain] ? status[summary.levels[domain]] : '아직 확인하지 않은 영역이에요' })) }
+  }
   const types: StateType[] = []
   for (const level of ['high', 'mid']) for (const area of areas) if (answers[area.id] === level && !types.includes(area.type)) types.push(area.type)
   if (answers.satisfaction === 'bad' || answers.face_to_face === 'high') types.push('wellbeing')
@@ -36,7 +45,7 @@ export function readCheckinHistory(): CheckinRecord[] {
     const parsed: unknown = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
     if (!Array.isArray(parsed)) return []
     return parsed.filter((record): record is CheckinRecord => !!record && typeof record.id === 'string' && typeof record.savedAt === 'string' && Number.isFinite(Date.parse(record.savedAt)) && record.completed === true && record.answers && typeof record.answers === 'object' && !Array.isArray(record.answers) && Object.values(record.answers).every(answer => typeof answer === 'string' || Array.isArray(answer) && answer.every(code => typeof code === 'string')))
-      .map(record => ({ ...record, result: record.result && typeof record.result.title === 'string' && typeof record.result.description === 'string' && Array.isArray(record.result.types) && record.result.types.length > 0 && record.result.types.every(type => Object.prototype.hasOwnProperty.call(typeInfo, type)) && Array.isArray(record.result.areas) && record.result.areas.every(area => area && typeof area.name === 'string' && typeof area.status === 'string') ? record.result : buildStateResult(record.answers), ratings: record.ratings && typeof record.ratings === 'object' ? Object.fromEntries(Object.entries(record.ratings).filter(([, rating]) => Number.isInteger(rating) && rating >= 1 && rating <= 5)) : {} }))
+      .map(record => ({ ...record, result: record.result && typeof record.result.title === 'string' && typeof record.result.description === 'string' && Array.isArray(record.result.types) && record.result.types.length > 0 && record.result.types.every(type => Object.prototype.hasOwnProperty.call(typeInfo, type)) && Array.isArray(record.result.areas) && record.result.areas.every(area => area && typeof area.name === 'string' && typeof area.status === 'string') ? record.result : buildStateResult(record.answers, record.summary), ratings: record.ratings && typeof record.ratings === 'object' ? Object.fromEntries(Object.entries(record.ratings).filter(([, rating]) => Number.isInteger(rating) && rating >= 1 && rating <= 5)) : {} }))
   } catch { return [] }
 }
 export const supportCatalog = [

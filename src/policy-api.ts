@@ -1,7 +1,7 @@
 import legalRegions from './data/regions.json'
 import administrativeRegions from './data/administrative-regions.json'
 import type { Program } from './data'
-import type { Answers } from './checkin-api'
+import type { Answers, Summary } from './checkin-api'
 
 export type PolicyCatalog = { generatedAt: string; items: Program[]; regionGroups: string[][]; regions: { code: string; label: string }[] }
 export type PolicyCriteria = { age: string; region: string; job: string; school?: string }
@@ -36,10 +36,10 @@ export type RecommendationItem = {
   id: string; kind: 'policy' | 'program'; title: string; summary: string; scope: string;
   deadline: string | null; why: string[]; domains: string[]; access_type: string;
   support?: string; institution?: string; apply_period: string; apply_url?: string;
-  reference_url?: string; income_condition?: { text: string } | null;
+  reference_url?: string; income_condition?: { kind: string; max_manwon?: number | null; text: string } | null; score?: number; situations?: string[];
   center?: string; place?: string; url?: string; apply_urls?: string; evergreen?: boolean
 }
-export type Recommendations = { policies: RecommendationItem[]; programs: RecommendationItem[]; notice: string; programs_notice: { message: string } | null }
+export type Recommendations = { policies: RecommendationItem[]; programs: RecommendationItem[]; notice: string; programs_notice: { code?: string; message: string } | null; summary: Summary; candidates: { policy: number; program: number }; source: string }
 export const loadPolicyCatalog = () => import('./data/policy-catalog.json').then(m => m.default as PolicyCatalog)
 export function safePolicyUrl(value?: string): string | undefined {
   try { const url = new URL(value || ''); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : undefined } catch { return undefined }

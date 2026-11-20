@@ -116,7 +116,7 @@
 .checkin-result-areas dt { font-weight: 700; }
 .checkin-result-areas dd { margin: 0; }
 .checkin-support-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
-.checkin-support-list a { display: block; padding: 20px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); }
+.checkin-support-list :is(a,article) { display: block; padding: 20px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); }
 .checkin-support-list a:hover { border-color: var(--blue); background: var(--blue-pale); }
 .checkin-support-list h3 { margin: 8px 0; font-size: var(--text-section); }
 .checkin-support-list :is(p,small,span) { font-size: var(--text-body); }

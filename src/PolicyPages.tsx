@@ -46,7 +46,7 @@ export function PolicyListPage({ data, view, setView, onSelect, saved, onToggleS
     <div className="results-layout policy-results-layout">
       <section className="panel panel-gray results-panel" aria-busy={data.busy || !data.catalog}>
         <div className="section-head"><h3>{data.recommended ? '조건별 추천' : '정책·프로그램 목록'}</h3><div className="policy-result-tools"><span role="status">{filtered.length.toLocaleString()}건{data.busy ? ' · 추천 확인 중' : ''}</span><select aria-label="정렬" value={view.sort} onChange={e => change({ sort: e.target.value })}>{['기본순', '마감 임박순', '가나다순'].map(sort => <option key={sort}>{sort}</option>)}</select></div></div>
-        {!data.catalog && <p className="empty-state" role="status">{data.failed ? '목록을 불러오지 못했어요.' : '정책 정보를 불러오고 있어요.'}{data.failed && <button className="btn btn-secondary" onClick={data.retry}>목록 불러오기</button>}</p>}
+        {!data.catalog && data.recommended === undefined && <p className="empty-state" role="status">{data.failed ? '목록을 불러오지 못했어요.' : '정책 정보를 불러오고 있어요.'}{data.failed && <button className="btn btn-secondary" onClick={data.retry}>목록 불러오기</button>}</p>}
         {data.notice && <p className="search-helper">{data.notice}</p>}
         {filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map(p => <article className="result-card" key={p.id}>
           <div className="result-icon"><FileText size={20} /></div>
