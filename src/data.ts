@@ -9,6 +9,21 @@ export type Program = {
   method: string
   place: string
   source: string
+  regionGroup?: number
+  ageMin?: number | null
+  ageMax?: number | null
+  deadline?: string | null
+  support?: string
+  documents?: string
+  income?: string
+  exclusions?: string
+  referenceUrl?: string
+  applyUrl?: string
+  category?: string
+  domains?: string[]
+  why?: string[]
+  evergreen?: boolean
+  updatedAt?: string
 }
 
 export type Center = {

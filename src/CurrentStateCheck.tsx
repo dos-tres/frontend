@@ -1,22 +1,27 @@
 import { useEffect, useRef, useState } from 'react'
 import { exampleQuestions, exampleSummary } from './checkin-example'
 import { SettingsShell } from './ProfileSettings'
-import { loadQuestions, summarizeAnswers, type Answers, type Questions, type Summary } from './checkin-api'
+import { buildStateResult, supportsForResult, typeInfo, type CheckinRecord, type StateResult } from './checkin-result'
+import { checkinScales, checkinBinaryOptions } from './checkin-scale'
+import { loadQuestions, summarizeAnswers, type Answers, type Question, type Questions, type Summary } from './checkin-api'
 
-export type CurrentStateValue = { answers: Answers; completed: boolean; summary?: Summary }
+export type CurrentStateValue = { answers: Answers; ratings?: Record<string, number>; completed: boolean; summary?: Summary; result?: StateResult; id?: string; savedAt?: string }
 export const initialCurrentState: CurrentStateValue = { answers: {}, completed: false }
 
-export default function CurrentStateCheck({ value, onSave, onBack, onExplore, onChat }: {
-  value: CurrentStateValue; onSave: (value: CurrentStateValue) => void; onBack: () => void; onExplore: () => void; onChat: () => void
+export default function CurrentStateCheck({ value, history, storageError, onSave, onBack, onChat }: {
+  value: CurrentStateValue; history: CheckinRecord[]; storageError: boolean; onSave: (value: CheckinRecord) => void; onBack: () => void; onChat: () => void
 }) {
   const [catalog, setCatalog] = useState<Questions>()
-  const [answers, setAnswers] = useState<Answers>({ ...value.answers })
-  const [step, setStep] = useState(-1)
-  const [summary, setSummary] = useState(value.summary)
+  const [answers, setAnswers] = useState<Answers>(() => Object.fromEntries(Object.entries(value.answers).filter(([id, answer]) =>
+    Array.isArray(answer) || (!['unknown', 'skip', 'later'].includes(answer) && (!checkinBinaryOptions[id] || checkinBinaryOptions[id].some(option => option.code === answer)))
+  )))
+  const [ratings, setRatings] = useState<Record<string, number>>({ ...value.ratings })
+  const [editing, setEditing] = useState(false)
   const [example, setExample] = useState(false)
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
-  const [saved, setSaved] = useState(value.completed)
+  const [result, setResult] = useState<StateResult | undefined>(value.result || (value.completed ? buildStateResult(value.answers) : undefined))
+  const [selectedId, setSelectedId] = useState(value.id)
   const heading = useRef<HTMLHeadingElement>(null)
   const submission = useRef<AbortController>()
   useEffect(() => {
@@ -28,11 +33,16 @@ export default function CurrentStateCheck({ value, onSave, onBack, onExplore, on
     return () => controller.abort()
   }, [])
   useEffect(() => () => submission.current?.abort(), [])
-  useEffect(() => { heading.current?.focus() }, [step, summary])
+  useEffect(() => { heading.current?.focus() }, [editing, result, loading])
   const questions = catalog ? [...catalog.domain_questions, ...catalog.extra_questions] : []
-  const question = questions[step]
-  const update = (code: string) => {
-    if (!question) return
+  const groups = [
+    { title: '일상과 마음', description: '각 문항에서 나에게 가까운 점을 하나 골라 주세요.', questions: questions.filter(q => checkinScales[q.id]) },
+    { title: '활동과 관계', description: '해당하는 답을 하나 골라 주세요.', questions: questions.filter(q => checkinBinaryOptions[q.id]) },
+    { title: '필요한 변화와 지원', description: '해당하는 항목을 모두 골라 주세요.', questions: questions.filter(q => !checkinScales[q.id] && !checkinBinaryOptions[q.id]) },
+  ]
+  const orderedQuestions = groups.flatMap(group => group.questions)
+  const answered = questions.filter(q => answers[q.id]?.length).length
+  const update = (question: Question, code: string) => {
     const previous = answers[question.id]
     let next: string | string[] = code
     if (question.multiple) {
@@ -40,48 +50,73 @@ export default function CurrentStateCheck({ value, onSave, onBack, onExplore, on
       next = selected.includes(code) ? selected.filter(c => c !== code) : code === 'none' ? ['none'] : [...selected.filter(c => c !== 'none'), code]
       if (question.max && next.length > question.max) return
     }
-    setAnswers(current => ({ ...current, [question.id]: next })); setSummary(undefined); setSaved(false)
+    setAnswers(current => ({ ...current, [question.id]: next }))
   }
+  const saveResult = (summary: Summary) => {
+    const nextResult = buildStateResult(answers)
+    const record: CheckinRecord = { id: crypto.randomUUID(), savedAt: new Date().toISOString(), answers: { ...answers }, ratings: { ...ratings }, completed: true, summary, result: nextResult }
+    setResult(nextResult); setSelectedId(record.id); setEditing(false); onSave(record)
+  }
+  const restart = () => { setAnswers({}); setRatings({}); setResult(undefined); setSelectedId(undefined); setEditing(true) }
+  const selectRecord = (record: CheckinRecord) => { setAnswers({ ...record.answers }); setRatings({ ...record.ratings }); setResult(record.result); setSelectedId(record.id); setEditing(false) }
   const submit = async () => {
+    if (sending) return
     submission.current?.abort()
     const controller = new AbortController(); submission.current = controller
     setSending(true)
     try {
       const result = example ? exampleSummary(answers) : await summarizeAnswers(answers, controller.signal)
-      setSummary(result); setStep(-1)
+      if (!controller.signal.aborted) saveResult(result)
     } catch {
-      if (!controller.signal.aborted) { setSummary(exampleSummary(answers)); setStep(-1) }
+      if (!controller.signal.aborted) { saveResult(exampleSummary(answers)) }
     } finally { if (!controller.signal.aborted) setSending(false) }
   }
   return <SettingsShell title="자가진단" description="요즘의 일상과 관계를 돌아보고, 지금 필요한 도움을 확인해요." onBack={onBack}>
     {loading && <p role="status">상태 점검 문항을 불러오고 있어요.</p>}
-    {!loading && catalog && (summary && step < 0 ? <section className="panel settings-section">
-      <h2 ref={heading} tabIndex={-1}>지금 나에게 필요한 도움</h2><p>{summary.disclaimer}</p>
-      {summary.notes.length ? summary.notes.map(note => <p key={note}>{note}</p>) : <p>우선 살펴볼 영역이 없어요. 원할 때 다시 답하거나 지원 목록을 둘러보세요.</p>}
-      <h3>내가 선택한 답변</h3>
-      {questions.map(q => {
-        const answer = answers[q.id]
-        const codes = Array.isArray(answer) ? answer : [answer]
-        return <div className="record-entry" key={q.id}><div><strong>{q.text}</strong><small>{codes.filter(Boolean).map(code => [...q.options, ...catalog.common_options].find(o => o.code === code)?.label).join(', ') || '건너뛴 질문'}</small></div></div>
-      })}
-      <div className="settings-survey-actions">
-        <button className="btn btn-primary" disabled={saved} onClick={() => { onSave({ answers: { ...answers }, completed: true, summary }); setSaved(true) }}>{saved ? '답변 보관됨' : '답변 보관'}</button>
-        <button className="btn btn-secondary" onClick={() => { setStep(0); setSaved(false) }}>답변 수정</button>
-        <button className="btn btn-secondary" onClick={onExplore}>지원 목록 살펴보기</button><button className="btn btn-secondary" onClick={onChat}>조이와 이야기하기</button>
-      </div><p role="status" className="settings-help">{saved ? '이 탭에서 답변을 보관하고 있어요.' : '답변 보관을 누르면 마이페이지에서 다시 볼 수 있어요.'} 새로고침하면 초기화돼요. 답변은 서버에 저장하지 않아요.</p>
-    </section> : question ? <section className="panel settings-section" aria-busy={sending}>
-      <p>{step + 1} / {questions.length} 문항</p><progress className="settings-progress" aria-label="상태 점검 진행률" value={step + 1} max={questions.length} />
-      <h2 className="settings-question-title" ref={heading} tabIndex={-1}>{question.text}</h2>
-      <fieldset className="settings-fieldset" disabled={sending}><legend>{question.multiple ? `여러 개 선택 가능${question.max ? ` · 최대 ${question.max}개` : ''}` : '하나를 선택해 주세요'}</legend><div className="settings-survey-options">
-        {[...question.options, ...(question.multiple ? [] : catalog.common_options)].map(option => {
-          const answer = answers[question.id]
-          const checked = Array.isArray(answer) ? answer.includes(option.code) : answer === option.code
-          return <label className={`filter-chip settings-choice ${checked ? 'active' : ''}`} key={option.code}><input type={question.multiple ? 'checkbox' : 'radio'} name={question.id} checked={checked} disabled={question.multiple && !checked && !!question.max && Array.isArray(answer) && answer.length >= question.max} onChange={() => update(option.code)} /><span>{option.label}</span></label>
-        })}
-      </div></fieldset>
-      <div className="settings-survey-actions"><button className="btn btn-secondary" disabled={sending} onClick={() => { setStep(v => v - 1) }}>이전</button>
-        <button className="btn btn-secondary" disabled={sending} onClick={() => { setAnswers(current => { const next = { ...current }; delete next[question.id]; return next }); setSummary(undefined); setSaved(false); setStep(v => v + 1) }}>건너뛰기</button>
-        <button className="btn btn-primary" disabled={sending || !answers[question.id] || answers[question.id].length === 0} onClick={() => { setStep(v => v + 1) }}>다음</button></div>
-    </section> : step >= questions.length ? <section className="panel settings-section"><h2 ref={heading} tabIndex={-1}>답변을 정리할 준비가 됐어요</h2><p>선택한 답변을 바탕으로 도움 영역을 정리해요.</p><div className="settings-survey-actions"><button className="btn btn-secondary" disabled={sending} onClick={() => setStep(questions.length - 1)}>이전</button><button className="btn btn-primary" disabled={sending} onClick={submit}>{sending ? '결과를 불러오는 중…' : '결과 보기'}</button></div></section> : <section className="panel settings-section"><h2>지금의 나를 돌아볼까요?</h2><p>{catalog.notice}</p><p>{questions.length}개의 질문을 한 번에 하나씩 확인해요. 원하지 않는 질문은 건너뛸 수 있어요.</p><button className="btn btn-primary" onClick={() => setStep(0)}>상태 점검 시작</button></section>)}
+    {storageError && <p role="alert" className="checkin-storage-error">이 브라우저에 결과를 저장하지 못했어요. 현재 화면에서는 볼 수 있지만, 새로고침하면 이 결과가 남지 않을 수 있어요.</p>}
+    {history.length > 0 && <section className="panel checkin-history"><div className="section-head"><h2>상태 점검 이력</h2><button className="btn btn-secondary" disabled={sending} onClick={restart}>다시 설문하기</button></div><div className="checkin-history-list">{history.map(record => <button type="button" key={record.id} aria-pressed={selectedId === record.id && !editing} disabled={sending} onClick={() => selectRecord(record)}><time dateTime={record.savedAt}>{new Date(record.savedAt).toLocaleString('ko-KR')}</time><strong>{record.result.title}</strong><span>결과 보기</span></button>)}</div></section>}
+    {!loading && catalog && (result && !editing ? <div className="checkin-result">
+      <section className="panel settings-section"><span className="mini-label">나의 상태 요약</span><h2 ref={heading} tabIndex={-1}>{result.title}</h2><p>{result.description}</p>
+        <div className="checkin-result-tags">{result.types.map(type => <span key={type}>{typeInfo[type].title}</span>)}</div>
+        <dl className="checkin-result-areas">{result.areas.map(area => <div key={area.name}><dt>{area.name}</dt><dd>{area.status}</dd></div>)}</dl>
+        <p className="settings-help">응답을 바탕으로 정리한 현재 상태예요. 의학적 진단이나 위험 등급이 아니에요.</p>
+        <div className="settings-survey-actions"><button className="btn btn-secondary" onClick={() => setEditing(true)}>답변 수정하고 다시 저장</button><button className="btn btn-secondary" onClick={restart}>새로 설문하기</button><button className="btn btn-secondary" onClick={onChat}>조이와 이야기하기</button></div>
+        {!storageError && <p role="status" className="settings-help">결과가 이 브라우저에 저장됐어요. 다음 방문에도 이력에서 확인할 수 있어요.</p>}
+      </section>
+      <section className="panel settings-section"><h2>이런 지원부터 살펴보세요</h2><p>상태 유형별로 연결한 전국 공통 제도와 공공 서비스를 모았어요. 신청 자격·모집 기간·이용 가능한 활동은 각 공식 안내에서 확인해 주세요.</p>
+        <div className="checkin-support-list">{supportsForResult(result).map(item => <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer"><span>{item.category}</span><h3>{item.title}</h3><p>{item.description}</p><small>{item.source} · 공식 안내 ↗</small></a>)}</div>
+      </section>
+    </div> : <form className="checkin-survey" aria-busy={sending} onSubmit={event => { event.preventDefault(); void submit() }}>
+      <section className="panel settings-section checkin-survey-intro">
+        <h2 ref={heading} tabIndex={-1}>요즘의 나는 어떤가요?</h2><p>{catalog.notice}</p>
+        <p>전체 {questions.length}개 문항을 살펴보고, 나에게 가까운 답을 골라 주세요. 답하고 싶지 않은 문항은 비워 두어도 괜찮아요.</p>
+        <p className="settings-help" role="status">{questions.length}개 중 {answered}개 응답</p>
+        <progress className="settings-progress" aria-label="응답한 문항 수" value={answered} max={questions.length} />
+      </section>
+      {groups.filter(group => group.questions.length).map(group => <section key={group.title} className="panel checkin-survey-group" aria-label={group.title}>
+        <div className="checkin-group-heading"><h2>{group.title}</h2><p>{group.description}</p></div>
+        {group.questions.map(question => <fieldset key={question.id} className="checkin-survey-question" disabled={sending}>
+        <legend><span className="checkin-question-number">{String(orderedQuestions.indexOf(question) + 1).padStart(2, '0')}</span>{question.text}</legend>
+        {question.multiple && <p className="settings-help">{question.max ? `최대 ${question.max}개 선택` : '여러 개 선택 가능'}</p>}
+        {checkinScales[question.id] ? <>
+          <div className="checkin-scale" role="radiogroup" aria-label={question.text}>
+            {checkinScales[question.id].labels.map((label, position) => <label key={label} className="checkin-scale-option">
+              <input type="radio" name={question.id} value={position + 1} checked={ratings[question.id] === position + 1} onChange={() => { setRatings(current => ({ ...current, [question.id]: position + 1 })); update(question, checkinScales[question.id].codes[position]) }} />
+              <span className="checkin-scale-dot" aria-hidden="true" /><span className="checkin-scale-label">{label}</span>
+            </label>)}
+          </div>
+        </> : <div className="settings-survey-options">
+          {(checkinBinaryOptions[question.id] || question.options).map(option => {
+            const answer = answers[question.id]
+            const checked = Array.isArray(answer) ? answer.includes(option.code) : answer === option.code
+            const atLimit = question.multiple && !checked && option.code !== 'none' && !!question.max && Array.isArray(answer) && answer.filter(code => code !== 'none').length >= question.max
+            return <label className={`settings-choice ${checked ? 'active' : ''}`} key={option.code}><input type={question.multiple ? 'checkbox' : 'radio'} name={question.id} checked={checked} disabled={!!atLimit} onChange={() => update(question, option.code)} /><span>{option.label}</span></label>
+          })}
+        </div>}
+        {answers[question.id]?.length > 0 && <button type="button" className="checkin-clear-answer" onClick={() => { setAnswers(current => { const next = { ...current }; delete next[question.id]; return next }); setRatings(current => { const next = { ...current }; delete next[question.id]; return next }) }}>선택 해제</button>}
+      </fieldset>)}
+      </section>)}
+      <section className="panel settings-section checkin-survey-submit"><div><strong>{questions.length}개 중 {answered}개 응답했어요</strong><p className="settings-help">선택한 답변을 바탕으로 지금 필요한 도움을 정리해요.</p></div><button type="submit" className="btn btn-primary" disabled={sending || answered === 0}>{sending ? '결과를 불러오는 중…' : '결과 보기'}</button></section>
+    </form>)}
   </SettingsShell>
 }

@@ -5,23 +5,25 @@ import { Choices, SaveSettings, SettingsShell } from './ProfileSettings'
 export type ActivityExperience = { id: string; title: string; category: string; status: string }
 export type ActivityInformationValue = {
   employment: string
+  school: string
   interests: string[]
   participation: string
   groupSize: string
   experiences: ActivityExperience[]
 }
-export const initialActivityInformation: ActivityInformationValue = { employment: '', interests: [], participation: '', groupSize: '', experiences: [] }
+export const initialActivityInformation: ActivityInformationValue = { employment: '', school: '', interests: [], participation: '', groupSize: '', experiences: [] }
 const interestOptions = ['취업·진로', '주거', '생활·금융', '교육·자격증', '창업', '건강·마음', '문화·여가', '지역 활동']
 
 export default function ActivityInformation({ value, onSave, onBack }: { value: ActivityInformationValue; onSave: (value: ActivityInformationValue) => void; onBack: () => void }) {
   const [draft, setDraft] = useState(() => ({ ...value, interests: [...value.interests], experiences: value.experiences.map(e => ({ ...e })) }))
   const changeExperience = (id: string, patch: Partial<ActivityExperience>) => setDraft(v => ({ ...v, experiences: v.experiences.map(e => e.id === id ? { ...e, ...patch } : e) }))
   const submit = (event: FormEvent) => { event.preventDefault(); onSave({ ...draft, experiences: draft.experiences.map(e => ({ ...e, title: e.title.trim() })) }) }
-  return <SettingsShell title="내 상태 입력" description="해온 활동과 관심사, 편한 참여 방식을 직접 등록해요." onBack={onBack}>
+  return <SettingsShell title="맞춤 조건·내 상태" description="기본 조건과 관심 분야를 한 번 등록하면, 지원 정보를 찾을 때 다시 입력하지 않아도 돼요." onBack={onBack}>
     <form onSubmit={submit}>
       <section className="panel settings-section">
-        <div className="settings-section-heading"><h2>지금 하는 일</h2><p>현재의 활동 상황을 선택해 주세요.</p></div>
-        <Choices label="활동 상태" options={['구직 중', '재직 중', '재학 중', '창업·자영업', '쉬고 있어요']} value={draft.employment} onChange={employment => setDraft(v => ({ ...v, employment }))} />
+        <div className="settings-section-heading"><h2>기본 조건</h2><p>현재 상황에 해당하는 항목을 선택해 주세요. 원하지 않는 항목은 비워둘 수 있어요.</p></div>
+        <Choices label="현재 상태" options={['구직 중', '재직 중', '재학 중', '아르바이트·단기', '프리랜서', '창업·자영업', '쉬고 있어요']} value={draft.employment} onChange={employment => setDraft(v => ({ ...v, employment }))} />
+        <Choices label="재학 상태 · 학생인 경우" options={['고등학생', '대학생', '대학원생']} value={draft.school || ''} onChange={school => setDraft(v => ({ ...v, school }))} />
       </section>
       <section className="panel settings-section">
         <div className="section-head"><h2 className="section-label">나의 활동 경험</h2><button type="button" className="btn btn-secondary" onClick={() => setDraft(v => ({ ...v, experiences: [...v.experiences, { id: crypto.randomUUID(), title: '', category: '교육·훈련', status: '참여 중' }] }))}><Plus size={16} /> 활동 추가</button></div>
@@ -35,14 +37,14 @@ export default function ActivityInformation({ value, onSave, onBack }: { value: 
           <button type="button" className="btn btn-ghost" aria-label={`활동 ${index + 1} 삭제`} onClick={() => setDraft(v => ({ ...v, experiences: v.experiences.filter(e => e.id !== experience.id) }))}><Trash2 size={16} /> 삭제</button>
         </fieldset>)}
       </section>
-      <section className="panel settings-section"><div className="settings-section-heading"><h2>관심 분야</h2><p>알아보고 싶은 분야를 모두 선택해 주세요.</p></div>
-        <fieldset className="settings-fieldset"><legend className="settings-sr-only">관심 분야 · 여러 개 선택 가능</legend><div className="settings-options">{interestOptions.map(interest => <label key={interest} className={`filter-chip settings-choice ${draft.interests.includes(interest) ? 'active' : ''}`}><input type="checkbox" checked={draft.interests.includes(interest)} onChange={() => setDraft(v => ({ ...v, interests: v.interests.includes(interest) ? v.interests.filter(i => i !== interest) : [...v.interests, interest] }))} /><span>{interest}</span></label>)}</div></fieldset>
+      <section className="panel settings-section"><div className="settings-section-heading"><h2>관심 분야</h2><p>알아보고 싶은 분야를 최대 3개 선택해 주세요.</p></div>
+        <fieldset className="settings-fieldset"><legend className="settings-sr-only">관심 분야 · 최대 3개 선택 가능</legend><div className="settings-options">{interestOptions.map(interest => <label key={interest} className={`filter-chip settings-choice ${draft.interests.includes(interest) ? 'active' : ''}`}><input type="checkbox" disabled={!draft.interests.includes(interest) && draft.interests.length >= 3} checked={draft.interests.includes(interest)} onChange={() => setDraft(v => ({ ...v, interests: v.interests.includes(interest) ? v.interests.filter(i => i !== interest) : [...v.interests, interest] }))} /><span>{interest}</span></label>)}</div></fieldset>
       </section>
       <section className="panel settings-section"><div className="settings-section-heading"><h2>참여 선호</h2><p>어떤 방식이 편한지 직접 선택해요.</p></div>
         <Choices label="편한 참여 방식" options={['온라인', '직접 방문', '둘 다 좋아요']} value={draft.participation} onChange={participation => setDraft(v => ({ ...v, participation }))} />
         <Choices label="편한 모임 규모" options={['혼자 참여', '소규모 모임', '규모 상관없어요']} value={draft.groupSize} onChange={groupSize => setDraft(v => ({ ...v, groupSize }))} />
       </section>
-      <SaveSettings onCancel={onBack} label="활동 정보 저장" />
+      <SaveSettings onCancel={onBack} label="맞춤 조건 저장" />
     </form>
   </SettingsShell>
 }
