@@ -1,0 +1,330 @@
+{
+  "transport": "real HTTP via Vite5173 → backend8000 → PostgreSQL; Docker host.docker.internal",
+  "synthetic_only": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "input": {
+        "profile": {
+          "age": 24,
+          "sigungu_cd": "11620"
+        },
+        "checkin": {}
+      },
+      "http": "HTTP/1.1 200 OK",
+      "source": "db",
+      "candidates": {
+        "policy": 119,
+        "program": 133
+      },
+      "policies": [
+        {
+          "id": "policy:20260528005400113227",
+          "title": "(농식품부) 농식품 바우처",
+          "why": []
+        },
+        {
+          "id": "policy:20261006005400113909",
+          "title": "미래형 관광인재 육성",
+          "why": []
+        },
+        {
+          "id": "policy:20261021005400214208",
+          "title": "2026 청년 월세 지원",
+          "why": []
+        },
+        {
+          "id": "policy:20260930005400113725",
+          "title": "고립·은둔 청년 대상 선제적 sns 상담 실시",
+          "why": []
+        },
+        {
+          "id": "policy:20261021005400214204",
+          "title": "2026 고립·은둔 청년 지원",
+          "why": []
+        },
+        {
+          "id": "policy:20261023005400214280",
+          "title": "2026 청년예술청 운영",
+          "why": []
+        }
+      ],
+      "program_count": 4,
+      "summary_interests": [],
+      "programs_notice": null
+    },
+    {
+      "case": "age17",
+      "input": {
+        "profile": {
+          "age": 17,
+          "sigungu_cd": "11620"
+        },
+        "checkin": {}
+      },
+      "http": "HTTP/1.1 200 OK",
+      "source": "db",
+      "candidates": {
+        "policy": 64,
+        "program": 133
+      },
+      "policies": [
+        {
+          "id": "policy:20261018005400213990",
+          "title": "2026 청년취업사관학교 조성 및 운영",
+          "why": []
+        },
+        {
+          "id": "policy:20261023005400214279",
+          "title": "2026 7979 서울 러닝크루",
+          "why": []
+        },
+        {
+          "id": "policy:20261021005400214207",
+          "title": "2026 청년과 어르신 주거공유(한지붕세대공감)",
+          "why": []
+        },
+        {
+          "id": "policy:20261018005400213983",
+          "title": "2026 서울영커리언스 캠프",
+          "why": []
+        },
+        {
+          "id": "policy:20261023005400214277",
+          "title": "2026 청년 마약류 오남용 예방교육 등 운영",
+          "why": []
+        },
+        {
+          "id": "policy:20260415005400112751",
+          "title": "(복지부) 26년 정신건강 심리상담 바우처사업",
+          "why": []
+        }
+      ],
+      "program_count": 4,
+      "summary_interests": [],
+      "programs_notice": null
+    },
+    {
+      "case": "daejeon",
+      "input": {
+        "profile": {
+          "age": 24,
+          "sigungu_cd": "30170"
+        },
+        "checkin": {}
+      },
+      "http": "HTTP/1.1 200 OK",
+      "source": "db",
+      "candidates": {
+        "policy": 106,
+        "program": 0
+      },
+      "policies": [
+        {
+          "id": "policy:20260107005400212076",
+          "title": "심리상담 바우처 사업(구 전국민 마음투자 지원사업)",
+          "why": []
+        },
+        {
+          "id": "policy:20260107005400212074",
+          "title": "청년 네트워크 활성화 지원사업",
+          "why": []
+        },
+        {
+          "id": "policy:20260107005400212075",
+          "title": "대전청년챔프",
+          "why": []
+        },
+        {
+          "id": "policy:20260107005400212077",
+          "title": "청년 행정체험연수 운영",
+          "why": []
+        },
+        {
+          "id": "policy:20240507005400200010",
+          "title": "청년 주택임차보증금 이자지원",
+          "why": []
+        },
+        {
+          "id": "policy:20261002005400113836",
+          "title": "대학생 천원의 아침밥 지원 사업",
+          "why": []
+        }
+      ],
+      "program_count": 0,
+      "summary_interests": [],
+      "programs_notice": {
+        "code": "no_program_data",
+        "message": "아직 이 지역 청년센터 프로그램 정보를 모으지 못했어요. 가까운 청년센터에 직접 물어봐 주세요."
+      }
+    },
+    {
+      "case": "employed",
+      "input": {
+        "profile": {
+          "age": 24,
+          "sigungu_cd": "11620",
+          "job": "회사원"
+        },
+        "checkin": {}
+      },
+      "http": "HTTP/1.1 200 OK",
+      "source": "db",
+      "candidates": {
+        "policy": 119,
+        "program": 133
+      },
+      "policies": [
+        {
+          "id": "policy:20260528005400113227",
+          "title": "(농식품부) 농식품 바우처",
+          "why": []
+        },
+        {
+          "id": "policy:20261006005400113909",
+          "title": "미래형 관광인재 육성",
+          "why": []
+        },
+        {
+          "id": "policy:20261021005400214208",
+          "title": "2026 청년 월세 지원",
+          "why": []
+        },
+        {
+          "id": "policy:20260930005400113725",
+          "title": "고립·은둔 청년 대상 선제적 sns 상담 실시",
+          "why": []
+        },
+        {
+          "id": "policy:20261021005400214204",
+          "title": "2026 고립·은둔 청년 지원",
+          "why": []
+        },
+        {
+          "id": "policy:20261023005400214280",
+          "title": "2026 청년예술청 운영",
+          "why": []
+        }
+      ],
+      "program_count": 4,
+      "summary_interests": [],
+      "programs_notice": null
+    },
+    {
+      "case": "student",
+      "input": {
+        "profile": {
+          "age": 24,
+          "sigungu_cd": "11620",
+          "job": "학생",
+          "school": "대학생"
+        },
+        "checkin": {}
+      },
+      "http": "HTTP/1.1 200 OK",
+      "source": "db",
+      "candidates": {
+        "policy": 119,
+        "program": 133
+      },
+      "policies": [
+        {
+          "id": "policy:20260528005400113227",
+          "title": "(농식품부) 농식품 바우처",
+          "why": []
+        },
+        {
+          "id": "policy:20261006005400113909",
+          "title": "미래형 관광인재 육성",
+          "why": []
+        },
+        {
+          "id": "policy:20261021005400214208",
+          "title": "2026 청년 월세 지원",
+          "why": []
+        },
+        {
+          "id": "policy:20260930005400113725",
+          "title": "고립·은둔 청년 대상 선제적 sns 상담 실시",
+          "why": []
+        },
+        {
+          "id": "policy:20261021005400214204",
+          "title": "2026 고립·은둔 청년 지원",
+          "why": []
+        },
+        {
+          "id": "policy:20261023005400214280",
+          "title": "2026 청년예술청 운영",
+          "why": []
+        }
+      ],
+      "program_count": 4,
+      "summary_interests": [],
+      "programs_notice": null
+    },
+    {
+      "case": "housing_interest",
+      "input": {
+        "profile": {
+          "age": 24,
+          "sigungu_cd": "11620"
+        },
+        "checkin": {
+          "interests": [
+            "집·주거"
+          ]
+        }
+      },
+      "http": "HTTP/1.1 200 OK",
+      "source": "db",
+      "candidates": {
+        "policy": 119,
+        "program": 133
+      },
+      "policies": [
+        {
+          "id": "policy:20261021005400214208",
+          "title": "2026 청년 월세 지원",
+          "why": [
+            "관심 분야: 집·주거"
+          ]
+        },
+        {
+          "id": "policy:20261021005400214222",
+          "title": "2026 전월세 안심계약 도움서비스 운영",
+          "why": [
+            "관심 분야: 집·주거"
+          ]
+        },
+        {
+          "id": "policy:20261021005400214209",
+          "title": "2026 청년주거 씨앗펀드",
+          "why": [
+            "관심 분야: 집·주거"
+          ]
+        },
+        {
+          "id": "policy:20260930005400113725",
+          "title": "고립·은둔 청년 대상 선제적 sns 상담 실시",
+          "why": []
+        },
+        {
+          "id": "policy:20261021005400214204",
+          "title": "2026 고립·은둔 청년 지원",
+          "why": []
+        },
+        {
+          "id": "policy:20261023005400214280",
+          "title": "2026 청년예술청 운영",
+          "why": []
+        }
+      ],
+      "program_count": 4,
+      "summary_interests": [
+        "집·주거"
+      ],
+      "programs_notice": null
+    }
+  ]
+}

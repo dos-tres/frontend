@@ -2,7 +2,7 @@ import { RegionSelection } from './RegionSelection'
 import { useEffect, useState, type FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, Bookmark, Check, ExternalLink, FileText, Search, SlidersHorizontal } from 'lucide-react'
 import type { Program } from './data'
-import { isClosed, periodLabel, safePolicyUrl, policyProvinces, policyDistricts } from './policy-api'
+import { filterPolicies, isClosed, periodLabel, safePolicyUrl, policyProvinces, policyDistricts } from './policy-api'
 import { usePolicyCatalog } from './use-policy-catalog'
 import './policy-pages.css'
 
@@ -18,7 +18,9 @@ export function PolicyListPage({ data, view, setView, onSelect, saved, onToggleS
   const changeRegion = (region: string) => { data.setCriteria({ ...data.criteria, region }); change({}) }
   const change = (patch: Partial<PolicyView>) => setView({ ...view, page: 1, ...patch })
   const terms = view.query.toLowerCase().trim().split(/\s+/).filter(Boolean)
-  const filtered = data.items.filter(p => (!view.onlyOpen || !isClosed(p)) && (!view.onlySaved || saved.includes(p.id)) &&
+  const browsing = !!(view.query.trim() || view.onlySaved || view.type !== '전체')
+  const searchable = data.catalog && browsing ? filterPolicies(data.catalog.items, data.catalog, data.criteria, '', '전체', false, false, []) : data.items
+  const filtered = searchable.filter(p => (!view.onlyOpen || !isClosed(p)) && (!view.onlySaved || saved.includes(p.id)) &&
     (view.type === '전체' || view.type === p.type) && terms.every(term => `${p.title} ${p.summary} ${p.source} ${p.category || ''}`.toLowerCase().includes(term)))
   if (view.sort === '마감 임박순') filtered.sort((a, b) => (a.deadline || '9999').localeCompare(b.deadline || '9999'))
   if (view.sort === '가나다순') filtered.sort((a, b) => a.title.localeCompare(b.title, 'ko'))
@@ -45,9 +47,10 @@ export function PolicyListPage({ data, view, setView, onSelect, saved, onToggleS
     </section>
     <div className="results-layout policy-results-layout">
       <section className="panel panel-gray results-panel" aria-busy={data.busy || !data.catalog}>
-        <div className="section-head"><h3>{data.recommended ? '조건별 추천' : '정책·프로그램 목록'}</h3><div className="policy-result-tools"><span role="status">{filtered.length.toLocaleString()}건{data.busy ? ' · 추천 확인 중' : ''}</span><select aria-label="정렬" value={view.sort} onChange={e => change({ sort: e.target.value })}>{['기본순', '마감 임박순', '가나다순'].map(sort => <option key={sort}>{sort}</option>)}</select></div></div>
-        {!data.catalog && <p className="empty-state" role="status">{data.failed ? '목록을 불러오지 못했어요.' : '정책 정보를 불러오고 있어요.'}{data.failed && <button className="btn btn-secondary" onClick={data.retry}>목록 불러오기</button>}</p>}
-        {data.notice && <p className="search-helper">{data.notice}</p>}
+        <div className="section-head"><h3>{data.recommended && !browsing ? '조건별 추천' : '정책·프로그램 목록'}</h3><div className="policy-result-tools"><span role="status">{filtered.length.toLocaleString()}건{data.busy ? ' · 추천 확인 중' : ''}</span><select aria-label="정렬" value={view.sort} onChange={e => change({ sort: e.target.value })}>{['기본순', '마감 임박순', '가나다순'].map(sort => <option key={sort}>{sort}</option>)}</select></div></div>
+        {!data.catalog && data.recommended === undefined && <p className="empty-state" role="status">{data.failed ? '목록을 불러오지 못했어요.' : '정책 정보를 불러오고 있어요.'}{data.failed && <button className="btn btn-secondary" onClick={data.retry}>목록 불러오기</button>}</p>}
+        {browsing && <p className="search-helper">전체 수집 스냅샷에서 검색한 목록이에요. 서버 추천 순위와 다를 수 있어요.</p>}
+        {data.notice && !browsing && <p className="search-helper">{data.notice}</p>}
         {filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map(p => <article className="result-card" key={p.id}>
           <div className="result-icon"><FileText size={20} /></div>
           <div className="result-content"><span className="result-type">{p.type} · {p.category || p.region}{isClosed(p) ? ' · 마감' : p.deadline ? ` · ~${p.deadline}` : ' · 일정 확인'}</span><h3><button className="policy-title-button" onClick={() => onSelect(p)}>{p.title}</button></h3><p>{p.summary || '상세 공고에서 지원 내용을 확인해 주세요.'}</p><small>{p.source} · {periodLabel(p.period)}</small>{p.why?.length ? <p className="policy-reason">{p.why[0]}</p> : null}</div>
@@ -56,7 +59,7 @@ export function PolicyListPage({ data, view, setView, onSelect, saved, onToggleS
         {data.catalog && !filtered.length && <div className="empty-state"><p>선택한 조건에 맞는 정보가 없어요. 검색어나 조건을 바꿔 보세요.</p><button className="btn btn-secondary" onClick={reset}>조건 초기화</button></div>}
         {filtered.length > PAGE_SIZE && <nav className="policy-pagination" aria-label="검색 결과 페이지"><button className="btn btn-secondary" disabled={page === 1} onClick={() => setView({ ...view, page: page - 1 })}>이전</button><span aria-live="polite">{page} / {pages}</span><button className="btn btn-secondary" disabled={page === pages} onClick={() => setView({ ...view, page: page + 1 })}>다음</button></nav>}
       </section>
-      <aside className="panel joy-side-card policy-guide"><span className="mini-label">지원 정보 살펴보기</span><h3>내 조건에 맞게 찾아보세요</h3><p>내 정보와 상태 점검 답변을 바탕으로 필요한 도움을 좁혀볼 수 있어요.</p><div className="mini-checks"><span><Check size={14} /> 나이·거주 지역 확인</span><span><Check size={14} /> 지원 내용·신청 조건 비교</span><span><Check size={14} /> 공식 공고에서 최종 확인</span></div><button className="btn btn-secondary" onClick={() => { onUseProfile() }}>내 거주 지역으로 보기</button><button className="btn btn-primary" onClick={onCheck}>내 상태 점검하기 <ArrowRight size={14} /></button><p className="search-helper">수집 기준: {data.catalog?.generatedAt || '확인 중'}. 공고의 변경·마감 여부는 운영기관에서 확인해 주세요.</p></aside>
+      <aside className="panel joy-side-card policy-guide"><span className="mini-label">지원 정보 살펴보기</span><h3>내 조건에 맞게 찾아보세요</h3><p>내 정보와 상태 점검 답변을 바탕으로 필요한 도움을 좁혀볼 수 있어요.</p><div className="mini-checks"><span><Check size={14} /> 나이·거주 지역 확인</span><span><Check size={14} /> 지원 내용·신청 조건 비교</span><span><Check size={14} /> 공식 공고에서 최종 확인</span></div><button className="btn btn-secondary" onClick={() => { onUseProfile() }}>내 거주 지역으로 보기</button><button className="btn btn-primary" onClick={onCheck}>생활 점검하기 <ArrowRight size={14} /></button><p className="search-helper">수집 기준: {data.catalog?.generatedAt || '확인 중'}. 공고의 변경·마감 여부는 운영기관에서 확인해 주세요.</p></aside>
     </div>
   </>
 }

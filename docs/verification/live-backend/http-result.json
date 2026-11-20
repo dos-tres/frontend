@@ -1,0 +1,18 @@
+{
+  "transport": "HTTP via Vite 5175 proxy -> Docker published 8000",
+  "questions": 200,
+  "summary_priority": [
+    "E",
+    "C",
+    "U",
+    "P"
+  ],
+  "policies": 6,
+  "programs": 4,
+  "source": "file",
+  "first_policy": "고립·은둔 청년 대상 선제적 sns 상담 실시",
+  "outside_programs_notice": {
+    "code": "no_program_data",
+    "message": "아직 이 지역 청년센터 프로그램 정보를 모으지 못했어요. 가까운 청년센터에 직접 물어봐 주세요."
+  }
+}
