@@ -29,6 +29,26 @@ const questions = [...catalog.domain_questions, ...catalog.extra_questions]
 assert.equal(questions.length, 9)
 assert.equal(catalog.common_options.length, 3)
 console.log('PASS: frontend loads all 9 real backend questions')
+const scaleSource = await readFile(new URL('../src/checkin-scale.ts', import.meta.url), 'utf8')
+const scaleModule = await transform(scaleSource, { loader: 'ts', format: 'esm' })
+const { checkinScales, checkinBinaryOptions } = await import(`data:text/javascript;base64,${Buffer.from(scaleModule.code).toString('base64')}`)
+for (const [id, options] of Object.entries(checkinBinaryOptions)) {
+  assert.deepEqual(options.map(option => option.label), ['예', '아니오'])
+  const question = questions.find(q => q.id === id)
+  assert.ok(options.every(option => question.options.some(original => original.code === option.code)))
+}
+for (const [id, scale] of Object.entries(checkinScales)) {
+  const question = questions.find(q => q.id === id)
+  assert.ok(question && !question.multiple)
+  assert.equal(scale.labels.length, 5)
+  assert.equal(scale.codes.length, 5)
+  assert.ok(scale.codes.every(code => question.options.some(option => option.code === code)))
+}
+for (let point = 0; point < 5; point++) {
+  const scaledAnswers = Object.fromEntries(Object.entries(checkinScales).map(([id, scale]) => [id, scale.codes[point]]))
+  assert.ok(Array.isArray((await api.summarizeAnswers(scaledAnswers, signal())).notes))
+}
+console.log('PASS: all five scale positions accepted by the real backend; categorical questions remain separate')
 
 const answers = Object.fromEntries(questions.map(q => [q.id, q.multiple ? [q.options[0].code] : q.options[0].code]))
 const summary = await api.summarizeAnswers(answers, signal())

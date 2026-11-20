@@ -1,0 +1,95 @@
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+import { build } from 'esbuild'
+
+const catalog = JSON.parse(await readFile(new URL('../src/data/policy-catalog.json', import.meta.url), 'utf8'))
+const source = await readFile(new URL('../src/policy-api.ts', import.meta.url), 'utf8')
+const compiled = await build({ stdin: { contents: source, loader: 'ts', resolveDir: fileURLToPath(new URL('../src/', import.meta.url)) }, bundle: true, write: false, format: 'esm', platform: 'node', external: ['./data/policy-catalog.json'], define: { 'import.meta.env.VITE_API_BASE_URL': '""' } })
+const code = compiled.outputFiles[0].text
+const api = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`)
+assert.equal(catalog.items.length, 2504)
+assert.equal(new Set(catalog.items.map(p => p.id)).size, catalog.items.length)
+assert.equal(catalog.items.filter(p => p.type === '정책').length, 2335)
+assert.equal(catalog.items.filter(p => p.type === '프로그램').length, 169)
+assert.equal(catalog.regions.find(r => r.label === '서울특별시 관악구').code, '11620')
+assert.deepEqual(catalog.regions, api.policyDistricts)
+assert.equal(api.policyDistricts.filter(r => r.code.startsWith('26')).length, 16)
+assert.equal(api.policyDistricts.filter(r => r.code.startsWith('27')).length, 9)
+assert.ok(api.policyDistricts.some(r => r.code === '27720' && r.label === '대구광역시 군위군'))
+assert.ok(api.policyRegionCodes('41110').includes('41117'))
+const birthdayToday = new Date(2026, 10, 20)
+assert.equal(api.ageFromBirthDate('2002-11-20', birthdayToday), '24')
+assert.equal(api.ageFromBirthDate('2002-11-21', birthdayToday), '23')
+assert.equal(api.ageFromBirthDate('2002-02-30', birthdayToday), '')
+assert.equal(api.ageFromBirthDate('2027-01-01', birthdayToday), '')
+assert.equal(api.ageFromBirthDate('', birthdayToday), '')
+assert.deepEqual(api.profilePolicyCriteria(catalog, { birthDate: '2002-11-20', regionLabel: '서울특별시 관악구 봉천동', employment: '재직 중' }, birthdayToday), { age: '24', region: '11620', job: '회사원' })
+const provinceFallback = api.profilePolicyCriteria(catalog, { birthDate: '', regionLabel: '충청북도 등록되지않은군', employment: '' }, birthdayToday)
+assert.equal(provinceFallback.region, '43')
+assert.equal(provinceFallback.age, '')
+assert.equal(api.profilePolicyCriteria(catalog, { birthDate: '', regionLabel: '광주광역시 미등록구', employment: '' }, birthdayToday).region, '12')
+assert.ok(api.policyProvinces.some(p => p.code === '43' && p.fullName === '충청북도'))
+console.log('PASS: birthday-based age, profile defaults, district-name matching and province fallback')
+const criteria = { age: '24', region: '11620', job: '구직 중' }
+const today = '2026-11-20'
+const all = api.filterPolicies(catalog.items, catalog, criteria, '', '전체', true, false, [], today)
+assert.ok(all.length)
+assert.ok(all.every(p => !api.isClosed(p, today)))
+const provinceItems = api.filterPolicies(catalog.items, catalog, { ...criteria, region: '11' }, '', '전체', true, false, [], today)
+assert.ok(provinceItems.length >= all.length)
+assert.ok(provinceItems.every(p => catalog.regionGroups[p.regionGroup].some(code => code.startsWith('11'))))
+
+assert.ok(all.every(p => Number(criteria.age) >= (p.ageMin || 0) && Number(criteria.age) <= (p.ageMax || 120)))
+const found = api.filterPolicies(catalog.items, catalog, { age: '', region: '', job: '' }, '청년내일카드', '정책', true, false, [], today)
+assert.ok(found.length)
+assert.ok(found.every(p => p.title.includes('청년내일카드') || p.summary.includes('청년내일카드')))
+assert.deepEqual(api.filterPolicies(found, catalog, { age: '', region: '', job: '' }, '', '전체', true, true, [found[0].id], today).map(p => p.id), [found[0].id])
+assert.equal(api.isClosed({ deadline: today }, today), false)
+assert.equal(api.isClosed({ deadline: '2026-11-19' }, today), true)
+assert.equal(api.safePolicyUrl('javascript:alert(1)'), undefined)
+assert.equal(api.safePolicyUrl('https://user:pass@example.com'), undefined)
+assert.equal(api.safePolicyUrl('https://example.com/notice'), 'https://example.com/notice')
+console.log(`PASS: 2,504 catalog records; region/age/deadline/search/saved filters and safe links (${all.length} Seoul/age24 open records)`)
+
+const python = process.env.BACKEND_PYTHON || fileURLToPath(new URL('../../backend/.venv/bin/python', import.meta.url))
+const bridge = fileURLToPath(new URL('./checkin-asgi-bridge.py', import.meta.url))
+const statuses = []
+const requests = []
+globalThis.fetch = async (url, options) => {
+  requests.push(JSON.parse(options.body))
+  const result = spawnSync(python, [bridge], { encoding: 'utf8', input: JSON.stringify({ method: options.method, path: new URL(url, 'http://local.test').pathname, body: options.body, headers: options.headers }) })
+  if (result.error || result.status !== 0) throw new Error(result.error?.message || result.stderr)
+  const reply = JSON.parse(result.stdout)
+  statuses.push(reply.status)
+  return new Response(JSON.stringify(reply.body), { status: reply.status, headers: { 'Content-Type': 'application/json' } })
+}
+const answers = { economy: 'high', participation: 'high', support: 'high', interests: ['일자리·취업'] }
+const response = await api.requestRecommendations(criteria, answers, new AbortController().signal)
+assert.ok(response.policies.length > 0 && response.policies.length <= 6)
+assert.ok(response.programs.length <= 4)
+const legalRegions = JSON.parse(await readFile(new URL('../src/data/regions.json', import.meta.url), 'utf8'))
+const town = legalRegions.find(r => r.code.length === 8 && r.code.startsWith(criteria.region))
+assert.ok(town)
+const townCriteria = api.profilePolicyCriteria(catalog, { birthDate: '2002-11-20', regionCode: town.code, regionLabel: town.label, employment: '재학 중', school: '대학생' }, birthdayToday)
+assert.equal(townCriteria.region, town.code)
+assert.equal(townCriteria.school, '대학생')
+assert.deepEqual(api.policyRegionCodes(town.code), api.policyRegionCodes(criteria.region))
+await api.requestRecommendations({ ...townCriteria, job: '학생' }, answers, new AbortController().signal)
+assert.equal(requests.at(-1).profile.sigungu_cd, criteria.region)
+assert.equal(requests.at(-1).profile.school, '대학생')
+for (const item of [...response.policies, ...response.programs]) {
+  const mapped = api.toProgram(item, catalog.items.find(p => p.id === item.id))
+  assert.equal(mapped.id, item.id)
+  assert.equal(mapped.title, item.title)
+  assert.ok(mapped.why.length)
+  assert.equal(mapped.deadline, item.deadline)
+  for (const url of [mapped.referenceUrl, mapped.applyUrl].filter(Boolean)) assert.match(url, /^https?:\/\//)
+}
+const outside = await api.requestRecommendations({ ...criteria, region: '30170' }, {}, new AbortController().signal)
+assert.ok(outside.policies.length)
+assert.equal(outside.programs.length, 0)
+assert.ok(outside.programs_notice.message)
+await assert.rejects(api.requestRecommendations({ ...criteria, region: '99999' }, {}, new AbortController().signal), /API 422/)
+console.log(`PASS: real frontend recommendation API → FastAPI ASGI app; Seoul ${response.policies.length} policies/${response.programs.length} programs; outside-Seoul notice; invalid region 422. HTTP statuses: ${statuses}`)
