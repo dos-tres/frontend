@@ -1,0 +1,258 @@
+{
+  "date": "2026-11-20",
+  "transport": "Vite5173 → backend8000 → DB actual HTTP; detailed fields rendered by actual React component to static HTML",
+  "profile": {
+    "age": 28,
+    "sigungu_cd": "11620",
+    "job": "구직 중"
+  },
+  "checkin": {
+    "interests": [
+      "일자리·취업",
+      "집·주거"
+    ]
+  },
+  "source": "db",
+  "policy_count": 6,
+  "program_count": 4,
+  "policy_api_fields": [
+    "id",
+    "kind",
+    "title",
+    "why",
+    "score",
+    "domains",
+    "situations",
+    "access_type",
+    "deadline",
+    "scope",
+    "summary",
+    "support",
+    "institution",
+    "apply_period",
+    "apply_url",
+    "reference_url",
+    "income_condition"
+  ],
+  "program_api_fields": [
+    "id",
+    "kind",
+    "title",
+    "why",
+    "score",
+    "domains",
+    "situations",
+    "access_type",
+    "deadline",
+    "scope",
+    "summary",
+    "center",
+    "place",
+    "apply_period",
+    "url",
+    "apply_urls",
+    "evergreen"
+  ],
+  "snapshot_date": "2026-11-19",
+  "checks": [
+    {
+      "id": "policy:20261021005400214208",
+      "kind": "policy",
+      "server_fields_preserved": true,
+      "detail_fields_visible": true,
+      "reason_count": 1,
+      "snapshot_fields": [
+        "target",
+        "method",
+        "category",
+        "ageMin",
+        "ageMax",
+        "updatedAt"
+      ],
+      "dropped_metadata": [
+        "score",
+        "situations",
+        "access_type"
+      ],
+      "structured_income_kept": false
+    },
+    {
+      "id": "policy:20261021005400214222",
+      "kind": "policy",
+      "server_fields_preserved": true,
+      "detail_fields_visible": true,
+      "reason_count": 1,
+      "snapshot_fields": [
+        "target",
+        "method",
+        "category",
+        "ageMin",
+        "ageMax",
+        "updatedAt"
+      ],
+      "dropped_metadata": [
+        "score",
+        "situations",
+        "access_type"
+      ],
+      "structured_income_kept": false
+    },
+    {
+      "id": "policy:20261021005400214209",
+      "kind": "policy",
+      "server_fields_preserved": true,
+      "detail_fields_visible": true,
+      "reason_count": 1,
+      "snapshot_fields": [
+        "target",
+        "method",
+        "category",
+        "ageMin",
+        "ageMax",
+        "updatedAt"
+      ],
+      "dropped_metadata": [
+        "score",
+        "situations",
+        "access_type"
+      ],
+      "structured_income_kept": false
+    },
+    {
+      "id": "policy:20260930005400113725",
+      "kind": "policy",
+      "server_fields_preserved": true,
+      "detail_fields_visible": true,
+      "reason_count": 0,
+      "snapshot_fields": [
+        "target",
+        "method",
+        "category",
+        "ageMin",
+        "ageMax",
+        "updatedAt"
+      ],
+      "dropped_metadata": [
+        "score",
+        "situations",
+        "access_type"
+      ],
+      "structured_income_kept": false
+    },
+    {
+      "id": "policy:20261021005400214204",
+      "kind": "policy",
+      "server_fields_preserved": true,
+      "detail_fields_visible": true,
+      "reason_count": 0,
+      "snapshot_fields": [
+        "target",
+        "method",
+        "category",
+        "ageMin",
+        "ageMax",
+        "updatedAt"
+      ],
+      "dropped_metadata": [
+        "score",
+        "situations",
+        "access_type"
+      ],
+      "structured_income_kept": false
+    },
+    {
+      "id": "policy:20261023005400214280",
+      "kind": "policy",
+      "server_fields_preserved": true,
+      "detail_fields_visible": true,
+      "reason_count": 0,
+      "snapshot_fields": [
+        "target",
+        "method",
+        "category",
+        "ageMin",
+        "ageMax",
+        "updatedAt"
+      ],
+      "dropped_metadata": [
+        "score",
+        "situations",
+        "access_type"
+      ],
+      "structured_income_kept": false
+    },
+    {
+      "id": "program:orang:69787",
+      "kind": "program",
+      "server_fields_preserved": true,
+      "detail_fields_visible": true,
+      "reason_count": 2,
+      "snapshot_fields": [
+        "target",
+        "method",
+        "category"
+      ],
+      "dropped_metadata": [
+        "score",
+        "situations",
+        "access_type"
+      ],
+      "structured_income_kept": false
+    },
+    {
+      "id": "program:orang:72762",
+      "kind": "program",
+      "server_fields_preserved": true,
+      "detail_fields_visible": true,
+      "reason_count": 1,
+      "snapshot_fields": [
+        "target",
+        "method",
+        "category"
+      ],
+      "dropped_metadata": [
+        "score",
+        "situations",
+        "access_type"
+      ],
+      "structured_income_kept": false
+    },
+    {
+      "id": "program:orang:74858",
+      "kind": "program",
+      "server_fields_preserved": true,
+      "detail_fields_visible": true,
+      "reason_count": 1,
+      "snapshot_fields": [
+        "target",
+        "method",
+        "category"
+      ],
+      "dropped_metadata": [
+        "score",
+        "situations",
+        "access_type"
+      ],
+      "structured_income_kept": false
+    },
+    {
+      "id": "program:orang:75462",
+      "kind": "program",
+      "server_fields_preserved": true,
+      "detail_fields_visible": true,
+      "reason_count": 1,
+      "snapshot_fields": [
+        "target",
+        "method",
+        "category"
+      ],
+      "dropped_metadata": [
+        "score",
+        "situations",
+        "access_type"
+      ],
+      "structured_income_kept": false
+    }
+  ],
+  "redaction": "Raw summaries/support/organization/place and URLs replaced with non-sensitive sentinels for render checks; no private browser values or form URLs saved."
+}

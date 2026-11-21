@@ -1,0 +1,127 @@
+{
+  "questions": {
+    "http": "HTTP/1.1 200 OK",
+    "count": 9,
+    "ids": [
+      "economy",
+      "participation",
+      "outing",
+      "conversation",
+      "support",
+      "satisfaction",
+      "change_wishes",
+      "face_to_face",
+      "interests"
+    ]
+  },
+  "cases": [
+    {
+      "id": "support_needed",
+      "answers": {
+        "economy": "high",
+        "participation": "high",
+        "outing": "high",
+        "conversation": "high",
+        "support": "high",
+        "face_to_face": "high",
+        "satisfaction": "bad",
+        "interests": [
+          "일자리·취업"
+        ],
+        "change_wishes": [
+          "none"
+        ]
+      },
+      "summary_http": "HTTP/1.1 200 OK",
+      "summary": {
+        "levels": {
+          "E": "mid",
+          "P": "mid",
+          "O": "mid",
+          "C": "mid",
+          "U": "mid"
+        },
+        "priority_domains": [
+          "E",
+          "P",
+          "O",
+          "C",
+          "U"
+        ],
+        "unanswered_domains": [],
+        "lowered_domains": [
+          "E",
+          "P",
+          "O",
+          "C",
+          "U"
+        ],
+        "change_wishes": [],
+        "face_to_face": "high",
+        "satisfaction": "bad",
+        "interests": [
+          "일자리·취업"
+        ],
+        "notes": [
+          "경제: 조금 신경 쓰여요",
+          "참여: 조금 신경 쓰여요",
+          "외출: 조금 신경 쓰여요",
+          "교류: 조금 신경 쓰여요",
+          "지원망: 조금 신경 쓰여요",
+          "바꾸고 싶다고 고르지 않은 부분은 덜 앞세워 보여드려요: 경제, 참여, 외출, 교류, 지원망",
+          "직접 만나는 활동은 부담이 덜한 것부터 보여드려요"
+        ],
+        "disclaimer": "서비스 자체 상태 체크 결과예요. 진단이나 위험 등급이 아니에요."
+      },
+      "recommendations_http": "HTTP/1.1 200 OK",
+      "source": "db",
+      "policies": 6,
+      "programs": 4,
+      "same_summary": true
+    },
+    {
+      "id": "stable",
+      "answers": {
+        "economy": "low",
+        "participation": "low",
+        "outing": "low",
+        "conversation": "low",
+        "support": "low",
+        "face_to_face": "low",
+        "satisfaction": "good",
+        "interests": [
+          "문화·여가"
+        ],
+        "change_wishes": [
+          "none"
+        ]
+      },
+      "summary_http": "HTTP/1.1 200 OK",
+      "summary": {
+        "levels": {
+          "E": "low",
+          "P": "low",
+          "O": "low",
+          "C": "low",
+          "U": "low"
+        },
+        "priority_domains": [],
+        "unanswered_domains": [],
+        "lowered_domains": [],
+        "change_wishes": [],
+        "face_to_face": "low",
+        "satisfaction": "good",
+        "interests": [
+          "문화·여가"
+        ],
+        "notes": [],
+        "disclaimer": "서비스 자체 상태 체크 결과예요. 진단이나 위험 등급이 아니에요."
+      },
+      "recommendations_http": "HTTP/1.1 200 OK",
+      "source": "db",
+      "policies": 6,
+      "programs": 4,
+      "same_summary": true
+    }
+  ]
+}

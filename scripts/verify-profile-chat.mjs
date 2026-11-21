@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict'
+import { build } from 'esbuild'
+const compiled = await build({ entryPoints: ['src/profile-chat.ts'], bundle: true, write: false, format: 'esm', platform: 'node' })
+const api = await import('data:text/javascript;base64,' + Buffer.from(compiled.outputFiles[0].text).toString('base64'))
+const today = new Date(2026,10,21)
+assert.ok('error' in api.parseProfileChat('birthDate','2026-02-30',today))
+assert.ok('error' in api.parseProfileChat('birthDate','2027-01-01',today))
+assert.equal(api.parseProfileChat('birthDate','2000.1.15',today).value,'2000-01-15')
+assert.equal(api.parseProfileChat('birthDate','2000-02-29',today).value,'2000-02-29')
+assert.equal(api.parseProfileChat('regionCode','서울 관악구').value,'11620')
+assert.ok('error' in api.parseProfileChat('regionCode','중구'))
+assert.ok('error' in api.parseProfileChat('employment','알 수 없는 상태'))
+assert.equal(api.parseProfileChat('school','학생이 아니에요').value,'')
+assert.deepEqual(api.parseProfileChat('interests','주거, 주거, 취업·진로').value,['주거','취업·진로'])
+assert.ok('error' in api.parseProfileChat('interests','주거, 취업·진로, 창업, 문화·여가'))
+assert.ok('error' in api.parseProfileChat('interests','없는 분야'))
+console.log('PASS: conversational profile date/calendar/future validation, unique region matching, allowed choices, interests max 3')
