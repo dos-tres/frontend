@@ -64,7 +64,7 @@ export function CenterDetailContent({ data, onProgram, onAsk }: { onAsk?: (cente
   const center = data.item
   const official = center.official
   const hours = official?.hours || center.guide?.hours
-  const homepage = safePolicyUrl(official?.homepage || center.homepage || '') || safePolicyUrl(center.guide?.source.url || '')
+  const homepage = safePolicyUrl(official?.homepage || center.guide?.homepage || center.homepage || '') || safePolicyUrl(center.guide?.source.url || '')
   const programs = centerPrograms(data).filter(p=>p.applicationStatus === 'open' || p.applicationStatus === 'always_open')
   return <>
     <header className="page-title center-introduction"><h1>{center.name}</h1><p>{center.province} · {center.district}</p>{center.guide && <><CenterTags kind={center.guide.kind} /><p className="center-introduction-text">{official?.summary || center.guide.summary}</p></>}</header>
@@ -82,6 +82,7 @@ export function CenterDetailContent({ data, onProgram, onAsk }: { onAsk?: (cente
       </section>
       {programs.length > 0 && <section className="panel"><div className="section-head"><h2>현재 모집 중인 프로그램</h2><span>{programs.length}개</span></div>{programs.map(p=><div className="center-program" key={p.id}><span className={`policy-period-status status-${p.applicationStatus}`}>{applicationLabel(p)}</span><h3>{p.title}</h3><p>{p.summary}</p><button className="btn btn-secondary" onClick={()=>onProgram(p)}>조이와 알아보기 <ArrowRight size={15}/></button></div>)}</section>}
     </div>
+    {!official && safePolicyUrl(center.guide?.notice_url || '') && <section className="panel center-notices"><h2>공지사항</h2><a className="policy-official-link" href={safePolicyUrl(center.guide?.notice_url || '')} target="_blank" rel="noopener noreferrer">공식 공지사항 보기 <ExternalLink size={13}/></a></section>}
     {official && <section className="panel center-notices"><div className="section-head"><h2>공지사항</h2>{safePolicyUrl(official.notice_url) && <a className="policy-official-link" href={safePolicyUrl(official.notice_url)} target="_blank" rel="noopener noreferrer">전체 공지 보기 <ExternalLink size={13}/></a>}</div>{official.notices?.map(notice=>safePolicyUrl(notice.url)&&<a className="center-notice-row" key={notice.id} href={safePolicyUrl(notice.url)} target="_blank" rel="noopener noreferrer"><span>{notice.title}</span>{notice.date&&<time dateTime={notice.date}>{notice.date}</time>}<ExternalLink size={13}/></a>)}</section>}
   </>
 }
