@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { eventLabel, parseSchedule, validateEvent, type CalendarEvent } from './schedule'
+import { localDate, eventLabel, parseSchedule, validateEvent, type CalendarEvent } from './schedule'
 import { ScheduleEditor } from './SchedulePages'
 import type { PublicCenter } from './center-api'
 import type { Program } from './data'
@@ -20,7 +20,7 @@ export function useAssistantSchedule(bridge:ScheduleBridge|undefined, center:Pub
    const parsed=parseSchedule(text)
    const next={...pending,...parsed,title:pending.title||parsed.title}
    if(!pending.title&&!parsed.title)next.title=text
-   if(pending.date&&!pending.startTime&&!parsed.startTime&&!/시간\s*미정/.test(text)){say(text,'오전·오후와 시간을 알려주세요. 예: 오후 3시부터 4시. 정해지지 않았다면 ‘시간 미정’이라고 해주세요.');return true}
+
    setPending(next);say(text,!next.title?'어떤 일정인가요?':!next.date?'언제인가요? 예: 내일 또는 2026-12-01':!next.startTime&&!/시간\s*미정/.test(text)?'몇 시인가요? 오전·오후도 알려주세요. 아직 정해지지 않았다면 ‘시간 미정’이라고 해주세요.':`${eventLabel(next as CalendarEvent)}\n이대로 등록할까요? ‘저장 확인’을 누르거나 시간·알림 설정을 열어 주세요.`);return true
   }
   if(program && /신청.*(완료|했어|했어요)/.test(text)){bridge.recordApplication?.(program);setPending({title:program.title,type:'참여 일정',source:'application',itemId:program.id});say(text,'직접 신청했다고 알려주신 내용으로 신청 이력을 남겼어요. 참석 일정은 언제인가요? 신청 마감일을 참석 날짜로 사용하지 않아요.');return true}
@@ -36,6 +36,12 @@ export function useAssistantSchedule(bridge:ScheduleBridge|undefined, center:Pub
   }
   return false
  }
- const controls=bridge?<div className="schedule-review"><div className="assistant-choices"><button disabled={!!pending||!!deleting} onClick={()=>handle('내 일정 보여줘')}>내 일정 확인</button><button disabled={!!pending||!!deleting} onClick={()=>handle(center?'센터 방문 일정 등록':'일정 등록')}>{center?'센터 방문 일정':'일정 등록'}</button><button onClick={bridge.open}>내 일정으로 이동</button>{program&&!pending&&!deleting&&<button onClick={()=>handle('신청했어')}>직접 신청한 내역 기록</button>}{pending&&<><button onClick={()=>handle('저장 확인')}>저장 확인</button><button onClick={()=>setEditing({id:Date.now(),title:'',date:'',type:'개인 일정',source:'assistant',...pending} as CalendarEvent)}>시간·장소·알림 설정</button><button onClick={()=>handle('취소')}>취소</button></>}{deleting&&<><button onClick={()=>handle('삭제 확인')}>삭제 확인</button><button onClick={()=>handle('취소')}>취소</button></>}</div>{editing&&<ScheduleEditor event={editing} date={editing.date} onClose={()=>setEditing(undefined)} onSave={e=>{bridge.save(e);setEditing(undefined);setPending(undefined);say('일정 저장',`${eventLabel(e)}\n저장했어요.`)}}/>}</div>:null
- return {handle,controls,reset:()=>{setPending(undefined);setEditing(undefined);setDeleting(undefined)}}
+ const controls=bridge?<div className="schedule-review"><div className="assistant-choices"><button disabled={!!pending||!!deleting} onClick={()=>handle('내 일정 보여줘')}>내 일정 확인</button><button disabled={!!pending||!!deleting} onClick={()=>handle(center?'센터 방문 일정 등록':'일정 등록')}>{center?'센터 방문 일정':'일정 등록'}</button><button onClick={bridge.open}>내 일정으로 이동</button>{program&&!pending&&!deleting&&<button onClick={()=>handle('신청했어')}>직접 신청한 내역 기록</button>}{pending&&<><button onClick={()=>setEditing({id:Date.now(),title:'',date:'',type:'개인 일정',source:'assistant',...pending} as CalendarEvent)}>시간·장소·알림 설정</button><button onClick={()=>handle('취소')}>취소</button></>}{deleting&&<><button onClick={()=>handle('삭제 확인')}>삭제 확인</button><button onClick={()=>handle('취소')}>취소</button></>}</div>{editing&&<ScheduleEditor event={editing} date={editing.date} onClose={()=>setEditing(undefined)} onSave={e=>{bridge.save(e);setEditing(undefined);setPending(undefined);say('일정 저장',`${eventLabel(e)}\n저장했어요.`)}}/>}</div>:null
+ const preview=pending?.title && pending.date && !validateEvent(pending as CalendarEvent) && bridge ? <ScheduleConfirmation event={pending as CalendarEvent} onConfirm={()=>handle('저장 확인')} onEdit={()=>setEditing({id:Date.now(),type:'개인 일정',source:'assistant',...pending} as CalendarEvent)} onCancel={()=>handle('취소')} /> : null
+ return {handle,controls,preview,begin:(date:string)=>setPending({date}),reset:()=>{setPending(undefined);setEditing(undefined);setDeleting(undefined)}}
+}
+
+export function ScheduleConfirmation({event,onConfirm,onEdit,onCancel}:{event:CalendarEvent;onConfirm:()=>void;onEdit:()=>void;onCancel:()=>void}) {
+ const validDate=new Date(`${event.date}T12:00:00`),year=validDate.getFullYear(),month=validDate.getMonth(),offset=new Date(year,month,1).getDay(),days=new Date(year,month+1,0).getDate()
+ return <section className="schedule-confirmation" aria-label="일정 등록 확인"><h3>이 일정으로 등록할까요?</h3><div className="schedule-confirmation-layout"><div><strong>{year}년 {month+1}월</strong><div className="schedule-preview-calendar" aria-label={`${event.date} 선택된 달력`}>{['일','월','화','수','목','금','토'].map(d=><small key={d}>{d}</small>)}{Array.from({length:Math.ceil((offset+days)/7)*7},(_,i)=>{const day=i-offset+1;return <span key={i} className={day===validDate.getDate()?'selected':''} aria-current={day===validDate.getDate()?'date':undefined}>{day>0&&day<=days?day:''}</span>})}</div></div><div className="schedule-confirmation-details"><h4>{event.title}</h4><p>{localDate(validDate)}</p><strong>{event.startTime||'시간 미정'}{event.endTime&&`–${event.endTime}`}</strong>{event.location&&<p>{event.location}</p>}{event.reminderMinutes!==undefined&&<p>{event.reminderMinutes}분 전 알림</p>}<small>아직 저장되지 않았어요.</small></div></div><div className="schedule-actions"><button className="btn btn-primary" onClick={onConfirm}>확인하고 등록</button><button className="btn btn-secondary" onClick={onEdit}>내용 수정</button><button className="text-button" onClick={onCancel}>취소</button></div></section>
 }
