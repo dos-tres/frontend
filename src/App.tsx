@@ -1,3 +1,5 @@
+import { CenterListPage, CenterDetailPage } from './CenterPages'
+import PolicyJoyPanel from './PolicyJoyPanel'
 import ActivityExperiences from './ActivityExperiences'
 import { readSetup, type AnswerDecision } from './setup-state'
 import { profileInterests, currentRecommendationAnswers } from './profile-context'
@@ -18,7 +20,7 @@ import {
   Navigation, CalendarCheck, History, Sprout, MapPinned, BadgeCheck,
   BookOpen, Star, Footprints, NotebookPen, Compass, X, Menu
 } from 'lucide-react'
-import { programs, centers, type Program, type Center, type Application } from './data'
+import { programs, type Program, type Application } from './data'
 
 import joyImage from './assets/joy.png'
 import joyIslandImage from './assets/joy-island.png'
@@ -219,49 +221,6 @@ function HomePage({ onNavigate, onSend, completed }: { completed: boolean; onNav
   )
 }
 
-function ChatPage({ messages, onSend }: { messages: Message[]; onSend: (text: string) => void }) {
-  const [draft, setDraft] = useState('')
-  const submit = (e: FormEvent) => { e.preventDefault(); onSend(draft); setDraft('') }
-  return (
-    <>
-      <PageTitle title="조이 AI 비서 · 대화" description="시작 화면에서 채팅으로 전환하고, 이전 대화를 이어서 사용할 수 있어요." />
-      <div className="chat-layout">
-        <Panel tone="gray" className="chat-history">
-          <Button onClick={() => onSend('새로운 고민이 있어요.')}><Plus size={16} /> 새 대화</Button>
-          <div className="divider" />
-          <h3>최근 대화</h3>
-          {['취업 준비와 활동', '주거 지원 찾아보기', '센터 프로그램 문의'].map((title, i) => (
-            <button key={title} className={`history-item ${i === 0 ? 'selected' : ''}`} onClick={() => onSend(`${title}에 대해 이어서 이야기하고 싶어요.`)}>
-              <strong>{title}</strong><small>{['11/17 · 이어서 대화', '11/15 · 다시 열기', '11/13 · 신청 이력 연결'][i]}</small>
-            </button>
-          ))}
-          <button className="text-button">대화 삭제 · 관리</button>
-        </Panel>
-        <Panel className="chat-main">
-          <div className="chat-main-head"><JoyAvatar size="sm" /><div><strong>조이</strong><small>청년 지원 AI 비서</small></div><span className="online-dot">대화 예시</span></div>
-          <div className="chat-messages">
-            {messages.map((message, index) => (
-              <div key={`${index}-${message.role}`} className={`message-row ${message.role}`}>
-                {message.role === 'assistant' && <JoyAvatar size="sm" />}
-                <div className={`message-bubble ${message.role}`}>{message.text}</div>
-              </div>
-            ))}
-          </div>
-          <div className="quick-replies">
-            <span>답변 선택</span>
-            <button onClick={() => onSend('온라인으로 시작하고 싶어요')}>온라인으로 시작하고 싶어요</button>
-            <button onClick={() => onSend('작은 모임 정도는 괜찮아요')}>작은 모임 정도는 괜찮아요</button>
-          </div>
-          <form className="chat-entry" onSubmit={submit}>
-            <input value={draft} onChange={e => setDraft(e.target.value)} placeholder="메시지를 입력해 주세요..." aria-label="메시지 입력" />
-            <button type="submit" aria-label="보내기"><Send size={17} /></button>
-          </form>
-          <p className="muted-note">현재는 화면 확인을 위한 예시 응답입니다. 실제 AI 응답은 백엔드 API 연결 후 동작해요.</p>
-        </Panel>
-      </div>
-    </>
-  )
-}
 
 function ApplyPage({ program, onRecord, onOpenPolicy }: { program: Program; onRecord: () => void; onOpenPolicy: () => void }) {
   return (
@@ -300,82 +259,6 @@ function ApplyPage({ program, onRecord, onOpenPolicy }: { program: Program; onRe
   )
 }
 
-function CenterListPage({ onSelect }: { onSelect: (c: Center) => void }) {
-  const [region, setRegion] = useState('서울 마포구 (예시)')
-  const [programOnly, setProgramOnly] = useState(false)
-  return (
-    <>
-      <PageTitle title="내 주변 청년센터" description="관심 지역의 청년센터와 참여 기회를 탐색해요. 위치 기능은 실제 연결 후 사용할 수 있어요." />
-      <Panel tone="gray" className="search-panel">
-        <div className="filter-row">
-          <label className="region-select">활동 지역
-            <select value={region} onChange={e => setRegion(e.target.value)}><option>서울 마포구 (예시)</option><option>대전 유성구 (예시)</option><option>직접 선택 예정</option></select>
-          </label>
-          <Button variant={programOnly ? 'primary' : 'secondary'} onClick={() => setProgramOnly(v => !v)}><Filter size={14} /> 프로그램 있는 곳</Button>
-          <Button variant="secondary" onClick={() => alert('실제 위치 권한 연결 전입니다.')}><Navigation size={14} /> 현재 위치 사용</Button>
-        </div>
-        <p className="search-helper">센터 이용법 · 행사 · 소모임 · 청년 공간 안내를 함께 확인할 수 있어요.</p>
-      </Panel>
-      <div className="results-layout">
-        <Panel tone="gray" className="results-panel">
-          <div className="section-head"><h3>주변 기관 / 참여 프로그램</h3><span>가상 위치·예시</span></div>
-          <div className="map-preview">
-            <img src={mapImage} alt="종이 지도와 위치 핀 캐릭터" />
-            <div className="map-bubble"><MapPin size={15} /> {region}</div>
-            <div className="map-label">가까운 청년센터</div>
-          </div>
-          {centers.filter(c => c.region === region && (!programOnly || c.programs.length > 0)).map(c => (
-            <button className="center-result" key={c.id} onClick={() => onSelect(c)}>
-              <span className="center-pin"><Building2 size={18} /></span>
-              <span><strong>{c.name}</strong><small>{c.description}</small></span>
-              <em>{c.distance}</em><ChevronRight size={17} />
-            </button>
-          ))}
-        </Panel>
-        <Panel className="joy-side-card">
-          <img className="side-illustration" src={boatImage} alt="종이배 캐릭터" />
-          <span className="mini-label">JOY'S CENTER GUIDE</span>
-          <h3>조이는 센터 이용도 도와줘요!</h3>
-          <div className="mini-checks"><span><Check size={14} /> 가까운 센터 찾기</span><span><Check size={14} /> 프로그램과 신청 일정 확인</span><span><Check size={14} /> 방문 전 문의 내용 정리</span></div>
-          <p className="notice">전화 직접 대행은 향후 확장 기능으로 구분해요.</p>
-        </Panel>
-      </div>
-    </>
-  )
-}
-
-function CenterDetailPage({ center, onBack, onHelp }: { center: Center; onBack: () => void; onHelp: () => void }) {
-  return (
-    <>
-      <PageTitle title="청년센터 상세 · 프로그램" description="기능 확인용 가상 센터예요. 실제 기관의 위치·운영 정보가 아니에요." />
-      <div className="two-column">
-        <Panel tone="gray" className="detail-panel">
-          <span className="mini-label">CENTER · 가상 정보</span>
-          <h2>{center.name}</h2><p>{center.description}</p>
-          <div className="divider" />
-          <dl className="detail-list">
-            <div><dt>지역</dt><dd>{center.region}</dd></div>
-            <div><dt>주소</dt><dd>{center.address}</dd></div>
-            <div><dt>운영 시간</dt><dd>{center.hours}</dd></div>
-          </dl>
-          <h3 className="section-label">이곳에서 할 수 있는 일</h3>
-          {center.programs.map(p => <div className="simple-list-item" key={p}><Check size={16} /> {p}</div>)}
-          <Button variant="secondary" onClick={onBack}>센터 목록으로 돌아가기</Button>
-        </Panel>
-        <Panel className="steps-panel">
-          <JoyAvatar size="md" />
-          <h3>방문하기 전에</h3>
-          <p>조이가 센터 이용 방법과 공식 연락처를 정리해 드릴게요.</p>
-          <Button onClick={onHelp}>조이에게 문의 내용 준비 요청 <ArrowRight size={15} /></Button>
-          <div className="divider" />
-          <h4>주변 프로그램</h4>
-          {center.programs.map(p => <p className="subtle-row" key={p}>{p}</p>)}
-          <p className="notice">센터 정보와 운영 일정은 공식 기관 페이지에서 최종 확인해야 해요.</p>
-        </Panel>
-      </div>
-    </>
-  )
-}
 
 function CalendarPage({ events, onAddEvent, onEditEvent, onDeleteEvent, onGoApplications }: { events: CalendarEvent[]; onAddEvent: (date: string) => void; onEditEvent: (event: CalendarEvent) => void; onDeleteEvent: (id: number) => void; onGoApplications: () => void }) {
   const [month, setMonth] = useState(new Date(2026, 10, 1))
@@ -468,9 +351,10 @@ function ApplicationsPage({ applications, onChangeStatus, onCalendar }: { applic
   )
 }
 
-function RecordsPage({ saved, applications, events, history, onSelect, onCheck, experiences, onExperiences }: { experiences: ActivityInformationValue['experiences']; onExperiences: (next: ActivityInformationValue['experiences']) => void; saved: Program[]; applications: Application[]; events: CalendarEvent[]; history: CheckinRecord[]; onSelect: (program: Program) => void; onCheck: () => void }) {
+function RecordsPage({ saved, applications, events, history, onSelect, onCheck, experiences, onExperiences, loading, failed }: { loading: boolean; failed: boolean; experiences: ActivityInformationValue['experiences']; onExperiences: (next: ActivityInformationValue['experiences']) => void; saved: Program[]; applications: Application[]; events: CalendarEvent[]; history: CheckinRecord[]; onSelect: (program: Program) => void; onCheck: () => void }) {
   return <>
     <PageTitle title="마이페이지 · 내 기록" description="이 브라우저에 저장한 관심 정보, 신청 준비와 일정, 생활 점검을 확인해요. 서버 계정과 동기화되지 않아요." />
+    {loading && <p role="status">저장한 공고를 확인하고 있어요.</p>}{failed && <p role="alert">저장한 공고를 불러오지 못했어요. 관심 ID와 다른 로컬 기록은 보존돼 있어요.</p>}
     <ActivityExperiences value={experiences} onChange={onExperiences} />
     <Panel><h2>관심 정책·프로그램 · {saved.length}건</h2>{saved.map(p => <button className="record-entry" key={p.id} onClick={() => onSelect(p)}>{p.title}<ChevronRight size={18} /></button>)}{!saved.length && <p>관심 저장한 정보가 없어요.</p>}</Panel>
     <Panel><h2>신청·참여 기록 · {applications.length}건</h2>{applications.map(a => <p key={a.id}>{a.title} · {a.status} · {a.date}</p>)}{!applications.length && <p>등록한 신청 기록이 없어요.</p>}</Panel>
@@ -547,12 +431,14 @@ export default function App() {
     { role: 'assistant', text: '현재 고민과 원하는 활동 방식을 먼저 확인할게요. 온라인과 작은 모임 중 어떤 게 더 편한가요?' },
   ])
   const [selectedProgram, setSelectedProgram] = useState<Program>(programs[0])
+  const [chatProgram, setChatProgram] = useState<Program>()
+  const [savedIds, setSavedIds] = useState<string[]>(() => readLocal('saved', [] as string[]))
   const [policyView, setPolicyView] = useState<PolicyView>(initialPolicyView)
+  const effectivePolicyView = useMemo(() => screen === 'records' ? { ...initialPolicyView, onlySaved: true } : policyView, [screen, policyView])
   const defaultInterests = useMemo(() => profileInterests(activity.interests), [activity.interests])
   const policyAnswers = useMemo(() => currentRecommendationAnswers(stateCheck.answers, defaultInterests, setup.interestSource === 'profile', setup.decisions), [stateCheck.answers, defaultInterests, setup.interestSource, setup.decisions])
-  const policyData = usePolicyCatalog(['policy-list', 'policy-detail', 'apply', 'records'].includes(screen), policyAnswers, { birthDate: personal.birthDate, regionLabel: profileRegionLabel(personal.regionCode), regionCode: personal.regionCode, employment: activity.employment, school: activity.school })
-  const [selectedCenterId, setSelectedCenterId] = useState(centers[0].id)
-  const [savedIds, setSavedIds] = useState<string[]>(() => readLocal('saved', [] as string[]))
+  const policyData = usePolicyCatalog(['policy-list', 'policy-detail', 'apply', 'records'].includes(screen), policyAnswers, { birthDate: personal.birthDate, regionLabel: profileRegionLabel(personal.regionCode), regionCode: personal.regionCode, employment: activity.employment, school: activity.school }, effectivePolicyView, savedIds)
+  const [selectedCenterId, setSelectedCenterId] = useState('')
   const [applications, setApplications] = useState<Application[]>(() => readLocal('applications', [] as Application[]))
   const [events, setEvents] = useState<CalendarEvent[]>(() => readLocal('events', [] as CalendarEvent[]))
   const [editingEvent, setEditingEvent] = useState<CalendarEvent>()
@@ -567,18 +453,18 @@ export default function App() {
     } catch { setStorageError(true) }
   }, [personal, activity, savedIds, applications, events, setup])
 
-  const selectedCenter = centers.find(c => c.id === selectedCenterId) ?? centers[0]
 
   const notify = (message: string) => setToast(message)
   const sendMessage = (text: string) => {
     const value = text.trim()
     if (!value) return
-    setMessages(prev => [...prev, { role: 'user', text: value }, { role: 'assistant', text: '이야기해 줘서 고마워요. 관심 지역과 원하는 참여 방식을 함께 확인한 뒤, 관련 정책과 프로그램을 찾아볼게요. 실제 공고와 신청 조건은 공식 출처로 확인할 수 있도록 안내할게요.' }])
+    setChatProgram(undefined)
+    setMessages(prev => [...prev, { role: 'user', text: value }])
     setScreen('chat')
   }
   const toggleSave = (id: string) => setSavedIds(prev => prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id])
-  const openProgram = (p: Program) => { setSelectedProgram(p); setScreen('policy-detail') }
-  const openCenter = (c: Center) => { setSelectedCenterId(c.id); setScreen('center-detail') }
+  const openProgram = (p: Program) => { setSelectedProgram(p); setChatProgram(p); setScreen('chat') }
+  const openCenter = (id: string) => { setSelectedCenterId(id); setScreen('center-detail') }
   const recordApplication = () => {
     setApplications(prev => [{ id: `a${Date.now()}`, title: selectedProgram.title, status: '신청 전', date: new Date().toISOString().slice(0, 10).replaceAll('-', '.'), note: '관심 등록 · 실제 신청 여부는 직접 확인' }, ...prev])
     setScreen('applications')
@@ -611,23 +497,23 @@ export default function App() {
         {setup.step === 3 && <><CurrentStateCheck onboarding startInSurvey decisions={setup.decisions} onDecision={decideQuestion} preferProfile={setup.interestSource === 'profile'} defaultInterests={defaultInterests} profile={{ birthDate: personal.birthDate, regionLabel: profileRegionLabel(personal.regionCode), regionCode: personal.regionCode, employment: activity.employment, school: activity.school }} onOpenPolicy={openProgram} onEditProfile={() => setSetup(prev => ({ ...prev, step: 1 }))} value={stateCheck} history={checkinHistory} storageError={checkinStorageError} onSave={saveCheckin} onBack={skipSetup} onChat={finishSetup} /></>}
       </div>
       case 'home': return <HomePage completed={checkinHistory.some(record => record.completed)} onNavigate={navigate} onSend={sendMessage} />
-      case 'chat': return <ChatPage messages={messages} onSend={sendMessage} />
+      case 'chat': return <PolicyJoyPanel program={chatProgram} personal={personal} activity={activity} initialMessages={messages} onBack={() => setScreen('policy-list')} onSavePersonal={savePersonal} onSaveActivity={saveActivity} onNew={() => { setChatProgram(undefined); setMessages([]) }} onSave={() => { if (chatProgram) toggleSave(chatProgram.id) }} saved={!!chatProgram && savedIds.includes(chatProgram.id)} />
       case 'apply': return <ApplyPage program={selectedProgram} onRecord={recordApplication} onOpenPolicy={() => setScreen('policy-list')} />
       case 'policy-list': return <PolicyListPage data={policyData} view={policyView} setView={setPolicyView} onSelect={openProgram} saved={savedIds} onToggleSave={toggleSave} onCheck={() => setScreen('state-check')} onUseProfile={useProfileForPolicies} onEditProfile={() => setScreen('profile-edit')} />
-      case 'policy-detail': return <PolicyDetailPage onBack={() => setScreen('policy-list')} program={selectedProgram} onApply={() => setScreen('apply')} onSave={() => toggleSave(selectedProgram.id)} isSaved={savedIds.includes(selectedProgram.id)} />
-      case 'center-list': return <CenterListPage onSelect={openCenter} />
-      case 'center-detail': return <CenterDetailPage center={selectedCenter} onBack={() => setScreen('center-list')} onHelp={() => sendMessage(`${selectedCenter.name} 이용 방법과 문의할 내용을 정리해 줘.`)} />
+      case 'policy-detail': return <PolicyDetailPage onBack={() => setScreen('policy-list')} program={selectedProgram} onApply={() => { setChatProgram(selectedProgram); setScreen('chat') }} onSave={() => toggleSave(selectedProgram.id)} isSaved={savedIds.includes(selectedProgram.id)} />
+      case 'center-list': return <CenterListPage onSelect={openCenter} savedRegion={personal.regionCode ? profileRegionLabel(personal.regionCode) : ''} />
+      case 'center-detail': return <CenterDetailPage id={selectedCenterId} onBack={() => setScreen('center-list')} onProgram={openProgram} />
       case 'calendar': return <CalendarPage events={events} onAddEvent={date => { setEditingEvent(undefined); setEventDate(date); setShowEventModal(true) }} onEditEvent={event => { setEditingEvent(event); setEventDate(event.date); setShowEventModal(true) }} onDeleteEvent={id => setEvents(prev => prev.filter(e => e.id !== id))} onGoApplications={() => setScreen('applications')} />
       case 'applications': return <ApplicationsPage applications={applications} onChangeStatus={changeApplication} onCalendar={() => setScreen('calendar')} />
       case 'profile': return <MyPage onRecords={() => setScreen('records')} personal={personal} activity={activity} completed={stateCheck.completed} savedCount={savedIds.filter(id => id.startsWith('policy:') || id.startsWith('program:')).length} onEdit={() => setScreen('profile-edit')} onActivity={() => setScreen('activity-edit')} onCheck={() => setScreen('state-check')} onSaved={() => { setPolicyView({ ...initialPolicyView, onlySaved: true }); setScreen('policy-list') }} onBrowse={() => setScreen('policy-list')} />
       case 'profile-edit': return <ProfileSettings value={personal} onBack={() => setScreen('profile')} onSave={next => { savePersonal(next); setScreen('profile'); notify('기본 정보를 수정했어요.') }} />
       case 'activity-edit': return <ActivityInformation value={activity} onBack={() => setScreen('profile')} onSave={next => { saveActivity(next); setScreen('profile'); notify('활동·관심 정보를 저장했어요.') }} />
       case 'state-check': return <CurrentStateCheck startInSurvey decisions={setup.decisions} onDecision={decideQuestion} preferProfile={setup.interestSource === 'profile'} defaultInterests={defaultInterests} profile={{ birthDate: personal.birthDate, regionLabel: profileRegionLabel(personal.regionCode), regionCode: personal.regionCode, employment: activity.employment, school: activity.school }} onOpenPolicy={openProgram} onEditProfile={() => setScreen('profile-edit')} value={stateCheck} history={checkinHistory} storageError={checkinStorageError} onSave={saveCheckin} onBack={() => setScreen('profile')} onChat={() => setScreen('chat')} />
-      case 'records': return <RecordsPage experiences={activity.experiences} onExperiences={experiences => setActivity(prev => ({ ...prev, experiences }))} saved={(policyData.catalog?.items || []).filter(p => savedIds.includes(p.id))} applications={applications} events={events} history={checkinHistory} onSelect={openProgram} onCheck={() => setScreen('state-check')} />
+      case 'records': return <RecordsPage loading={policyData.busy} failed={policyData.failed} experiences={activity.experiences} onExperiences={experiences => setActivity(prev => ({ ...prev, experiences }))} saved={policyData.items.filter(p => savedIds.includes(p.id))} applications={applications} events={events} history={checkinHistory} onSelect={openProgram} onCheck={() => setScreen('state-check')} />
       case 'about': return <AboutPage />
       default: return <HomePage completed={checkinHistory.some(record => record.completed)} onNavigate={navigate} onSend={sendMessage} />
     }
-  }, [screen, personal, activity, stateCheck, checkinHistory, checkinStorageError, messages, selectedProgram, selectedCenter, savedIds, applications, events, policyData, policyView, setup])
+  }, [screen, personal, activity, stateCheck, checkinHistory, checkinStorageError, messages, selectedProgram, selectedCenterId, savedIds, applications, events, policyData, policyView, setup, chatProgram])
 
   return (
     <div className="app-shell">

@@ -33,6 +33,10 @@ export function profilePolicyCriteria(catalog: PolicyCatalog | undefined, profil
   return { age: ageFromBirthDate(profile.birthDate, today), region: saved ? saved.code : district?.code || province?.code || '', job: jobs[profile.employment] || profile.employment, ...(profile.school ? { school: profile.school } : {}) }
 }
 export type RecommendationItem = {
+  categories?: string[]; subcategories?: string[]; keywords?: string[]; region_label?: string;
+  application_status?: Program['applicationStatus']; application_status_label?: string; application_period?: string;
+  target?: string; method?: string; documents?: string; exclusions?: string; updated_at?: string;
+  age_min?: number | null; age_max?: number | null;
   id: string; kind: 'policy' | 'program'; title: string; summary: string; scope: string;
   deadline: string | null; why: string[]; domains: string[]; access_type: string;
   support?: string; institution?: string; apply_period: string; apply_url?: string;
@@ -62,18 +66,44 @@ export function filterPolicies(items: Program[], catalog: PolicyCatalog, criteri
       terms.every(term => `${p.title} ${p.summary} ${p.category || ''} ${p.source}`.toLowerCase().includes(term))
   })
 }
-export function toProgram(item: RecommendationItem, original?: Program): Program {
+export function toProgram(item: RecommendationItem, _original?: Program): Program {
   return {
-    ...original, id: item.id, type: item.kind === 'policy' ? '정책' : '프로그램', title: item.title,
-    summary: item.summary, region: item.scope, period: item.apply_period || '공식 공고 확인',
-    target: original?.target || '연령·지역·소득 등 상세 조건은 공식 공고에서 확인해 주세요.',
-    method: original?.method || (item.access_type === 'visit' ? '방문 이용' : '공식 공고에서 신청'),
-    place: item.place || original?.place || '운영기관 공고 확인', source: item.institution || item.center || original?.source || '운영기관',
-    support: item.support || item.summary, income: item.income_condition?.text || '',
-    referenceUrl: safePolicyUrl(item.reference_url || item.url),
-    applyUrl: safePolicyUrl(item.apply_url || item.apply_urls?.split(/\s+/)[0]),
+    id: item.id, type: item.kind === 'policy' ? '정책' : '프로그램', title: item.title,
+    summary: item.summary, region: item.region_label || item.scope, period: item.application_period || item.apply_period || '기간 미제공',
+    target: item.target || '', method: item.method || '', place: item.place || '', source: item.institution || item.center || '',
+    support: item.support || item.summary, income: item.income_condition?.text || '', incomeCondition: item.income_condition,
+    referenceUrl: safePolicyUrl(item.reference_url || item.url), applyUrl: safePolicyUrl(item.apply_url || item.apply_urls?.split(/\s+/)[0]),
     why: item.why, domains: item.domains, deadline: item.deadline, evergreen: item.evergreen,
+    categories: item.categories || [], subcategories: item.subcategories || [], keywords: item.keywords || [],
+    category: item.categories?.join(' · '), applicationStatus: item.application_status, applicationStatusLabel: item.application_status_label,
+    documents: item.documents, exclusions: item.exclusions, updatedAt: item.updated_at, ageMin: item.age_min, ageMax: item.age_max,
   }
+}
+export type CatalogQuery = { query: string; type: string; category: string; onlyOpen: boolean; onlySaved: boolean; mode: string; page: number; sort: string }
+export type CatalogResponse = { items: RecommendationItem[]; total: number; categories: string[]; source: string; notice: string }
+export async function requestCatalog(criteria: PolicyCriteria, view: CatalogQuery, signal: AbortSignal): Promise<CatalogResponse> {
+  const params = new URLSearchParams({ q: view.query, only_open: String(view.onlyOpen), page: String(view.page), page_size: '12', sort: view.sort === '마감 임박순' ? 'deadline' : 'title' })
+  if (view.type !== '전체') params.set('kind', view.type === '정책' ? 'policy' : 'program')
+  if (view.category) params.set('category', view.category)
+  if (criteria.region) params.set('sigungu_cd', criteria.region.slice(0, 5))
+  if (criteria.age) params.set('age', criteria.age)
+  const base = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+  const response = await fetch(`${base}/api/catalog/items?${params}`, { signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]) })
+  if (!response.ok) throw new Error(`API ${response.status}`)
+  return response.json()
+}
+export async function requestCatalogItem(id: string, signal: AbortSignal): Promise<Program> {
+  const base = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+  const response = await fetch(`${base}/api/catalog/items/${encodeURIComponent(id)}`, { signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]) })
+  if (!response.ok) throw new Error(`API ${response.status}`)
+  const result = await response.json()
+  return toProgram(result.item)
+}
+export function applicationLabel(program: Program): string {
+  if (program.applicationStatusLabel) return program.applicationStatusLabel
+  if (isClosed(program)) return '마감'
+  if (/상시|연중/.test(program.period)) return '상시'
+  return program.deadline ? '모집 중' : '기간 미제공'
 }
 export async function requestRecommendations(criteria: PolicyCriteria, answers: Answers, signal: AbortSignal): Promise<Recommendations> {
   const base = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')

@@ -24,6 +24,12 @@ export type Program = {
   why?: string[]
   evergreen?: boolean
   updatedAt?: string
+  categories?: string[]
+  subcategories?: string[]
+  keywords?: string[]
+  applicationStatus?: 'always_open' | 'open' | 'upcoming' | 'closed' | 'unknown'
+  applicationStatusLabel?: string
+  incomeCondition?: { kind: string; max_manwon?: number | null; text: string } | null
 }
 
 export type Center = {
