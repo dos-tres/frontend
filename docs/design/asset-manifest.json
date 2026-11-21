@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "reference": {
     "status": "approved-reference",
     "path": "docs/design/references/joy-character-sheet.png",
@@ -158,6 +158,96 @@
       "width": 1024,
       "height": 1024,
       "usage": "프로필·공유용 아이콘"
+    },
+    {
+      "id": "home-paper-village-briefcase",
+      "targetPath": "src/assets/paper-village/briefcase.png",
+      "status": "design-review",
+      "source": "dos-tres/docs@d5738fb322f5e48b2c17f450bd60349548cdb8b7:design/assets/paper-village/source-pack/assets/png/",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 320,
+      "height": 320,
+      "note": "User-requested existing source-pack reuse; larger images resized only, no recolor. Homepage design branch, not approved final design."
+    },
+    {
+      "id": "home-paper-village-center-isolated",
+      "targetPath": "src/assets/paper-village/center-isolated.png",
+      "status": "design-review",
+      "source": "dos-tres/docs@d5738fb322f5e48b2c17f450bd60349548cdb8b7:design/assets/paper-village/source-pack/assets/png/",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 800,
+      "height": 800,
+      "note": "User-requested existing source-pack reuse; larger images resized only, no recolor. Homepage design branch, not approved final design."
+    },
+    {
+      "id": "home-paper-village-chat",
+      "targetPath": "src/assets/paper-village/chat.png",
+      "status": "design-review",
+      "source": "dos-tres/docs@d5738fb322f5e48b2c17f450bd60349548cdb8b7:design/assets/paper-village/source-pack/assets/png/",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 320,
+      "height": 320,
+      "note": "User-requested existing source-pack reuse; larger images resized only, no recolor. Homepage design branch, not approved final design."
+    },
+    {
+      "id": "home-paper-village-checklist",
+      "targetPath": "src/assets/paper-village/checklist.png",
+      "status": "design-review",
+      "source": "dos-tres/docs@d5738fb322f5e48b2c17f450bd60349548cdb8b7:design/assets/paper-village/source-pack/assets/png/",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 320,
+      "height": 320,
+      "note": "User-requested existing source-pack reuse; larger images resized only, no recolor. Homepage design branch, not approved final design."
+    },
+    {
+      "id": "home-paper-village-home",
+      "targetPath": "src/assets/paper-village/home.png",
+      "status": "design-review",
+      "source": "dos-tres/docs@d5738fb322f5e48b2c17f450bd60349548cdb8b7:design/assets/paper-village/source-pack/assets/png/",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 320,
+      "height": 320,
+      "note": "User-requested existing source-pack reuse; larger images resized only, no recolor. Homepage design branch, not approved final design."
+    },
+    {
+      "id": "home-paper-village-joy-original",
+      "targetPath": "src/assets/paper-village/joy-original.png",
+      "status": "design-review",
+      "source": "dos-tres/docs@d5738fb322f5e48b2c17f450bd60349548cdb8b7:design/assets/paper-village/source-pack/assets/png/",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 731,
+      "height": 800,
+      "note": "User-requested existing source-pack reuse; larger images resized only, no recolor. Homepage design branch, not approved final design."
+    },
+    {
+      "id": "home-paper-village-paperplane-smooth",
+      "targetPath": "src/assets/paper-village/paperplane-smooth.png",
+      "status": "design-review",
+      "source": "dos-tres/docs@d5738fb322f5e48b2c17f450bd60349548cdb8b7:design/assets/paper-village/source-pack/assets/png/",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 800,
+      "height": 800,
+      "note": "User-requested existing source-pack reuse; larger images resized only, no recolor. Homepage design branch, not approved final design."
+    },
+    {
+      "id": "home-opportunity-bridge",
+      "targetPath": "src/assets/illustrations/opportunity-bridge.png",
+      "status": "design-review",
+      "source": "OpenAI built-in image_gen; 2026-11-21; user-authorized additional generation",
+      "reference": "dos-tres/docs design/assets/paper-village/source-pack/assets/png/backgrounds/island-full-scene.png (style only)",
+      "prompt": "docs/design/home-paper-village.md",
+      "format": "png",
+      "transparentBackground": true,
+      "width": 1100,
+      "height": 550,
+      "note": "Generated environment only; no new JOY identity or logo. Resized to 1100px maximum edge."
     }
   ],
   "brand": {
