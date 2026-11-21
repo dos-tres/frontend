@@ -1,6 +1,7 @@
 import { toProgram, type RecommendationItem } from './policy-api'
-export type CenterGuide = { kind: string; summary: string; facilities: string[]; usage_note: string; hours?: string; source: { name: string; url: string; checked_at: string } }
-export type PublicCenter = { id: string; name: string; address: string; region_code: string; district: string; province: string; homepage: string; updated_at: string; program_count?: number; open_program_count?: number; guide?: CenterGuide }
+export type CenterGuide = { kind: string; summary: string; facilities: string[]; usage_note: string; hours?: string; homepage?: string; notice_url?: string; source: { name: string; url: string; checked_at: string } }
+export type OfficialCenterContent = { center_id: string; name: string; summary: string; address: string; hours: string; directions: string; usage: string; sections: {title:string;body:string}[]; homepage: string; notice_url: string; notices?: {id:string;title:string;date:string;url:string}[]; fetched_at: string; notices_fetched_at?: string }
+export type PublicCenter = { id: string; name: string; address: string; region_code: string; district: string; province: string; homepage: string; updated_at: string; program_count?: number; open_program_count?: number; guide?: CenterGuide; official?: OfficialCenterContent }
 export type CenterList = { items: PublicCenter[]; districts: string[]; source: 'file'; dataset: 'runtime' | 'seed'; programs_source: 'db' | 'file'; notice: string }
 export type CenterDetail = { item: PublicCenter; source: 'file'; dataset: 'runtime' | 'seed'; programs: RecommendationItem[]; programs_source: 'db' | 'file'; notice: string }
 async function get<T>(path: string, signal: AbortSignal): Promise<T> {
