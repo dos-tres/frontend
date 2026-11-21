@@ -1,3 +1,4 @@
+import HomeLanding from './HomeLanding'
 import { SchedulePage, ScheduleEditor } from './SchedulePages'
 import { localDate, dueReminders, type CalendarEvent } from './schedule'
 import type { PublicCenter } from './center-api'
@@ -135,92 +136,6 @@ function Footer({ onAbout }: { onAbout: () => void }) {
       <span>둘셋 · 청년의 고민과 정책, 지역 활동을 연결하는 AI 비서</span>
       <button onClick={onAbout}>둘셋 소개 <ArrowRight size={13} /></button>
     </footer>
-  )
-}
-
-function HomePage({ onNavigate, onSend, completed }: { completed: boolean; onNavigate: (s: Screen) => void; onSend: (text: string) => void }) {
-  const [draft, setDraft] = useState('')
-  const prompts = [
-    ['취업·진로 때문에 고민이에요', '지원받을 정책과 함께할 활동 찾기', 'briefcase'],
-    ['경제·주거가 걱정이에요', '현실적인 지원사업부터 확인하기', 'home'],
-    ['사람들과 교류할 기회가 필요해요', '부담 없는 가까운 활동부터 시작하기', 'people'],
-  ]
-  const submit = (e: FormEvent) => { e.preventDefault(); onSend(draft); setDraft('') }
-  return (
-    <>
-      {!completed && <section className="panel settings-section"><h2>나에게 맞는 지원 찾기</h2><p>내 정보와 관심을 설정하면 다음 방문에도 이어서 사용할 수 있어요.</p><Button onClick={() => onNavigate('setup')}>처음 시작하기</Button></section>}
-      <PageTitle title="둘셋과 함께, 시작해볼까요?" description="혼자 시작하기 막막한 청년을 위한 사회참여 AI 비서 · 필요한 도움과 지역 활동을 함께 찾아드려요." />
-      <div className="home-grid">
-        <Panel tone="blue" className="home-agent">
-          <div className="agent-intro">
-            <div>
-              <span className="small-tag"><Sparkles size={13} /> AI 비서 조이</span>
-              <h2>안녕하세요!<br />저는 AI 비서 조이예요.</h2>
-              <p>어떤 고민이 있든 편하게 이야기해 주세요.<br />필요한 도움과 지역 활동을 함께 찾아드릴게요.</p>
-            </div>
-            <JoyAvatar size="lg" />
-          </div>
-          <div className="divider" />
-          <h3 className="section-label">어디서 시작할지 모르겠다면</h3>
-          <div className="prompt-list">
-            {prompts.map(([title, desc]) => (
-              <button key={title} className="prompt-card" onClick={() => onSend(title)}>
-                <span><strong>{title}</strong><small>{desc}</small></span>
-                <ArrowRight size={18} />
-              </button>
-            ))}
-          </div>
-          <form className="chat-entry" onSubmit={submit}>
-            <MessageCircle size={18} />
-            <input value={draft} onChange={e => setDraft(e.target.value)} placeholder="조이에게 자유롭게 이야기하기..." aria-label="조이에게 메시지 입력" />
-            <button type="submit" aria-label="메시지 보내기"><Send size={17} /></button>
-          </form>
-        </Panel>
-        <aside className="home-aside">
-          <Panel tone="lavender" className="status-card">
-            <div className="panel-heading">
-              <div>
-                <span className="mini-label">MY CONNECTION</span>
-                <h3>나의 연결 상태 살펴보기</h3>
-              </div>
-              <Sprout size={24} />
-            </div>
-            <p>최근 외부 활동, 사람들과의 교류, 새 활동에 대한 부담을 가볍게 돌아봐요.</p>
-            <p className="notice">※ 고립 여부를 진단하거나 점수화하지 않아요.</p>
-            <Button variant="secondary" onClick={() => onNavigate('profile')}>나에게 편한 활동 방식 알아보기 <ArrowRight size={15} /></Button>
-          </Panel>
-          <Panel tone="green" className="weekly-card">
-            <div className="weekly-copy">
-              <span className="mini-label">THIS WEEK</span>
-              <h3>이번 주의 연결</h3>
-              <p>관심 지역의 청년센터 프로그램과 저장한 일정을 확인해요.</p>
-              <Button variant="secondary" onClick={() => onNavigate('center-list')}>근처 참여 기회 살펴보기 <ArrowRight size={15} /></Button>
-            </div>
-            <img src={boatImage} alt="파란 깃발을 단 종이배" />
-          </Panel>
-        </aside>
-      </div>
-      <section className="journey-section">
-        <div className="journey-heading">
-          <div><span className="mini-label">MY JOURNEY</span><h2>나의 섬에서, 기회의 다리를 건너</h2><p>작은 관심이 실제 참여로 이어지고, 나만의 경험이 쌓여요.</p></div>
-          <span className="journey-caption">섬 → 다리 → 마을</span>
-        </div>
-        <div className="journey-grid">
-          <article className="journey-card island-step">
-            <img src={joyIslandImage} alt="초록 섬에 서 있는 조이" />
-            <div><span>01 · 나의 섬</span><h3>지금의 나를 이해해요</h3><p>관심사와 필요한 도움을 편하게 알려주세요.</p></div>
-          </article>
-          <article className="journey-card bridge-step">
-            <img src={bridgeVillageImage} alt="섬과 마을을 연결하는 다리" />
-            <div><span>02 · 기회의 다리</span><h3>나에게 맞는 기회를 찾아요</h3><p>정책과 프로그램을 비교하고 참여 방법을 살펴봐요.</p></div>
-          </article>
-          <article className="journey-card village-step">
-            <img src={bridgeVillageImage} alt="다리 너머의 작은 마을" />
-            <div><span>03 · 경험의 마을</span><h3>참여 경험을 쌓아가요</h3><p>신청과 참여를 기록하고 다음 기회로 이어가요.</p></div>
-          </article>
-        </div>
-      </section>
-    </>
   )
 }
 
@@ -436,7 +351,7 @@ export default function App() {
         {setup.step === 2 && <ActivityInformation onboarding value={activity} onSave={next => { saveActivity(next); setSetup(prev => ({ ...prev, step: 3 })) }} onBack={skipSetup} />}
         {setup.step === 3 && <><CurrentStateCheck onboarding startInSurvey decisions={setup.decisions} onDecision={decideQuestion} preferProfile={setup.interestSource === 'profile'} defaultInterests={defaultInterests} profile={{ birthDate: personal.birthDate, regionLabel: profileRegionLabel(personal.regionCode), regionCode: personal.regionCode, employment: activity.employment, school: activity.school }} onOpenPolicy={openProgram} onEditProfile={() => setSetup(prev => ({ ...prev, step: 1 }))} value={stateCheck} history={checkinHistory} storageError={checkinStorageError} onSave={saveCheckin} onBack={skipSetup} onChat={finishSetup} /></>}
       </div>
-      case 'home': return <HomePage completed={checkinHistory.some(record => record.completed)} onNavigate={navigate} onSend={sendMessage} />
+      case 'home': return <HomeLanding completed={checkinHistory.some(record => record.completed)} onNavigate={navigate} onSend={sendMessage} />
       case 'chat': return <PolicyJoyPanel scheduleContext={chatSchedule} center={chatCenter} schedule={{ events, save:saveEvent, remove:id=>setEvents(prev=>prev.filter(e=>e.id!==id)), open:()=>setScreen('calendar'), recordApplication:p=>setApplications(prev=>prev.some(a=>a.id===`reported:${p.id}`)?prev:[{id:`reported:${p.id}`,title:p.title,status:'신청 완료',date:localDate().replaceAll('-','.'),note:'사용자가 직접 신청했다고 확인한 기록 · 기관 접수 확인 아님'},...prev]) }} program={chatProgram} personal={personal} activity={activity} initialMessages={messages} onBack={() => setScreen(chatSchedule?'calendar':chatCenter?'center-list':'policy-list')} onSavePersonal={savePersonal} onSaveActivity={saveActivity} onNew={() => { setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined); setMessages([]) }} onSave={() => { if (chatProgram) toggleSave(chatProgram.id) }} saved={!!chatProgram && savedIds.includes(chatProgram.id)} />
       case 'apply': return <ApplyPage program={selectedProgram} onRecord={recordApplication} onOpenPolicy={() => setScreen('policy-list')} />
       case 'policy-list': return <PolicyListPage data={policyData} view={policyView} setView={setPolicyView} onSelect={openProgram} saved={savedIds} onToggleSave={toggleSave} onCheck={() => setScreen('state-check')} onUseProfile={useProfileForPolicies} onEditProfile={() => setScreen('profile-edit')} />
@@ -451,7 +366,7 @@ export default function App() {
       case 'state-check': return <CurrentStateCheck startInSurvey decisions={setup.decisions} onDecision={decideQuestion} preferProfile={setup.interestSource === 'profile'} defaultInterests={defaultInterests} profile={{ birthDate: personal.birthDate, regionLabel: profileRegionLabel(personal.regionCode), regionCode: personal.regionCode, employment: activity.employment, school: activity.school }} onOpenPolicy={openProgram} onEditProfile={() => setScreen('profile-edit')} value={stateCheck} history={checkinHistory} storageError={checkinStorageError} onSave={saveCheckin} onBack={() => setScreen('profile')} onChat={() => setScreen('chat')} />
       case 'records': return <RecordsPage loading={policyData.busy} failed={policyData.failed} experiences={activity.experiences} onExperiences={experiences => setActivity(prev => ({ ...prev, experiences }))} saved={policyData.items.filter(p => savedIds.includes(p.id))} applications={applications} events={events} history={checkinHistory} onSelect={openProgram} onCheck={() => setScreen('state-check')} />
       case 'about': return <AboutPage />
-      default: return <HomePage completed={checkinHistory.some(record => record.completed)} onNavigate={navigate} onSend={sendMessage} />
+      default: return <HomeLanding completed={checkinHistory.some(record => record.completed)} onNavigate={navigate} onSend={sendMessage} />
     }
   }, [screen, personal, activity, stateCheck, checkinHistory, checkinStorageError, messages, selectedProgram, selectedCenterId, savedIds, applications, events, policyData, policyView, setup, chatProgram, chatCenter, chatSchedule])
 
