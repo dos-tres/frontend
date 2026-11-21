@@ -1,3 +1,4 @@
+import { centerPlaceQuery, selectCenterPlace, kakaoPlaceUrl, type CenterPlaceQuery, type KakaoPlace } from './center-place'
 import { centerAddressQueries } from './center-address'
 type Point = object
 type KakaoMaps = {
@@ -5,7 +6,7 @@ type KakaoMaps = {
   LatLng: new (lat: number, lng: number) => Point
   Map: new (element: HTMLElement, options: { center: Point; level: number }) => { relayout: () => void; setCenter: (point: Point) => void }
   Marker: new (options: { map: object; position: Point; title: string }) => { setMap: (map: object | null) => void }
-  services: { Status: { OK: string; ZERO_RESULT: string }; Geocoder: new () => { addressSearch: (address: string, callback: (result: { x: string; y: string }[], status: string) => void) => void } }
+  services: { Places: new () => { keywordSearch: (query: string, callback: (results: KakaoPlace[], status: string, pagination: { hasNextPage: boolean }) => void, options?: { size: number }) => void }; Status: { OK: string; ZERO_RESULT: string }; Geocoder: new () => { addressSearch: (address: string, callback: (result: { x: string; y: string }[], status: string) => void) => void } }
 }
 declare global { interface Window { kakao?: { maps: KakaoMaps } } }
 let sdkPromise: Promise<KakaoMaps> | undefined
@@ -59,4 +60,40 @@ export async function geocodeAddress(address: string): Promise<Coordinates | nul
     }
     search(0)
   })
+}
+
+export type CenterLocation = Coordinates & { source: 'address' | 'kakao-place'; address: string; placeName?: string; placeUrl?: string }
+const locationCache = new Map<string, CenterLocation>()
+const locationRequests = new Map<string, Promise<CenterLocation | null>>()
+export async function resolveCenterLocation(center: CenterPlaceQuery): Promise<CenterLocation | null> {
+  const id = JSON.stringify([center.name, center.address, center.province, center.district])
+  if (locationCache.has(id)) return locationCache.get(id)!
+  if (locationRequests.has(id)) return locationRequests.get(id)!
+  const request = (async () => {
+    // Service errors are retryable; only a missing/unsuccessful address triggers place lookup.
+    const hasBuildingAddress = /(?:대로|로|길)\s*\d+|(?:동|읍|면|리)\s+\d+/.test(center.address)
+    const coords = hasBuildingAddress ? await geocodeAddress(center.address) : null
+    if (coords) return { ...coords, source: 'address' as const, address: center.address }
+    const key = import.meta.env.VITE_KAKAO_MAP_APP_KEY?.trim()
+    if (!key) throw new Error('Map unavailable')
+    const maps = await loadMaps(key)
+    return new Promise<CenterLocation | null>((resolve, reject) => {
+      let settled = false
+      const timer = window.setTimeout(() => { settled = true; reject(new Error('Place lookup timed out')) }, 8000)
+      try {
+        new maps.services.Places().keywordSearch(centerPlaceQuery(center), (results, status, pagination) => {
+          if (settled) return
+          settled = true; window.clearTimeout(timer)
+          if (status === maps.services.Status.ZERO_RESULT) { resolve(null); return }
+          if (status !== maps.services.Status.OK) { reject(new Error('Place lookup failed')); return }
+          // Do not auto-select from a truncated or ambiguous result set.
+          const place = pagination?.hasNextPage ? null : selectCenterPlace(center, results)
+          resolve(place ? { lat: Number(place.y), lng: Number(place.x), source: 'kakao-place', address: place.road_address_name || place.address_name, placeName: place.place_name, placeUrl: kakaoPlaceUrl(place) } : null)
+        }, { size: 15 })
+      } catch (error) { settled = true; window.clearTimeout(timer); reject(error) }
+    })
+  })()
+  locationRequests.set(id, request)
+  try { const result = await request; if (result) locationCache.set(id, result); return result }
+  finally { locationRequests.delete(id) }
 }

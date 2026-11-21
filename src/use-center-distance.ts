@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { PublicCenter } from './center-api'
-import { geocodeAddress } from './kakao-maps'
+import { geocodeAddress, resolveCenterLocation } from './kakao-maps'
 import { distanceKm } from './center-distance'
 
 type DistanceState = { origin: string; distances: Record<string, number>; status: 'idle' | 'loading' | 'ready' | 'failed'; missing: number }
@@ -22,7 +22,7 @@ export function useCenterDistance(centers: PublicCenter[] | undefined, origin: s
           while (!cancelled && index<centers.length) {
             const center=centers[index++]
             try {
-              const point=center.address ? await geocodeAddress(center.address) : null
+              const point=await resolveCenterLocation(center)
               if (cancelled) return
               if (point) distances[center.id]=distanceKm(start,point)
             } catch { /* An unavailable center address must not hide the center. */ }

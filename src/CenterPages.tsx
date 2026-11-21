@@ -7,6 +7,11 @@ import type { Program } from './data'
 import { safePolicyUrl, applicationLabel } from './policy-api'
 import { requestCenters, requestCenter, centerPrograms, type CenterList, type CenterDetail, type CenterGuide, type PublicCenter } from './center-api'
 
+export function CenterTags({ kind }: { kind?: string }) {
+  const tags = [...new Set((kind || '').split(/[·ㆍ/・,]/).map(tag => tag.trim().replace('정책상담', '정책 상담')).filter(Boolean))]
+  return tags.length ? <span className="policy-keywords center-tags" aria-label="센터 특징">{tags.map(tag=><span className="center-tag" key={tag}>#{tag}</span>)}</span> : null
+}
+
 export function CenterListPage({ onSelect, savedRegion = '' }: { onSelect: (id: string) => void; savedRegion?: string }) {
   const [draft, setDraft] = useState(''), [query, setQuery] = useState(''), [district, setDistrict] = useState('')
   const [data, setData] = useState<CenterList>(), [failed, setFailed] = useState(false), [busy, setBusy] = useState(true), [revision, setRevision] = useState(0)
@@ -41,7 +46,7 @@ export function CenterListPage({ onSelect, savedRegion = '' }: { onSelect: (id: 
   </div>
 }
 
-export function CenterDetailPage({ id, onBack, onProgram }: { id: string; onBack: () => void; onProgram: (p: Program) => void }) {
+export function CenterDetailPage({ id, onBack, onProgram, onAsk }: { onAsk?: (center: PublicCenter) => void; id: string; onBack: () => void; onProgram: (p: Program) => void }) {
   const [data,setData] = useState<CenterDetail>(), [busy,setBusy] = useState(true), [failed,setFailed] = useState(false), [revision,setRevision] = useState(0)
   useEffect(()=>{ const controller=new AbortController(); setBusy(true); setFailed(false); setData(undefined); window.scrollTo(0,0)
     requestCenter(id,controller.signal).then(v=>{if(!controller.signal.aborted)setData(v)}).catch(()=>{if(!controller.signal.aborted)setFailed(true)}).finally(()=>{if(!controller.signal.aborted)setBusy(false)})
@@ -51,38 +56,45 @@ export function CenterDetailPage({ id, onBack, onProgram }: { id: string; onBack
     <button className="btn btn-ghost policy-back" onClick={onBack}><ArrowLeft size={16}/> 센터 목록</button>
     {busy && <p role="status">센터 상세를 불러오고 있어요.</p>}
     {failed && <p role="alert">센터 정보를 불러오지 못했어요. <button className="text-button" onClick={()=>setRevision(n=>n+1)}>다시 불러오기</button></p>}
-    {data && <CenterDetailContent data={data} onProgram={onProgram} />}
+    {data && <CenterDetailContent data={data} onProgram={onProgram} onAsk={onAsk} />}
   </div>
 }
 
-export function CenterDetailContent({ data, onProgram }: { data: CenterDetail; onProgram: (p: Program) => void }) {
+export function CenterDetailContent({ data, onProgram, onAsk }: { onAsk?: (center: PublicCenter) => void; data: CenterDetail; onProgram: (p: Program) => void }) {
   const center = data.item
-  const homepage = safePolicyUrl(center.homepage || '')
+  const official = center.official
+  const hours = official?.hours || center.guide?.hours
+  const homepage = safePolicyUrl(official?.homepage || center.homepage || '') || safePolicyUrl(center.guide?.source.url || '')
   const programs = centerPrograms(data).filter(p=>p.applicationStatus === 'open' || p.applicationStatus === 'always_open')
   return <>
-    <header className="page-title center-introduction"><h1>{center.name}</h1><p>{center.province} · {center.district}</p>{center.guide && <><span className="center-kind">{center.guide.kind}</span><p className="center-introduction-text">{center.guide.summary}</p></>}</header>
+    <header className="page-title center-introduction"><h1>{center.name}</h1><p>{center.province} · {center.district}</p>{center.guide && <><CenterTags kind={center.guide.kind} /><p className="center-introduction-text">{official?.summary || center.guide.summary}</p></>}</header>
+    {onAsk && <button className="btn btn-primary" onClick={()=>onAsk(center)}>조이에게 센터 물어보기 · 방문 일정 잡기</button>}
     <div className={`center-detail-grid ${programs.length ? '' : 'center-detail-single'}`}>
       <section className="panel">
-        {center.guide && <CenterGuideSection guide={center.guide} showSummary={false} />}
+        {official ? <section className="center-guide-section"><h2>공간소개</h2>{!center.guide && official.summary && <p>{official.summary}</p>}{official.sections.map((section,index)=><div key={index}><h3>{section.title}</h3><p>{section.body}</p></div>)}{official.usage && <><h3>공간 이용방법</h3><p>{official.usage}</p></>}{official.directions && <><h3>오시는 길</h3><p>{official.directions}</p></>}</section> : center.guide && <CenterGuideSection guide={center.guide} showSummary={false} showSource={false} />}
         <h2>위치·운영 정보</h2>
-        <dl className="detail-list"><div><dt>주소</dt><dd>{center.address || '미제공'}</dd></div><div><dt>운영 시간</dt><dd>{center.guide?.hours || '방문 전 공식 운영 안내를 확인해 주세요.'}</dd></div><div><dt>출처</dt><dd>온통청년 · 공식 기관 안내</dd></div>{center.updated_at && <div><dt>수집 확인일</dt><dd>{center.updated_at}</dd></div>}</dl>
-        {homepage && <a className="policy-official-link" href={homepage} target="_blank" rel="noopener noreferrer">공식 홈페이지 <ExternalLink size={13}/></a>}
-        <KakaoCenterMap name={center.name} address={center.address} />
+        <dl className="detail-list">
+          {center.address && <div><dt>주소</dt><dd>{center.address}</dd></div>}
+          {hours?.trim() && <div><dt>운영 시간</dt><dd>{hours}</dd></div>}
+          {homepage && <div><dt>공식 홈페이지</dt><dd><a className="policy-official-link" href={homepage} target="_blank" rel="noopener noreferrer">바로가기 <ExternalLink size={13}/></a></dd></div>}
+        </dl>
+        <KakaoCenterMap name={center.name} address={center.address} province={center.province} district={center.district} />
       </section>
       {programs.length > 0 && <section className="panel"><div className="section-head"><h2>현재 모집 중인 프로그램</h2><span>{programs.length}개</span></div>{programs.map(p=><div className="center-program" key={p.id}><span className={`policy-period-status status-${p.applicationStatus}`}>{applicationLabel(p)}</span><h3>{p.title}</h3><p>{p.summary}</p><button className="btn btn-secondary" onClick={()=>onProgram(p)}>조이와 알아보기 <ArrowRight size={15}/></button></div>)}</section>}
     </div>
+    {official && <section className="panel center-notices"><div className="section-head"><h2>공지사항</h2>{safePolicyUrl(official.notice_url) && <a className="policy-official-link" href={safePolicyUrl(official.notice_url)} target="_blank" rel="noopener noreferrer">전체 공지 보기 <ExternalLink size={13}/></a>}</div>{official.notices?.map(notice=>safePolicyUrl(notice.url)&&<a className="center-notice-row" key={notice.id} href={safePolicyUrl(notice.url)} target="_blank" rel="noopener noreferrer"><span>{notice.title}</span>{notice.date&&<time dateTime={notice.date}>{notice.date}</time>}<ExternalLink size={13}/></a>)}</section>}
   </>
 }
 
-export function CenterGuideSection({ guide, showSummary = true }: { guide: CenterGuide; showSummary?: boolean }) {
+export function CenterGuideSection({ guide, showSummary = true, showSource = true }: { guide: CenterGuide; showSummary?: boolean; showSource?: boolean }) {
   const source = safePolicyUrl(guide.source.url)
-  return <section className="center-guide-section"><h2>{showSummary ? '어떤 곳인가요?' : '공간 이용 안내'}</h2>{showSummary && <p>{guide.summary}</p>}<h3>이용할 수 있는 것</h3><div className="center-facilities">{guide.facilities.map(item=><span key={item}>{item}</span>)}</div><h3>이용 전에</h3><p>{guide.usage_note}</p>{source && <a className="policy-official-link" href={source} target="_blank" rel="noopener noreferrer">공식 공간 안내 확인 <ExternalLink size={13}/></a>}<small className="center-guide-source">{guide.source.name} · {guide.source.checked_at} 확인</small></section>
+  return <section className="center-guide-section"><h2>{showSummary ? '어떤 곳인가요?' : '공간 이용 안내'}</h2>{showSummary && <p>{guide.summary}</p>}<h3>이용할 수 있는 것</h3><div className="center-facilities">{guide.facilities.map(item=><span key={item}>{item}</span>)}</div><h3>이용 전에</h3><p>{guide.usage_note}</p>{showSource && source && <a className="policy-official-link" href={source} target="_blank" rel="noopener noreferrer">공식 공간 안내 확인 <ExternalLink size={13}/></a>}</section>
 }
 
 export function CenterListRow({ center, onSelect, showDistance = false, distance }: { center: PublicCenter; onSelect: (id: string) => void; showDistance?: boolean; distance?: number }) {
   return <button className="center-result center-directory-row" onClick={()=>onSelect(center.id)}>
     <span className="center-pin"><Building2 size={20}/></span>
-    <span><strong>{center.name}</strong>{center.guide && <><span className="center-kind">{center.guide.kind}</span><small className="center-summary">{center.guide.summary}</small></>}<small><MapPin size={13}/> {center.address || '주소 미제공'}</small></span>
+    <span className="center-row-content"><strong className="center-name">{center.name}</strong>{center.guide && <><small className="center-summary">{center.official?.summary || center.guide.summary}</small></>}<small className="center-address"><MapPin size={13}/> {center.address || '주소 미제공'}</small><CenterTags kind={center.guide?.kind} /></span>
     <span className="center-count">{showDistance && <span className="center-distance" aria-label={`직선거리 ${distanceLabel(distance)}`}>{distanceLabel(distance)}</span>}{(center.open_program_count || 0) > 0 && <strong>현재 모집 중 {center.open_program_count}개</strong>}<small>{center.district}</small></span>
     <ArrowRight size={17}/>
   </button>
