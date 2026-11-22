@@ -138,7 +138,43 @@
 /* Functional screens: preserve status colors, map size and calendar positioning. */
 .app-shell :is(.result-card,.center-list-row,.assistant-result-item,.apply-flow) { border-radius: 12px; border-color: var(--service-border); box-shadow: none; background: #fff; }
 .app-shell .policy-title-button { color: var(--service-ink); font-weight: 700; letter-spacing: -.03em; }
-.app-shell .policy-list-row { padding: 26px 0; }
+/* Policy rows: real inner padding and a stable action column. */
+.app-shell .policy-list-row {
+  display: grid; grid-template-columns: minmax(0,1fr) 208px;
+  align-items: start; column-gap: 28px; row-gap: 18px;
+  padding: 24px; margin-top: 14px;
+}
+.app-shell .policy-list-row .result-content { min-width: 0; }
+.app-shell .policy-list-row .policy-row-meta { gap: 7px; margin-bottom: 12px; }
+.app-shell .policy-list-row .result-content h3 { margin: 0 0 10px; font-size: 19px; line-height: 1.5; }
+.app-shell .policy-list-row .policy-title-button { line-height: 1.5; text-align: left; }
+.app-shell .policy-list-row .result-content > p { margin: 0; font-size: 14px; line-height: 1.75; }
+.app-shell .policy-list-row .policy-application-period { gap: 10px; margin: 12px 0 6px; }
+.app-shell .policy-list-row .result-content > small { display: block; font-size: 13px; line-height: 1.6; color: var(--service-muted); }
+.app-shell .policy-list-row .policy-keywords { margin-top: 14px; gap: 6px; }
+.app-shell .policy-list-row .policy-keywords span { padding: 4px 8px; font-size: 12px; line-height: 1.5; }
+.app-shell .policy-list-row .policy-row-actions {
+  display: grid; grid-template-columns: 40px minmax(0,1fr); gap: 10px;
+  min-width: 0; width: 100%; align-items: center; align-self: start;
+  padding-top: 2px;
+}
+.app-shell .policy-row-actions .icon-button { width: 40px; height: 44px; border-radius: 8px; }
+.app-shell .policy-row-actions .btn { min-height: 44px; padding: 10px 12px; font-size: 13px; white-space: nowrap; }
+.app-shell .policy-row-actions .policy-official-link { grid-column: 2; justify-self: end; min-height: 32px; padding: 4px 0; font-size: 12px; }
+.app-shell .policy-results-layout .section-head { margin-bottom: 18px; gap: 16px; flex-wrap: wrap; }
+.app-shell .policy-results-layout .section-head h2 { margin: 0; font-size: 21px; line-height: 1.5; }
+.app-shell .policy-results-layout .search-helper { margin: 0 0 18px; font-size: 13px; }
+@media(max-width:900px) {
+  .app-shell .policy-list-row { grid-template-columns: minmax(0,1fr); padding: 22px; gap: 18px; }
+  .app-shell .policy-list-row .policy-row-actions { display: flex; flex-wrap: wrap; width: 100%; padding: 14px 0 0; justify-content: flex-end; border-top: 1px solid var(--service-border); }
+}
+@media(max-width:600px) {
+  .app-shell .policy-list-row { padding: 18px; }
+  .app-shell .policy-list-row .result-content h3 { font-size: 18px; }
+  .app-shell .policy-list-row .policy-row-meta { row-gap: 8px; }
+  .app-shell .policy-list-row .policy-row-actions { gap: 8px; }
+  .app-shell .policy-row-actions .policy-official-link { margin-left: auto; }
+}
 .app-shell .policy-keywords span { background: #f2f4f6; border-color: transparent; border-radius: 6px; color: var(--service-secondary); }
 .app-shell .assistant-workspace { border: 1px solid var(--service-border); border-radius: 14px; overflow: hidden; }
 .app-shell .assistant-sidebar { background: #f9fafb; }
