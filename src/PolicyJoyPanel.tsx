@@ -96,7 +96,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
     return()=>{window.clearTimeout(timer);window.removeEventListener('beforeunload',persist)}
   },[turns,draft,chatReply,chatAnswers,detail,activeChatId,profileStep,profileQueue])
   const openSavedChat = (c:SavedChat) => {
-    chatRequest.current?.abort();chatRequest.current=null;setChatBusy(false);setChatError('');restoreChat.current=c;setActiveChatId(c.id);setTurns(c.turns);setDraft(c.draft||'');setChatReply(c.reply||null);setChatAnswers(c.answers||{});setDetail(c.detail);setProfileStep(null);setApplying(false);setPolicyExample(false);setCatalogMode(null);onNew()
+    chatRequest.current?.abort();chatRequest.current=null;setChatBusy(false);setChatError('');restoreChat.current=c;setActiveRecommendation(null);setActiveChatId(c.id);setTurns(c.turns);setDraft(c.draft||'');setChatReply(c.reply||null);setChatAnswers(c.answers||{});setDetail(c.detail);setProfileStep(null);setApplying(false);setPolicyExample(false);setCatalogMode(null);onNew()
   }
   const selectCatalogItem = (item:Program) => {
     setCatalogMode(null); setDetail(item); setApplying(false); setPolicyExample(false); setFailed(false)
@@ -146,7 +146,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
     try {
       const payload=buildAssistantChatPayload(requestTurns.filter(t=>t.text.trim()).slice(-40).map(t=>({role:t.role,content:t.text.slice(0,1000)})),requestContext)
       payload.checkin={...payload.checkin,...answers}
-      const reply=await requestAssistantChat({...payload,selected_item_id:silent||/다른.*(?:추천|찾)|새로.*(?:추천|찾)|다시.*추천/.test(value)?undefined:(activeRecommendation?.id||detail?.id)},controller.signal)
+      const reply=await requestAssistantChat({...payload,selected_item_id:silent||/다른.*(?:추천|찾)|새로.*(?:추천|찾)|다시.*추천/.test(value)||(/추천\s*해|찾아\s*줘|찾아주세요/.test(value)&&!/신청|서류|준비물|링크/.test(value))?undefined:(activeRecommendation?.id||detail?.id)},controller.signal)
       if(controller.signal.aborted)return
       setTurns([...next,...(reply.results?[{role:'assistant' as const,text:'',recommendations:reply.results}]:reply.replies.map(text=>({role:'assistant' as const,text})))])
       setChatReply(reply); setChatAnswers(reply.checkin)
@@ -188,7 +188,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
   return <div className="assistant-workspace">
     <aside className="assistant-sidebar">
       <div className="assistant-sidebar-title"><MessageCircle size={20} /><h1>AI 비서</h1></div>
-      <button className="btn btn-secondary" onClick={() => { restoreChat.current=null;const id=crypto.randomUUID();setActiveChatId(id);try{const existing=readChats();localStorage.setItem(CHAT_KEY,JSON.stringify({...existing,activeId:id}))}catch{} chatRequest.current?.abort(); chatRequest.current=null; setChatBusy(false);setChatError('');setChatReply(null);setChatAnswers({}); setCatalogMode(null); setDetail(undefined); setPolicyExample(false); setApplying(false); scheduler.reset(); setTurns([]); setProfileStep(null); setDraft(''); onNew() }}><Plus size={16} /> 새 대화</button>
+      <button className="btn btn-secondary" onClick={() => { restoreChat.current=null;setActiveRecommendation(null);const id=crypto.randomUUID();setActiveChatId(id);try{const existing=readChats();localStorage.setItem(CHAT_KEY,JSON.stringify({...existing,activeId:id}))}catch{} chatRequest.current?.abort(); chatRequest.current=null; setChatBusy(false);setChatError('');setChatReply(null);setChatAnswers({}); setCatalogMode(null); setDetail(undefined); setPolicyExample(false); setApplying(false); scheduler.reset(); setTurns([]); setProfileStep(null); setDraft(''); onNew() }}><Plus size={16} /> 새 대화</button>
       <details className="assistant-profile-context" open><summary>대화 이력</summary><p>이 브라우저에 최근 20개를 저장해요.</p>{savedChats.entries.map(c=><button className="chat-history-entry" aria-current={c.id===activeChatId?'true':undefined} key={c.id} onClick={()=>openSavedChat(c)}><strong>{c.title}</strong><small>{new Date(c.updatedAt).toLocaleDateString('ko-KR')}</small></button>)}</details>
       <p className="assistant-sidebar-label">함께 살펴보는 정보</p>{scheduleContext && <div className="assistant-context"><h2>내 일정에서 이어진 대화</h2><p>{scheduleContext.date} 선택</p><p>정리한 일정을 달력에서 확인한 뒤 등록해요.</p></div>}{center && <div className="assistant-context"><h2>{center.name}</h2><p>{center.address}</p><p>{center.guide?.summary}</p></div>}
       {detail ? <div className="assistant-context"><span className={`policy-period-status status-${detail.applicationStatus || 'unknown'}`}>{applicationLabel(detail)}</span><h2>{detail.title}</h2><p>{detail.region} · {detail.categories?.join(' · ')}</p><p>신청 기간<br />{periodLabel(detail.period)}</p>{detail.id===program?.id && <button className="text-button" onClick={onSave} aria-pressed={saved}><Bookmark size={14} /> {saved ? '관심 해제' : '관심 저장'}</button>}{official && <a className="policy-official-link" href={official} target="_blank" rel="noopener noreferrer">공식 공고 <ExternalLink size={12} /></a>}</div> : <p className="settings-help">{scheduleContext?'선택한 날짜의 약속이나 할 일을 말해 주세요.':center?'센터 이용 안내와 방문 일정을 함께 살펴봐요.':'관심 있는 정책이나 프로그램을 가져와 조이와 함께 알아보세요.'}</p>}
