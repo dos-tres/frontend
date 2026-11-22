@@ -25,7 +25,8 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
   const [drafting,setDrafting]=useState('')
   const [queue,setQueue]=useState<string[]>([]);const [step,setStep]=useState(0)
   const [editingReview,setEditingReview]=useState(false)
-  useEffect(()=>{panel.current?.scrollIntoView({block:'nearest'})},[stage,step])
+  const [reviewPage,setReviewPage]=useState(0)
+  useEffect(()=>{panel.current?.scrollIntoView({block:'nearest'})},[stage,step,reviewPage])
   const [invalid,setInvalid]=useState<string[]>([]); const lock=useRef(false)
   useEffect(()=>{let active=true
     request('start',{item_id:itemId}).then((data:Start)=>{
@@ -58,12 +59,12 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
   }
   const questions=form?.questions || []
   const update=(id:string,value:string|string[])=>{setAnswers(a=>({...a,[id]:value}));setInvalid(ids=>ids.filter(v=>v!==id));setError('')}
-  const review=()=>{
+  const review=(resetPage=true)=>{
     const malformed=questions.filter(q=>{const value=String(answers[q.id]||'');return !!value&&((q.fill_key==='phone'&&!/^01[016789]-?\d{3,4}-?\d{4}$/.test(value))||(q.fill_key==='age'&&!/^\d{1,3}$/.test(value))) }).map(q=>q.id)
     const missing=questions.filter(q=>q.kind!=='multi_grid'&&q.required && (!answers[q.id] || (Array.isArray(answers[q.id])?!answers[q.id].length:!String(answers[q.id]).trim()))).map(q=>q.id)
     setInvalid([...missing,...malformed])
     if(missing.length||malformed.length){const first=[...missing,...malformed][0];setQueue(questions.map(q=>q.id));setStep(questions.findIndex(q=>q.id===first));setError('표시한 항목을 확인해 주세요.');return}
-    setError('');setStage('review')
+    setError('');if(resetPage)setReviewPage(0);setStage('review')
   }
   const submit=async()=>{
     if(lock.current||!form?.replica||form?.submission_ready!==true)return
@@ -96,8 +97,17 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
         {q.other&&<label className="apply-other">기타 직접 입력<input aria-label={`${q.label} 기타 직접 입력`} value={q.kind==='multi'?(Array.isArray(answers[q.id])?(answers[q.id] as string[]).find(v=>!q.options?.includes(v))||'':''):typeof answers[q.id]==='string'&&!q.options?.includes(answers[q.id] as string)?answers[q.id] as string:''} onChange={e=>{const custom=e.target.value;update(q.id,q.kind==='multi'?[...(Array.isArray(answers[q.id])?(answers[q.id] as string[]).filter(v=>q.options?.includes(v)):[]),...(custom?[custom]:[])]:custom)}}/></label>}
         {invalid.includes(q.id)&&<p role="alert">이 항목을 확인해 주세요.</p>}
       </div>)}
-      <div className="assistant-profile-actions"><button className="text-button" disabled={step===0||editingReview} onClick={()=>setStep(i=>i-1)}>이전 항목</button><button className="btn btn-primary" onClick={()=>{const q=questions.find(q=>q.id===queue[step]);const v=q?answers[q.id]:undefined;if(q?.required&&(!v||(Array.isArray(v)?!v.length:!String(v).trim()))){setInvalid([q.id]);setError('이 항목에 답해 주세요.');return}setError('');if(editingReview){setEditingReview(false);review()}else if(step<queue.length-1)setStep(i=>i+1);else review()}}>{editingReview?'수정 완료':step<queue.length-1?'다음':'전체 내용 확인'}</button></div></>}
-    {stage==='review'&&<><h4>{form?.submission_ready?'이 내용으로 신청할까요?':'작성한 내용을 확인해 주세요'}</h4><dl className="apply-review">{questions.map((q,i)=><div key={q.id}><dt>{reviewLabel(q)}</dt><dd>{/동의/.test(q.label)?(answers[q.id]&&(!Array.isArray(answers[q.id])||(answers[q.id] as string[]).length)?'동의했어요':'미동의'):q.kind==='multi_grid'?(q.rows?.filter(r=>Array.isArray(answers[r.id])&&answers[r.id].length).map(r=>`${r.label}: ${(answers[r.id] as string[]).join(', ')}`).join(' / ')||'선택하지 않음'):Array.isArray(answers[q.id])?(answers[q.id] as string[]).join(', '):answers[q.id]||'미입력'}</dd><button className="text-button" aria-label={`${q.label} 수정`} onClick={()=>{setQueue(questions.map(q=>q.id));setStep(i);setEditingReview(true);setStage('edit')}}>수정</button></div>)}</dl><button className="btn btn-primary" disabled={busy||form?.submission_ready!==true} onClick={submit}>{form?.submission_ready!==true?'제출은 지원하지 않아요':busy?'처리 중…':'이 내용으로 신청'}</button></>}
+      <div className="assistant-profile-actions"><button className="text-button" disabled={step===0||editingReview} onClick={()=>setStep(i=>i-1)}>이전 항목</button><button className="btn btn-primary" onClick={()=>{const q=questions.find(q=>q.id===queue[step]);const v=q?answers[q.id]:undefined;if(q?.required&&(!v||(Array.isArray(v)?!v.length:!String(v).trim()))){setInvalid([q.id]);setError('이 항목에 답해 주세요.');return}setError('');if(editingReview){setEditingReview(false);review(false)}else if(step<queue.length-1)setStep(i=>i+1);else review()}}>{editingReview?'수정 완료':step<queue.length-1?'다음':'전체 내용 확인'}</button></div></>}
+    {stage==='review'&&<section className="apply-review-section" aria-label="신청 내용 최종 확인">
+      <div className="apply-review-heading"><h4>작성한 내용을 확인해 주세요</h4><span>{reviewPage+1} / {Math.ceil(questions.length/3)}</span></div>
+      <dl className="apply-review">{questions.slice(reviewPage*3,reviewPage*3+3).map((q,offset)=><div key={q.id}>
+        <dt>{reviewLabel(q)}</dt>
+        <dd>{q.kind==='multi_grid'?(q.rows?.filter(r=>Array.isArray(answers[r.id])&&answers[r.id].length).map(r=>`${r.label} · ${(answers[r.id] as string[]).join(', ')}`).join('\n')||'선택하지 않았어요'):Array.isArray(answers[q.id])?(answers[q.id] as string[]).join(', '):answers[q.id]||'입력하지 않았어요'}</dd>
+        <button className="text-button" aria-label={`${q.label} 수정`} onClick={()=>{setQueue(questions.map(q=>q.id));setStep(reviewPage*3+offset);setEditingReview(true);setStage('edit')}}>수정</button>
+      </div>)}</dl>
+      <div className="apply-review-footer"><button className="btn btn-secondary" disabled={reviewPage===0||busy} onClick={()=>setReviewPage(p=>p-1)}>이전</button>
+      {reviewPage<Math.ceil(questions.length/3)-1?<button className="btn btn-primary" onClick={()=>setReviewPage(p=>p+1)}>다음 내용 확인</button>:form?.submission_ready===true?<button className="btn btn-primary" disabled={busy} onClick={submit}>{busy?'제출 중…':'이 내용으로 제출하기'}</button>:<p className="apply-readonly-note" role="status">내용 확인이 끝났어요. 이 신청서는 제출되지 않아요.</p>}</div>
+    </section>}
     {stage==='done'&&result&&<><h4>신청 시연이 완료됐어요</h4><p>작성일: {new Date(result.submitted_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}</p><button className="btn btn-primary" onClick={()=>onSchedule(result)}>일정 등록하기</button><p className="settings-help">신청한 날짜로 기록하고 이 대화를 연결해요.</p></>}
     {stage==='unavailable'&&<><h4>{form?.reason==='closed'?'현재 접수가 마감됐어요':'신청 방법을 함께 확인해요'}</h4><p>이 기관 신청서는 현재 둘셋의 자동 제출 연결 대상이 아니에요. 실제 신청은 공식 신청서에서 진행하고, 필요한 내용은 함께 준비할 수 있어요.</p>{safePolicyUrl(officialUrl)&&<a className="text-button" href={safePolicyUrl(officialUrl)} target="_blank" rel="noopener noreferrer">공식 신청서 열기 ↗</a>}{onTest&&<><p>신청 과정을 체험하려면 별도 팀 소유 취업 클래스 테스트 폼으로 이어갈 수 있어요. 이 기관 신청으로 접수되지는 않아요.</p><button className="btn btn-secondary" onClick={onTest}>취업 클래스 테스트 신청 이어가기</button></>}<button className="btn btn-ghost" onClick={()=>onSchedule()}>문의할 일정 등록</button></>}
     {stage==='uncertain'&&<div role="alert"><h4>접수 여부를 확인하지 못했어요</h4><p>중복 신청을 막기 위해 다시 제출하지 않을게요. 신청처에서 접수 여부를 확인해 주세요.</p><button className="btn btn-ghost" onClick={()=>onSchedule()}>확인할 일정 등록</button></div>}
