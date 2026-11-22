@@ -24,3 +24,7 @@ const blocks=m.timeBlocks([e,{...e,id:2,startTime:'15:30',endTime:'16:30'},{...e
 assert.deepEqual(blocks.map(b=>b.lane),[0,1,0])
 assert.equal(blocks[0].end-blocks[0].start,60)
 console.log('PASS: relative dates, AM/PM, missing time, invalid dates/ranges, one-time due reminders, overlapping time blocks')
+
+const korean=m.parseSchedule('11월 24일 오전 11시에 준비물 문의 일정 등록해줘',new Date(2026,10,22))
+assert.deepEqual(korean,{date:'2026-11-24',startTime:'11:00',title:'준비물 문의'})
+console.log('PASS: Korean month/day date and time particles')

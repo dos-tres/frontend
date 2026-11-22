@@ -1,4 +1,4 @@
-export type CalendarEvent = { id: number; title: string; date: string; type: string; startTime?: string; endTime?: string; location?: string; reminderMinutes?: number; notifiedAt?: string; source?: 'manual' | 'assistant' | 'application'; itemId?: string; centerId?: string }
+export type CalendarEvent = { id: number; title: string; date: string; type: string; startTime?: string; endTime?: string; location?: string; reminderMinutes?: number; notifiedAt?: string; source?: 'manual' | 'assistant' | 'application'; itemId?: string; centerId?: string; kind?: 'application'|'activity'|'inquiry'|'personal'; chatId?: string; applicationAt?: string; simulation?: boolean }
 export const localDate = (value = new Date()) => `${value.getFullYear()}-${String(value.getMonth()+1).padStart(2,'0')}-${String(value.getDate()).padStart(2,'0')}`
 export function validateEvent(event: Pick<CalendarEvent,'title'|'date'|'startTime'|'endTime'|'reminderMinutes'>): string {
   if (!event.title.trim()) return '일정 이름을 알려주세요.'
@@ -11,8 +11,10 @@ export function validateEvent(event: Pick<CalendarEvent,'title'|'date'|'startTim
 }
 export function parseSchedule(text: string, now = new Date()): Partial<CalendarEvent> {
   let date: string | undefined
+  const korean=text.match(/(?:(\d{4})년\s*)?(\d{1,2})월\s*(\d{1,2})일/)
   const iso=text.match(/\b(\d{4}-\d{2}-\d{2})\b/)
   if (iso) date=iso[1]
+  else if (korean) date=`${korean[1]||now.getFullYear()}-${korean[2].padStart(2,'0')}-${korean[3].padStart(2,'0')}`
   else if (/오늘|내일|모레/.test(text)) { const d=new Date(now); d.setDate(d.getDate()+(/모레/.test(text)?2:/내일/.test(text)?1:0)); date=localDate(d) }
   else { const weekday=text.match(/(이번\s*주|다음\s*주)?\s*([일월화수목금토])요일/); if(weekday){const d=new Date(now); let offset='일월화수목금토'.indexOf(weekday[2])-d.getDay(); if(weekday[1]?.replace(/\s/g,'')==='다음주')offset+=7; else if(offset<0)offset+=7; d.setDate(d.getDate()+offset); date=localDate(d)} }
   const times=[...text.matchAll(/(오전|오후|저녁|밤)?\s*(\d{1,2})(?::(\d{2})|시(?!간)(?:\s*(반|\d{1,2}분))?)/g)]
@@ -20,7 +22,7 @@ export function parseSchedule(text: string, now = new Date()): Partial<CalendarE
   const parsed=times.map(m=>{meridiem=m[1]||meridiem; let hour=Number(m[2]); if(!meridiem && hour<=12)return undefined; if(meridiem && hour>12)return undefined; if(['오후','저녁','밤'].includes(meridiem)&&hour<12)hour+=12; if(meridiem==='오전'&&hour===12)hour=0; return `${String(hour).padStart(2,'0')}:${m[3]|| (m[4]==='반'?'30':String(parseInt(m[4]||'0')).padStart(2,'0'))}`})
   const reminder=text.match(/(\d{1,4})\s*분\s*전/), hourReminder=text.match(/(\d{1,2})\s*시간\s*전/)
   const reminderMinutes=reminder?Number(reminder[1]):hourReminder?Number(hourReminder[1])*60:undefined
-  const title=text.replace(/\d+\s*(분|시간)\s*전(?:에)?\s*(알려\s*줘|알림)?/g,'').replace(/\d{4}-\d{2}-\d{2}|오늘|내일|모레|(이번\s*주|다음\s*주)?\s*[일월화수목금토]요일/g,'').replace(/(오전|오후|저녁|밤)?\s*\d{1,2}(?::\d{2}|시(?!간)(?:\s*(반|\d{1,2}분))?)\s*(부터|까지)?/g,'').replace(/(일정\s*)?(등록해\s*줘|추가해\s*줘|넣어\s*줘|잡아\s*줘)|일정\s*(등록|추가)|있어[요]?/g,'').trim()
+  const title=text.replace(/(?:\d{4}년\s*)?\d{1,2}월\s*\d{1,2}일/g,'').replace(/\d+\s*(분|시간)\s*전(?:에)?\s*(알려\s*줘|알림)?/g,'').replace(/\d{4}-\d{2}-\d{2}|오늘|내일|모레|(이번\s*주|다음\s*주)?\s*[일월화수목금토]요일/g,'').replace(/(오전|오후|저녁|밤)?\s*\d{1,2}(?::\d{2}|시(?!간)(?:\s*(반|\d{1,2}분))?)\s*(부터|까지)?/g,'').replace(/(일정\s*)?(등록해\s*줘|추가해\s*줘|넣어\s*줘|잡아\s*줘)|일정\s*(등록|추가)|있어[요]?/g,'').trim().replace(/^(?:에|부터|까지)\s+/,'')
   return { ...(reminderMinutes!==undefined?{reminderMinutes}:{}),...(date?{date}:{}),...(parsed[0]?{startTime:parsed[0]}:{}),...(parsed[1]?{endTime:parsed[1]}:{}),...(title?{title}:{}) }
 }
 export const eventLabel = (e: CalendarEvent) => `${e.date} ${e.startTime ? `${e.startTime}${e.endTime?`~${e.endTime}`:''}` : '시간 미정'} · ${e.title}${e.location?` · ${e.location}`:''}`
@@ -36,3 +38,11 @@ export function timeBlocks(events: CalendarEvent[]) {
   return {event,start,end,lane}
  })
 }
+
+export type ApplicationCompletion={itemId:string;title:string;at:string;simulation:boolean;scheduled?:boolean}
+export function applicationCalendarEvent(application:ApplicationCompletion,chatId:string,id=Date.now()):CalendarEvent {
+ const at=new Date(application.at)
+ return {id,title:`${application.title} 신청 기록`,date:at.toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}),type:application.simulation?'신청 기록 · 시연':'신청 기록',source:'application',kind:'application',itemId:application.itemId,chatId,applicationAt:application.at,simulation:application.simulation}
+}
+export const scheduleKind=(e:CalendarEvent)=>e.kind||(e.source==='application'?'application':/문의/.test(e.title)?'inquiry':/참여/.test(e.type)?'activity':'personal')
+export const scheduleKindLabel=(e:CalendarEvent)=>({application:'신청 기록',activity:'참여 일정',inquiry:'문의 일정',personal:'개인 일정'}[scheduleKind(e)])

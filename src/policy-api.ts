@@ -33,6 +33,7 @@ export function profilePolicyCriteria(catalog: PolicyCatalog | undefined, profil
   return { age: ageFromBirthDate(profile.birthDate, today), region: saved ? saved.code : district?.code || province?.code || '', job: jobs[profile.employment] || profile.employment, ...(profile.school ? { school: profile.school } : {}) }
 }
 export type RecommendationItem = {
+  fit_notice?: string; activity_brief?: string; fit_reason?: string; activity_place?: string; activity_schedule?: string;
   categories?: string[]; subcategories?: string[]; keywords?: string[]; region_label?: string;
   application_status?: Program['applicationStatus']; application_status_label?: string; application_period?: string;
   target?: string; method?: string; documents?: string; exclusions?: string; updated_at?: string;

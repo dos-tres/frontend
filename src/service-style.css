@@ -232,3 +232,53 @@
   .app-shell .btn, .app-shell .joy-home-composer { transition: none; }
   .app-shell .joy-home-mascot:hover .joy-home-mascot-image { animation: none; }
 }
+
+/* Conversation identity must remain distinct from service card surfaces. */
+.app-shell .assistant-conversation .assistant-turn.user > div { background:#2470e8; color:#fff; border:0; border-radius:18px 18px 4px 18px; }
+.app-shell .assistant-conversation .assistant-turn.assistant > div { background:#f2f4f6; color:#191f28; border:0; border-radius:4px 18px 18px 18px; }
+.chat-recommendations {width:min(100%,520px);margin:8px 0 20px 44px;}
+.chat-recommendations>header {display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.chat-recommendations h3 {font-size:16px;margin:0;}
+.chat-recommendations>header>span {font-size:13px;color:#6b7684;}
+.chat-recommendation-card {background:#fff;border:1px solid #e5e8eb;border-radius:18px;padding:24px;box-shadow:0 4px 16px #191f2808;}
+.chat-recommendation-meta {display:flex;gap:8px;align-items:center;font-size:12px;color:#6b7684;}
+.chat-recommendation-meta span:first-child {background:#edf4ff;color:#245db0;padding:4px 9px;border-radius:6px;}
+.chat-recommendation-card h4 {font-size:19px;line-height:1.5;margin:16px 0 12px;overflow-wrap:anywhere;}
+.chat-recommendation-summary {font-size:14px;color:#4e5968;line-height:1.7;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.chat-recommendation-why {font-size:13px;line-height:1.6;color:#245db0;background:#f2f7ff;padding:10px 12px;border-radius:8px;}
+.chat-recommendation-card dl {margin:16px 0;font-size:13px;}
+.chat-recommendation-card dt {color:#6b7684;margin-bottom:4px;}
+.chat-recommendation-card dd {margin:0;}
+.chat-recommendation-card>.btn {width:100%;justify-content:center;gap:8px;}
+.chat-recommendations nav {display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:8px;}
+.chat-recommendations nav>span {font-size:12px;color:#6b7684;}
+.chat-recommendations nav button {display:flex;align-items:center;gap:4px;background:#fff;border:1px solid #e5e8eb;border-radius:9px;padding:10px;font:inherit;font-size:13px;}
+.chat-recommendations nav button:disabled {opacity:.35;cursor:not-allowed;}
+@media(max-width:760px){.chat-recommendations{margin-left:0;width:100%;}.chat-recommendation-card{padding:20px;}}
+.chat-history-entry{display:flex;flex-direction:column;gap:4px;width:100%;text-align:left;padding:10px 12px;margin:6px 0;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--service-ink);font:inherit;cursor:pointer;}
+.chat-history-entry strong{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-weight:500;}
+.chat-history-entry small{font-size:11px;color:var(--service-muted);}
+.chat-history-entry[aria-current="true"]{background:#edf4ff;border-color:#d5e3ff;}
+
+.chat-card-explanation {margin-top:20px; margin-left:-44px;}
+.chat-card-explanation p {margin:0 0 12px;line-height:1.8;}
+.chat-card-explanation .btn {display:inline-flex;gap:8px;margin-top:4px;}
+.chat-card-explanation > div {max-width:100%;}
+@media(max-width:760px){.chat-card-explanation{margin-left:0;}}
+
+.chat-reply-options {display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;}
+.app-shell .chat-reply-options .chat-reply-option {display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:7px 12px;border:1px solid #dce3eb;border-radius:18px;background:#fff;color:#42566f;font:inherit;font-size:13px;font-weight:500;line-height:1.5;box-shadow:none;cursor:pointer;transition:background .15s,border-color .15s;}
+.app-shell .chat-reply-options .chat-reply-option:hover {background:#eaf1fb;border-color:#bdcee6;}
+.app-shell .chat-reply-options .chat-reply-option:focus-visible {outline:2px solid #3182f6;outline-offset:3px;}
+.app-shell .chat-reply-options .chat-reply-option:disabled {opacity:.45;cursor:wait;}
+
+/* Recommendation content stays compact regardless of card/list defaults. */
+.app-shell .chat-recommendation-card{display:block;min-height:0;height:auto;padding:18px 20px;}
+.app-shell .chat-recommendation-card h4{margin:10px 0 8px;font-size:18px;}
+.app-shell .chat-recommendation-card .chat-recommendation-summary{margin:0 0 10px;display:block;font-size:14px;line-height:1.65;}
+.app-shell .chat-recommendation-card dl{display:grid;gap:10px;margin:12px 0 0;}
+.app-shell .chat-recommendation-card dl>div{padding:0;min-height:0;}
+.app-shell .chat-card-explanation{margin-top:12px;}
+.app-shell .chat-card-explanation>div{padding:16px 20px;}
+
+.app-shell .assistant-question .assistant-field-error{color:#c93434;font-size:14px;line-height:1.5;margin:0 0 10px;font-weight:600}.assistant-question input[aria-invalid=true]{border-color:#c93434}
