@@ -271,3 +271,12 @@
 .app-shell .chat-reply-options .chat-reply-option:hover {background:#eaf1fb;border-color:#bdcee6;}
 .app-shell .chat-reply-options .chat-reply-option:focus-visible {outline:2px solid #3182f6;outline-offset:3px;}
 .app-shell .chat-reply-options .chat-reply-option:disabled {opacity:.45;cursor:wait;}
+
+/* Recommendation content stays compact regardless of card/list defaults. */
+.app-shell .chat-recommendation-card{display:block;min-height:0;height:auto;padding:18px 20px;}
+.app-shell .chat-recommendation-card h4{margin:10px 0 8px;font-size:18px;}
+.app-shell .chat-recommendation-card .chat-recommendation-summary{margin:0 0 10px;display:block;font-size:14px;line-height:1.65;}
+.app-shell .chat-recommendation-card dl{display:grid;gap:10px;margin:12px 0 0;}
+.app-shell .chat-recommendation-card dl>div{padding:0;min-height:0;}
+.app-shell .chat-card-explanation{margin-top:12px;}
+.app-shell .chat-card-explanation>div{padding:16px 20px;}

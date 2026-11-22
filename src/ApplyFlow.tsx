@@ -16,7 +16,8 @@ async function request(path:string, body:unknown) {
   if (!response.ok) throw data.error || {code:'UNKNOWN'}
   return data
 }
-export default function ApplyFlow({itemId,personal,onClose,onSchedule,officialUrl,onTest}:{officialUrl?:string;onTest?:()=>void;itemId:string;personal:PersonalInformation;onClose:()=>void;onSchedule:()=>void}) {
+export default function ApplyFlow({itemId,personal,onClose,onSchedule,officialUrl,onTest,demoFor}:{demoFor?:string;officialUrl?:string;onTest?:()=>void;itemId:string;personal:PersonalInformation;onClose:()=>void;onSchedule:()=>void}) {
+  const panel=useRef<HTMLElement>(null)
   const [form,setForm]=useState<Start>(); const [answers,setAnswers]=useState<Answers>({})
   const [stage,setStage]=useState<'loading'|'edit'|'review'|'done'|'unavailable'|'uncertain'>('loading')
   const [error,setError]=useState(''); const [busy,setBusy]=useState(false); const [result,setResult]=useState<Result>()
@@ -24,6 +25,7 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,officialUr
   const [drafting,setDrafting]=useState('')
   const [motivation,setMotivation]=useState('')
   const [queue,setQueue]=useState<string[]>([]);const [step,setStep]=useState(0)
+  useEffect(()=>{panel.current?.scrollIntoView({block:'nearest'})},[stage,step])
   const [invalid,setInvalid]=useState<string[]>([]); const lock=useRef(false)
   useEffect(()=>{let active=true
     request('start',{item_id:itemId}).then((data:Start)=>{
@@ -78,10 +80,10 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,officialUr
       else setStage('uncertain')
     } finally {lock.current=false;setBusy(false)}
   }
-  return <section className="apply-flow" aria-label="프로그램 신청">
-    <header><h3>조이와 신청하기</h3><button className="text-button" disabled={busy} onClick={onClose}>닫기</button></header>
-    <ol className="apply-steps" aria-label="신청 단계">{['신청서 준비','최종 확인','접수 결과'].map((label,i)=><li key={label} aria-current={i===(stage==='review'?1:stage==='done'?2:0)?'step':undefined}>{i+1}. {label}</li>)}</ol>
-    <p>{form?.item.title}</p>{form?.test_only&&<p className="apply-test-label">팀 소유 테스트 신청서예요. 실제 기관의 프로그램 신청이 아니에요.</p>}
+  return <section ref={panel} className="apply-flow" aria-label="프로그램 신청">
+    <header><h3>신청할 내용을 같이 채워볼게요</h3><button className="text-button" disabled={busy} onClick={onClose}>닫기</button></header>
+
+    <p>{form?.item.title}</p>{demoFor&&<p className="apply-demo-context">‘{demoFor}’의 신청 과정을 시연해요. 실제 기관 접수 대신 둘셋 취업 클래스 테스트 구글폼에 연결했어요.</p>}{form?.test_only&&!demoFor&&<p className="apply-test-label">팀 소유 테스트 신청서예요. 실제 기관의 프로그램 신청이 아니에요.</p>}
     {stage==='loading'&&<p role="status">신청서 문항을 확인하고 있어요…</p>}
     {error&&<p role="alert">{error}</p>}
     {stage==='edit'&&<><p>저장된 정보는 이 기기에서 채웠어요. 모르는 항목만 하나씩 여쭤볼게요. 마지막에 전체 내용을 확인하고 제출해요.</p>
@@ -98,7 +100,7 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,officialUr
       <div className="assistant-profile-actions"><button className="text-button" disabled={step===0} onClick={()=>setStep(i=>i-1)}>이전 항목</button><button className="btn btn-primary" onClick={()=>{const q=questions.find(q=>q.id===queue[step]);const v=q?answers[q.id]:undefined;if(q?.required&&(!v||(Array.isArray(v)?!v.length:!String(v).trim()))){setInvalid([q.id]);setError('이 항목에 답해 주세요.');return}setError('');if(step<queue.length-1)setStep(i=>i+1);else review()}}>{step<queue.length-1?'다음':'전체 내용 확인'}</button><button className="text-button" onClick={()=>{setQueue(questions.map(q=>q.id));setStep(0)}}>자동 채운 정보도 수정하기</button></div></>}
     {stage==='review'&&<><h4>이 내용으로 신청할까요?</h4><dl>{questions.map(q=><div key={q.id}><dt>{q.label}</dt><dd>{Array.isArray(answers[q.id])?(answers[q.id] as string[]).join(', '):answers[q.id]||'미입력'}</dd></div>)}</dl><p>제출하면 확인한 신청 정보가 백엔드를 거쳐 신청처에 전달돼요. 이 단계에서는 AI에 답변을 보내지 않아요.</p><button className="btn btn-ghost" disabled={busy} onClick={()=>{setQueue(questions.map(q=>q.id));setStep(0);setStage('edit')}}>내용 수정</button><button className="btn btn-primary" disabled={busy} onClick={submit}>{busy?'제출 중…':'이 내용으로 신청'}</button></>}
     {stage==='done'&&result&&<><h4>신청서가 접수됐어요</h4><p>신청일: {new Date(result.submitted_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}</p><p>접수 완료는 선정이나 참여 확정을 의미하지 않아요.</p><button className="btn btn-primary" onClick={onSchedule}>일정 등록하기</button><p className="settings-help">날짜와 시간을 확인한 뒤 일정을 저장해요.</p></>}
-    {stage==='unavailable'&&<><h4>{form?.reason==='closed'?'현재 접수가 마감됐어요':'지금은 조이가 신청을 진행할 수 없어요'}</h4><p>이 기관 신청서는 현재 둘셋의 자동 제출 연결 대상이 아니에요. 실제 신청은 공식 신청서에서 진행하고, 필요한 내용은 함께 준비할 수 있어요.</p>{safePolicyUrl(officialUrl)&&<a className="text-button" href={safePolicyUrl(officialUrl)} target="_blank" rel="noopener noreferrer">공식 신청서 열기 ↗</a>}{onTest&&<><p>신청 과정을 체험하려면 별도 팀 소유 취업 클래스 테스트 폼으로 이어갈 수 있어요. 이 기관 신청으로 접수되지는 않아요.</p><button className="btn btn-secondary" onClick={onTest}>취업 클래스 테스트 신청 이어가기</button></>}<button className="btn btn-ghost" onClick={onSchedule}>문의할 일정 등록</button></>}
+    {stage==='unavailable'&&<><h4>{form?.reason==='closed'?'현재 접수가 마감됐어요':'신청 방법을 함께 확인해요'}</h4><p>이 기관 신청서는 현재 둘셋의 자동 제출 연결 대상이 아니에요. 실제 신청은 공식 신청서에서 진행하고, 필요한 내용은 함께 준비할 수 있어요.</p>{safePolicyUrl(officialUrl)&&<a className="text-button" href={safePolicyUrl(officialUrl)} target="_blank" rel="noopener noreferrer">공식 신청서 열기 ↗</a>}{onTest&&<><p>신청 과정을 체험하려면 별도 팀 소유 취업 클래스 테스트 폼으로 이어갈 수 있어요. 이 기관 신청으로 접수되지는 않아요.</p><button className="btn btn-secondary" onClick={onTest}>취업 클래스 테스트 신청 이어가기</button></>}<button className="btn btn-ghost" onClick={onSchedule}>문의할 일정 등록</button></>}
     {stage==='uncertain'&&<div role="alert"><h4>접수 여부를 확인하지 못했어요</h4><p>중복 신청을 막기 위해 다시 제출하지 않을게요. 신청처에서 접수 여부를 확인해 주세요.</p><button className="btn btn-ghost" onClick={onSchedule}>확인할 일정 등록</button></div>}
   </section>
 }
