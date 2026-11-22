@@ -19,7 +19,7 @@ export function profileChatQuestion(field: ProfileChatField, personal: PersonalI
   const current = profileChatCurrent(field, personal, activity)
   return `${current ? `저장된 정보는 ‘${current}’예요. 그대로 쓰거나 바꿀 수 있어요.\n\n` : ''}${questions[field]}`
 }
-export function parseProfileChat(field: ProfileChatField, text: string, today = new Date()): { value: string | string[]; label: string } | { error: string } {
+export function parseProfileChat(field: ProfileChatField, text: string, today = new Date()): { value: string | string[]; label: string } | { error: string; suggestions?: string[] } {
   const value = text.trim()
   if (field === 'name') {
     if (!value || value.length > 30) return {error:'이름이나 별명을 30자 이내로 알려주세요.'}
@@ -34,10 +34,13 @@ export function parseProfileChat(field: ProfileChatField, text: string, today = 
     return { value: normalized, label: normalized }
   }
   if (field === 'regionCode') {
-    const normalized = value.replace(/^서울(?=\s)/, '서울특별시')
-    const matches = regions.filter(r => r.label === normalized || (r.code.length === 5 && r.label.endsWith(` ${normalized}`)))
-    if (matches.length !== 1) return { error: '지역을 정확히 찾지 못했어요. ‘서울 강동구 천호동’처럼 시·도와 구·동을 함께 알려주세요.' }
-    return { value: matches[0].code, label: matches[0].label }
+    const normalize=(v:string)=>v.replace(/\s+/g,'').replace(/^서울(?:특별시|시)?/,'서울특별시')
+    const query=normalize(value)
+    const matches=regions.filter(r=>normalize(r.label)===query||normalize(r.label).endsWith(query))
+    if(matches.length===1)return {value:matches[0].code,label:matches[0].label}
+    const leaf=regions.map(r=>r.label.split(' ').slice(-1)[0]!).filter(part=>query.endsWith(part)).sort((a,b)=>b.length-a.length)[0]
+    const candidates=(matches.length?matches:leaf?regions.filter(r=>r.label.split(' ').slice(-1)[0]===leaf&&(!query.startsWith('서울특별시')||r.label.startsWith('서울특별시'))):[]).slice(0,5)
+    return {error:candidates.length?'입력한 지역을 확인해 주세요. 아래 지역이 맞나요?':'지역을 찾지 못했어요. 예: 서울 강동구 천호동',suggestions:candidates.map(r=>r.label)}
   }
   if (field === 'interests') {
     const values = [...new Set(value.split(/[,，]/).map(v => v.trim()).filter(Boolean))]

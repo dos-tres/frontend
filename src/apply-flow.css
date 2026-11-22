@@ -3,3 +3,17 @@
 .assistant-result{min-width:0}.assistant-result-item{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;padding:16px;margin:12px 0;border:1px solid #dfe6f3;border-radius:14px;background:white;color:inherit;cursor:pointer;font:inherit}.assistant-result-item:hover{border-color:#7799e2;background:#f8faff}.assistant-result-item strong{font-size:16px}.assistant-result-item span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14px;line-height:1.6}.assistant-result-item small{font-size:12px}.assistant-result-item em{font-size:13px;font-style:normal;color:#4565ae}.assistant-result-item:focus-visible{outline:3px solid #7799e2;outline-offset:2px}
 
 .apply-demo-context,.apply-test-label{font-size:13px;color:var(--muted);background:#f2f7ff;border-radius:8px;padding:10px 12px}.apply-flow{border-color:var(--line);padding:18px 20px}.apply-flow header h3{font-size:17px}
+
+/* Keep one question or the review within the conversation viewport. */
+.app-shell .apply-flow{width:min(100%,680px);max-width:100%;box-sizing:border-box;margin:4px 0;padding:16px 18px;border-radius:12px;flex-shrink:0;}
+.app-shell .apply-flow header h3{font-size:17px;margin:0;}.app-shell .apply-flow header{margin-bottom:8px;}
+.app-shell .apply-flow>p{font-size:13px;line-height:1.5;margin:6px 0;}.app-shell .apply-flow .apply-test-label{padding:6px 8px;font-size:12px;}
+.app-shell .apply-flow .apply-field{margin:12px 0;}.app-shell .apply-flow .apply-field>label{font-size:15px;line-height:1.5;}
+.app-shell .apply-flow textarea{min-height:100px;max-height:160px;}.app-shell .apply-flow .assistant-profile-actions{padding:8px 0 0;margin:8px 0 0;}
+.app-shell .apply-flow .apply-review{margin:8px 0;display:grid;gap:0;}
+.app-shell .apply-flow .apply-review>div{display:grid;grid-template-columns:130px minmax(0,1fr) 38px;gap:10px;align-items:start;padding:8px 0;font-size:13px;line-height:1.5;}
+.app-shell .apply-flow .apply-review dt{font-weight:600;}.app-shell .apply-flow .apply-review dd{margin:0;max-height:96px;overflow:auto;white-space:pre-wrap;}.app-shell .apply-flow .apply-review button{font-size:12px;padding:0;margin:0;}
+.app-shell .assistant-workspace{min-height:0;height:calc(100dvh - 132px);}.app-shell .assistant-conversation{min-height:0;}.app-shell .assistant-transcript{min-height:0;}
+@media(max-width:760px){.app-shell .assistant-workspace:has(.apply-flow){height:calc(100dvh - 90px);}.assistant-workspace:has(.apply-flow) .assistant-sidebar{display:none;}.app-shell .assistant-workspace:has(.apply-flow) .assistant-conversation{height:100%;min-height:0;}.app-shell .apply-flow{padding:12px;}.app-shell .apply-flow .apply-review>div{grid-template-columns:90px minmax(0,1fr) 32px;gap:6px;font-size:12px;}}
+
+.app-shell .apply-flow .apply-review>div{padding:6px 0;}.app-shell .apply-flow .apply-review dt{line-height:1.5;}

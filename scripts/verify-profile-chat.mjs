@@ -15,3 +15,10 @@ assert.deepEqual(api.parseProfileChat('interests','주거, 주거, 취업·진�
 assert.ok('error' in api.parseProfileChat('interests','주거, 취업·진로, 창업, 문화·여가'))
 assert.ok('error' in api.parseProfileChat('interests','없는 분야'))
 console.log('PASS: conversational profile date/calendar/future validation, unique region matching, allowed choices, interests max 3')
+
+assert.equal(api.parseProfileChat('regionCode','서울시강동구천호동').label,'서울특별시 강동구 천호동')
+assert.equal(api.parseProfileChat('regionCode','강동구 천호동').label,'서울특별시 강동구 천호동')
+const mismatch=api.parseProfileChat('regionCode','강서구 천호동')
+assert.ok('error' in mismatch)
+assert.ok(mismatch.suggestions.includes('서울특별시 강동구 천호동'))
+console.log('PASS: compact city aliases, unique district/dong and explicit correction candidates')

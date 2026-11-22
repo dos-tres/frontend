@@ -9,6 +9,7 @@ type Question = {id:string; label:string; kind:string; required:boolean; options
 type Start = {available:boolean; form_revision?:string; test_only?:boolean; reason?:string; questions?:Question[]; filled?:{id:string;label:string;value:string}[]; item:{id:string;title:string}}
 type Result = {status:string;confirmed_by:string;submitted_at:string;item:{id:string;title:string}}
 type Answers = Record<string,string|string[]>
+const reviewLabel=(q:Question)=>({name:'이름',age:'나이',region:'거주 지역',phone:'연락처',email:'이메일',birth_date:'생년월일'}[q.fill_key||'']||(/동의/.test(q.label)?'참여 동의':q.kind==='long'?'참여 동기':/피드백/.test(q.label)?'받고 싶은 도움':/취업 준비/.test(q.label)?'준비 상태':q.label.replace(/\s*\([^)]*\)/g,'')))
 const base = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/,'')
 async function request(path:string, body:unknown) {
   const response = await fetch(`${base}/api/apply/${path}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
@@ -21,10 +22,9 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,officialUr
   const [form,setForm]=useState<Start>(); const [answers,setAnswers]=useState<Answers>({})
   const [stage,setStage]=useState<'loading'|'edit'|'review'|'done'|'unavailable'|'uncertain'>('loading')
   const [error,setError]=useState(''); const [busy,setBusy]=useState(false); const [result,setResult]=useState<Result>()
-  const [preview,setPreview]=useState<{id:string;input:string;payload:unknown}|null>(null)
   const [drafting,setDrafting]=useState('')
-  const [motivation,setMotivation]=useState(motivationContext)
   const [queue,setQueue]=useState<string[]>([]);const [step,setStep]=useState(0)
+  const [editingReview,setEditingReview]=useState(false)
   useEffect(()=>{panel.current?.scrollIntoView({block:'nearest'})},[stage,step])
   const [invalid,setInvalid]=useState<string[]>([]); const lock=useRef(false)
   useEffect(()=>{let active=true
@@ -44,19 +44,20 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,officialUr
     for(const q of form?.questions||[]){if(q.fill_key&&labels[q.fill_key]&&typeof answers[q.id]==='string')known[labels[q.fill_key]]=answers[q.id] as string}
     return maskApplicationText(text,personal,known)
   }
-  const draftAnswer=async(id:string,generate=false)=>{
-    if(drafting||!motivation.trim())return
+  const draftAnswer=async(id:string)=>{
+    if(drafting)return
     setDrafting(id);setError('')
     try {
-      const payload={item_id:itemId,question_id:id,messages:[{role:'user',content:masked(motivation)}],preview:!generate}
-      const data=await request('draft',payload)
-      if(!generate)setPreview({id,input:data.ai_input,payload})
-      else {let value=String(data.draft||'');for(const [key,raw] of Object.entries({이름:personal.name,연락처:personal.phone,이메일:personal.email})){value=value.split(`[${key}]`).join(raw)}update(id,value);setPreview(null)}
-    } catch {setError('초안을 만들지 못했어요. 입력한 내용은 유지했어요. 다시 시도하거나 직접 작성할 수 있어요.')}
+      const facts=motivationContext.trim()||'이 활동에 참여하고 싶어요. 구체적인 경력이나 경험은 아직 알려주지 않았어요.'
+      const data=await request('draft',{item_id:itemId,question_id:id,messages:[{role:'user',content:masked(facts)}],preview:false})
+      let value=String(data.draft||'')
+      for(const [key,raw] of Object.entries({이름:personal.name,연락처:personal.phone,이메일:personal.email}))value=value.split(`[${key}]`).join(raw)
+      update(id,value)
+    } catch {setError('답변을 만들지 못했어요. 다시 추천받거나 직접 입력해 주세요.')}
     finally {setDrafting('')}
   }
   const questions=form?.questions || []
-  const update=(id:string,value:string|string[])=>{setAnswers(a=>({...a,[id]:value}));setInvalid(ids=>ids.filter(v=>v!==id));setError('');setPreview(null)}
+  const update=(id:string,value:string|string[])=>{setAnswers(a=>({...a,[id]:value}));setInvalid(ids=>ids.filter(v=>v!==id));setError('')}
   const review=()=>{
     const malformed=questions.filter(q=>{const value=String(answers[q.id]||'');return !!value&&((q.fill_key==='phone'&&!/^01[016789]-?\d{3,4}-?\d{4}$/.test(value))||(q.fill_key==='age'&&!/^\d{1,3}$/.test(value))) }).map(q=>q.id)
     const missing=questions.filter(q=>q.required && (!answers[q.id] || (Array.isArray(answers[q.id])?!answers[q.id].length:!String(answers[q.id]).trim()))).map(q=>q.id)
@@ -87,19 +88,18 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,officialUr
     <p>{demoFor||form?.item.title}</p><p className="apply-test-label">시연용이며 실제 기관에 접수되지 않아요.</p>
     {stage==='loading'&&<p role="status">신청서 문항을 확인하고 있어요…</p>}
     {error&&<p role="alert">{error}</p>}
-    {stage==='edit'&&<><p>저장된 정보는 이 기기에서 채웠어요. 모르는 항목만 하나씩 여쭤볼게요. 마지막에 전체 내용을 확인하고 제출해요.</p>
+    {stage==='edit'&&<>
       {!questions.some(q=>q.fill_key)&&<p className="settings-help">현재 신청서는 저장 정보 자동 채움을 지원하지 않아 직접 입력이 필요해요.</p>}
-      {questions.some(q=>q.id===queue[step]&&q.can_draft)&&<div className="apply-field"><label htmlFor="motivation-facts">추천 답변에 담을 내용</label><textarea id="motivation-facts" value={motivation} onChange={e=>{setMotivation(e.target.value);setPreview(null)}} placeholder="실제로 하고 싶은 활동과 기대하는 점만 알려주세요. 이름·연락처는 적지 않아도 돼요."/><p className="settings-help">지금까지 대화를 가져왔어요. 고치거나 추가한 뒤 추천 답변을 만들 수 있어요.</p></div>}
       <p>알려주실 항목 · {Math.min(step+1,queue.length)} / {queue.length}</p>
       {questions.filter(q=>q.id===queue[step]).map(q=><div className="apply-field" key={q.id}><label htmlFor={`apply-${q.id}`}>{q.label}{q.required?' (필수)':' (선택)'}</label>
         {q.description&&<p>{q.description}</p>}{q.hint&&<p className="settings-help">{q.hint}</p>}
-        {q.options?.length?<fieldset id={`apply-${q.id}`} aria-invalid={invalid.includes(q.id)}><legend className="settings-sr-only">{q.label}</legend>{q.options.map(option=><label key={option}><input type={q.kind==='multi'?'checkbox':'radio'} name={`apply-${q.id}`} checked={q.kind==='multi'?Array.isArray(answers[q.id])&&answers[q.id].includes(option):answers[q.id]===option} onChange={()=>{const current=Array.isArray(answers[q.id])?answers[q.id] as string[]:[];update(q.id,q.kind==='multi'?(current.includes(option)?current.filter(v=>v!==option):[...current,option]):option)}}/>{option}</label>)}</fieldset>:q.kind==='long'?<textarea id={`apply-${q.id}`} value={String(answers[q.id]||'')} onChange={e=>update(q.id,e.target.value)} aria-invalid={invalid.includes(q.id)}/>:<input id={`apply-${q.id}`} type={q.kind==='date'?'date':'text'} value={String(answers[q.id]||'')} onChange={e=>update(q.id,e.target.value)} aria-invalid={invalid.includes(q.id)}/>}
-        {q.can_draft&&<><button className="text-button" disabled={!!drafting||!motivation.trim()} onClick={()=>void draftAnswer(q.id,true)}>{drafting?'추천 답변 만드는 중…':'추천 답변 만들기'}</button><button className="text-button" disabled={!!drafting||!motivation.trim()} onClick={()=>void draftAnswer(q.id)}>AI에 전달할 내용 보기</button>{preview?.id===q.id&&<div><pre style={{whiteSpace:'pre-wrap'}}>{preview.input}</pre><button className="btn btn-secondary" disabled={!!drafting} onClick={()=>void draftAnswer(q.id,true)}>{drafting?'초안 작성 중…':'이 내용으로 초안 만들기'}</button></div>}</>}
+        {q.options?.length?<fieldset id={`apply-${q.id}`} aria-invalid={invalid.includes(q.id)}><legend className="settings-sr-only">{q.label}</legend>{q.options.map(option=><label key={option}><input type={q.kind==='multi'?'checkbox':'radio'} name={`apply-${q.id}`} checked={q.kind==='multi'?Array.isArray(answers[q.id])&&answers[q.id].includes(option):answers[q.id]===option} onChange={()=>{const current=Array.isArray(answers[q.id])?answers[q.id] as string[]:[];update(q.id,q.kind==='multi'?(current.includes(option)?current.filter(v=>v!==option):[...current,option]):option)}}/>{option}</label>)}</fieldset>:q.kind==='long'?<textarea id={`apply-${q.id}`} placeholder="직접 입력하거나 추천받기를 눌러주세요" rows={4} value={String(answers[q.id]||'')} onChange={e=>update(q.id,e.target.value)} aria-invalid={invalid.includes(q.id)}/>:<input id={`apply-${q.id}`} type={q.kind==='date'?'date':'text'} value={String(answers[q.id]||'')} onChange={e=>update(q.id,e.target.value)} aria-invalid={invalid.includes(q.id)}/>}
+        {q.can_draft&&<button className="btn btn-secondary" disabled={!!drafting} onClick={()=>void draftAnswer(q.id)}>{drafting?'답변 만드는 중…':'추천받기'}</button>}
         {q.other&&<p className="settings-help">기타 직접 답변은 현재 지원하지 않아요. 제공된 선택지로 답할 수 없다면 공식 신청서를 이용해 주세요.</p>}
         {invalid.includes(q.id)&&<p role="alert">이 항목을 확인해 주세요.</p>}
       </div>)}
-      <div className="assistant-profile-actions"><button className="text-button" disabled={step===0} onClick={()=>setStep(i=>i-1)}>이전 항목</button><button className="btn btn-primary" onClick={()=>{const q=questions.find(q=>q.id===queue[step]);const v=q?answers[q.id]:undefined;if(q?.required&&(!v||(Array.isArray(v)?!v.length:!String(v).trim()))){setInvalid([q.id]);setError('이 항목에 답해 주세요.');return}setError('');if(step<queue.length-1)setStep(i=>i+1);else review()}}>{step<queue.length-1?'다음':'전체 내용 확인'}</button><button className="text-button" onClick={()=>{setQueue(questions.map(q=>q.id));setStep(0)}}>자동 채운 정보도 수정하기</button></div></>}
-    {stage==='review'&&<><h4>이 내용으로 신청할까요?</h4><dl>{questions.map(q=><div key={q.id}><dt>{q.label}</dt><dd>{Array.isArray(answers[q.id])?(answers[q.id] as string[]).join(', '):answers[q.id]||'미입력'}</dd></div>)}</dl><button className="btn btn-ghost" disabled={busy} onClick={()=>{setQueue(questions.map(q=>q.id));setStep(0);setStage('edit')}}>내용 수정</button><button className="btn btn-primary" disabled={busy} onClick={submit}>{busy?'제출 중…':'이 내용으로 신청'}</button></>}
+      <div className="assistant-profile-actions"><button className="text-button" disabled={step===0||editingReview} onClick={()=>setStep(i=>i-1)}>이전 항목</button><button className="btn btn-primary" onClick={()=>{const q=questions.find(q=>q.id===queue[step]);const v=q?answers[q.id]:undefined;if(q?.required&&(!v||(Array.isArray(v)?!v.length:!String(v).trim()))){setInvalid([q.id]);setError('이 항목에 답해 주세요.');return}setError('');if(editingReview){setEditingReview(false);review()}else if(step<queue.length-1)setStep(i=>i+1);else review()}}>{editingReview?'수정 완료':step<queue.length-1?'다음':'전체 내용 확인'}</button></div></>}
+    {stage==='review'&&<><h4>이 내용으로 신청할까요?</h4><dl className="apply-review">{questions.map((q,i)=><div key={q.id}><dt>{reviewLabel(q)}</dt><dd>{/동의/.test(q.label)?(answers[q.id]&&(!Array.isArray(answers[q.id])||(answers[q.id] as string[]).length)?'동의했어요':'미동의'):Array.isArray(answers[q.id])?(answers[q.id] as string[]).join(', '):answers[q.id]||'미입력'}</dd><button className="text-button" aria-label={`${q.label} 수정`} onClick={()=>{setQueue(questions.map(q=>q.id));setStep(i);setEditingReview(true);setStage('edit')}}>수정</button></div>)}</dl><button className="btn btn-primary" disabled={busy} onClick={submit}>{busy?'처리 중…':'이 내용으로 신청'}</button></>}
     {stage==='done'&&result&&<><h4>신청 시연이 완료됐어요</h4><p>작성일: {new Date(result.submitted_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}</p><button className="btn btn-primary" onClick={onSchedule}>일정 등록하기</button><p className="settings-help">날짜와 시간을 확인한 뒤 일정을 저장해요.</p></>}
     {stage==='unavailable'&&<><h4>{form?.reason==='closed'?'현재 접수가 마감됐어요':'신청 방법을 함께 확인해요'}</h4><p>이 기관 신청서는 현재 둘셋의 자동 제출 연결 대상이 아니에요. 실제 신청은 공식 신청서에서 진행하고, 필요한 내용은 함께 준비할 수 있어요.</p>{safePolicyUrl(officialUrl)&&<a className="text-button" href={safePolicyUrl(officialUrl)} target="_blank" rel="noopener noreferrer">공식 신청서 열기 ↗</a>}{onTest&&<><p>신청 과정을 체험하려면 별도 팀 소유 취업 클래스 테스트 폼으로 이어갈 수 있어요. 이 기관 신청으로 접수되지는 않아요.</p><button className="btn btn-secondary" onClick={onTest}>취업 클래스 테스트 신청 이어가기</button></>}<button className="btn btn-ghost" onClick={onSchedule}>문의할 일정 등록</button></>}
     {stage==='uncertain'&&<div role="alert"><h4>접수 여부를 확인하지 못했어요</h4><p>중복 신청을 막기 위해 다시 제출하지 않을게요. 신청처에서 접수 여부를 확인해 주세요.</p><button className="btn btn-ghost" onClick={onSchedule}>확인할 일정 등록</button></div>}
