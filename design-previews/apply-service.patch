@@ -1,0 +1,7 @@
+diff --git a/src/main.tsx b/src/main.tsx
+--- a/src/main.tsx
++++ b/src/main.tsx
+@@ -3,2 +3,3 @@
+ import App from './App'
+ import './styles.css'
++import './service-style.css'
