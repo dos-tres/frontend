@@ -168,7 +168,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
   const answer = (text: string) => {
     const value = text.trim(); if (!value || chatRequest.current) return
     if (profileField) { respondProfile(value, /^(건너뛰기|건너뛸게|나중에)$/.test(value)); return }
-    if (scheduler.handle(value)) { setDraft(''); return }
+    if (scheduler.handle(value)) { setDraft('');setChatReply(null); return }
     if (/내\s*정보.*(입력|수정|등록)/.test(value)) { beginProfile(); return }
     if (busy) return
     if ((activeRecommendation||detail) && /^(신청해\s*줘|신청할래|신청하기|신청 진행|신청 같이)/.test(value)) {if(activeRecommendation)setDetail(toProgram(activeRecommendation));setCatalogMode(null);setPolicyExample(false);setApplying(true);setDraft('');return}
@@ -218,13 +218,13 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
         {!profileField && !context.profile && !!chatReply?.needs.includes('profile') && <button className="btn btn-secondary" onClick={beginProfile}>추천에 필요한 내 정보 입력</button>}
         {catalogMode && <AssistantCatalog mode={catalogMode} query={catalogQuery} criteria={{age:context.local.age,region:context.profile?.sigungu_cd||'',job:context.local.employment,school:context.local.school}} answers={context.checkin} onSelect={selectCatalogItem} />}
         {policyExample && <PolicyApplicationExample personal={personal} onClose={()=>setPolicyExample(false)} onSchedule={()=>{setPolicyExample(false);answer('월세 지원 조건·서류 확인 일정 등록')}} />}
-        {applying && detail && <ApplyFlow key={detail.id} itemId={!detail.id.startsWith('demo:')&&/docs\.google\.com\/forms|forms\.gle/.test(detail.applyUrl||'')?'demo:career':detail.id} demoFor={!detail.id.startsWith('demo:')&&/docs\.google\.com\/forms|forms\.gle/.test(detail.applyUrl||'')?detail.title:undefined} personal={personal} officialUrl={detail.applyUrl||detail.referenceUrl} onTest={()=>{setDetail({id:"demo:career",type:"프로그램",title:"[둘셋 테스트] 자소서·면접 피드백 클래스",summary:"가상 취업 클래스 신청 시연이에요.",region:"온라인 · 가상",target:"취업 준비 청년(시연)",period:"테스트",method:"테스트 폼",place:"온라인(가상)",source:"둘셋 테스트"});setApplying(true)}} onClose={()=>setApplying(false)} onSchedule={()=>{setApplying(false);answer('일정 등록')}} />}
-        {!profileField && scheduler.preview}
+        {applying && detail && <ApplyFlow key={detail.id} itemId={!detail.id.startsWith('demo:')&&/docs\.google\.com\/forms|forms\.gle/.test(detail.applyUrl||'')?'demo:career':detail.id} demoFor={!detail.id.startsWith('demo:')&&/docs\.google\.com\/forms|forms\.gle/.test(detail.applyUrl||'')?detail.title:undefined} personal={personal} motivationContext={[...new Set(turns.filter(t=>t.role==='user'&&!/신청|일정|찾아|추천|알려|어떤|여기|이 상담/.test(t.text)).map(t=>t.text))].slice(-3).join(' ').slice(0,600)} officialUrl={detail.applyUrl||detail.referenceUrl} onTest={()=>{setDetail({id:"demo:career",type:"프로그램",title:"[둘셋 테스트] 자소서·면접 피드백 클래스",summary:"가상 취업 클래스 신청 시연이에요.",region:"온라인 · 가상",target:"취업 준비 청년(시연)",period:"테스트",method:"테스트 폼",place:"온라인(가상)",source:"둘셋 테스트"});setApplying(true)}} onClose={()=>setApplying(false)} onSchedule={()=>{setApplying(false);answer('일정 등록')}} />}
+        {!profileField && scheduler.preview}{!profileField && scheduler.editor}
         {busy && <p role="status">선택한 공고를 읽고 있어요…</p>}
         {failed && <div role="alert">공고를 불러오지 못했어요. <button className="text-button" onClick={() => setRevision(n => n + 1)}>다시 시도</button></div>}
 
       </div>
-      <div className="assistant-composer">{!profileField && (!!scheduleContext || !!center || scheduler.active) && scheduler.controls}{center && <div className="assistant-choices"><button onClick={()=>answer('센터 이용 안내 알려줘')}>공간·이용 안내</button></div>}{!profileField && <form onSubmit={submit}><input aria-label="조이에게 메시지" placeholder={profileField === 'name' ? '이름 또는 별명' : profileField === 'birthDate' ? '예: 2000-01-15' : profileField === 'regionCode' ? '예: 서울 관악구' : '조이에게 물어보세요'} value={draft} onChange={e => setDraft(e.target.value)} maxLength={1000} disabled={chatBusy || (!profileField && (busy))} /><button type="submit" aria-label="메시지 보내기" disabled={chatBusy || !draft.trim() || (!profileField && (busy))}><Send size={18} /></button></form>}<p>공고 정보를 바탕으로 안내해요. 일정 대화는 날짜·시간을 확인한 뒤 저장해요. 신청은 최종 확인 후 진행해요. 대화는 AI가 답변하며 중요한 내용은 공식 안내를 확인해 주세요.</p></div>
+      <div className="assistant-composer">{!profileField && <form onSubmit={submit}><input aria-label="조이에게 메시지" placeholder={profileField === 'name' ? '이름 또는 별명' : profileField === 'birthDate' ? '예: 2000-01-15' : profileField === 'regionCode' ? '예: 서울 관악구' : '조이에게 물어보세요'} value={draft} onChange={e => setDraft(e.target.value)} maxLength={1000} disabled={chatBusy || (!profileField && (busy))} /><button type="submit" aria-label="메시지 보내기" disabled={chatBusy || !draft.trim() || (!profileField && (busy))}><Send size={18} /></button></form>}<p>공고 정보를 바탕으로 안내해요. 일정 대화는 날짜·시간을 확인한 뒤 저장해요. 신청은 최종 확인 후 진행해요. 대화는 AI가 답변하며 중요한 내용은 공식 안내를 확인해 주세요.</p></div>
     </section>
   </div>
 }
