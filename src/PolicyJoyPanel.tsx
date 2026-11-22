@@ -57,6 +57,8 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
   const [profileQueue,setProfileQueue] = useState<number[]>([])
   const [nickname,setNickname] = useState(()=>{try{return localStorage.getItem('dos-tres.nickname.v1')||''}catch{return ''}})
   const [profileStep, setProfileStep] = useState<number | null>(null)
+  const [profileError,setProfileError]=useState('')
+  useEffect(()=>setProfileError(''),[profileStep])
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
   const profileField = profileStep === null ? undefined : profileChatSteps[profileStep]
   const contextSignature=useRef('')
@@ -122,7 +124,8 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
     if (!profileField || profileStep === null) return
     let nextPersonal=personal,nextActivity=activity
     const parsed=skip?undefined:parseProfileChat(profileField,text)
-    if(parsed && 'error' in parsed){setTurns(prev=>[...prev,{role:'assistant',text:parsed.error}]);return}
+    if(parsed && 'error' in parsed){setProfileError(parsed.error);return}
+    setProfileError('')
     if(parsed && 'value' in parsed){
       if(profileField==='name'||profileField==='birthDate'||profileField==='regionCode'){nextPersonal={...personal,[profileField]:parsed.value as string};onSavePersonal(nextPersonal)}
       else {nextActivity={...activity,[profileField]:profileField==='school'&&!parsed.value?'학생이 아니에요':parsed.value};onSaveActivity(nextActivity)}
@@ -208,7 +211,8 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
           <h3>{profileField==='birthDate'?'생년월일을 알려주세요':profileField==='regionCode'?'어느 지역에 살고 있나요?':profileField==='employment'?'지금 어떤 상태인가요?':profileField==='school'?'현재 재학 상태를 알려주세요':profileField==='name'?'이름을 수정해 주세요':'관심 있는 분야를 골라주세요'}</h3>
           <p>{profileField==='birthDate'?'참여할 수 있는 나이인지 확인할 때 사용해요.':profileField==='regionCode'?'동까지 알려주셔도 좋아요. 예: 서울 강동구 천호동. 상세 주소는 필요 없어요.':profileField==='interests'?'최대 3개까지 선택할 수 있어요.':'하나를 고르면 다음으로 넘어가요.'}</p>
           <div className="assistant-profile-options">{(profileField==='employment'?chatEmploymentOptions:profileField==='school'?chatSchoolOptions:profileField==='interests'?chatInterestOptions:[]).map(option=><button key={option} aria-pressed={profileField==='interests'?selectedInterests.includes(option):profileChatCurrent(profileField,personal,activity)===option} disabled={profileField==='interests'&&!selectedInterests.includes(option)&&selectedInterests.length>=3} onClick={()=>profileField==='interests'?setSelectedInterests(prev=>prev.includes(option)?prev.filter(v=>v!==option):[...prev,option]):respondProfile(option)}>{option}</button>)}</div>
-          {['name','birthDate','regionCode'].includes(profileField)&&<form onSubmit={submit}><input autoFocus aria-label="내 정보 답변" placeholder={profileField==='birthDate'?'예: 2003-06-20':profileField==='regionCode'?'예: 서울 강동구 천호동':'이름'} value={draft} onChange={e=>setDraft(e.target.value)}/><button type="submit" disabled={!draft.trim()}>다음</button></form>}
+          {profileError&&<p id="profile-input-error" className="assistant-field-error" role="alert">{profileError}</p>}
+          {['name','birthDate','regionCode'].includes(profileField)&&<form onSubmit={submit}><input autoFocus aria-label="내 정보 답변" aria-invalid={!!profileError} aria-describedby={profileError?'profile-input-error':undefined} placeholder={profileField==='birthDate'?'예: 2003-06-20':profileField==='regionCode'?'예: 서울 강동구 천호동':'이름'} value={draft} onChange={e=>{setDraft(e.target.value);setProfileError('')}}/><button type="submit" disabled={!draft.trim()}>다음</button></form>}
           <div className="assistant-profile-actions">{profileField==='interests'&&<button className="btn btn-primary" disabled={!selectedInterests.length} onClick={()=>respondProfile(selectedInterests.join(', '))}>이 관심으로 계속하기 →</button>}{profileQueue.indexOf(profileStep!)>0&&<button className="text-button" onClick={previousProfile}>이전 질문</button>}<button className="text-button" onClick={()=>respondProfile('',true)}>나중에 알려줄게요</button></div>
         </section>}
 

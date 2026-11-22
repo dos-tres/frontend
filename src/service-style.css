@@ -280,3 +280,5 @@
 .app-shell .chat-recommendation-card dl>div{padding:0;min-height:0;}
 .app-shell .chat-card-explanation{margin-top:12px;}
 .app-shell .chat-card-explanation>div{padding:16px 20px;}
+
+.app-shell .assistant-question .assistant-field-error{color:#c93434;font-size:14px;line-height:1.5;margin:0 0 10px;font-weight:600}.assistant-question input[aria-invalid=true]{border-color:#c93434}
