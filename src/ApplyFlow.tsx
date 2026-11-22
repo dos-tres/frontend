@@ -71,8 +71,6 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
     try {
       const data:ApplyResult=form?.replica ? await request('submit',{item_id:itemId,form_revision:form.form_revision,answers}) : {status:'simulated',confirmed_by:'local',submitted_at:new Date().toISOString(),item:{id:itemId,title:form?.item.title||''}}
       setResult(data);setStage('done');onComplete?.(data);return
-      /* Live submission is disabled for this demonstration. */
-
     } catch(e) {
       const failure=e as {code?:string;missing?:string[];invalid?:string[]}
       if(failure.code==='APPLY_FORM_CHANGED'){setStage('unavailable');setError('작성 중 신청서 문항이 바뀌었어요. 닫고 다시 열어 내용을 확인해 주세요.')}
