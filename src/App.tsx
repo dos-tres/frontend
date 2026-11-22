@@ -51,7 +51,8 @@ const navItems = [
 ] as const
 
 function sectionFor(screen: Screen) {
-  if (['home', 'chat', 'apply'].includes(screen)) return 'assistant'
+  if (screen === 'home') return null
+  if (['chat', 'apply'].includes(screen)) return 'assistant'
   if (['policy-list', 'policy-detail'].includes(screen)) return 'policies'
   if (['center-list', 'center-detail'].includes(screen)) return 'centers'
   if (['calendar', 'applications'].includes(screen)) return 'schedule'
@@ -276,6 +277,7 @@ export default function App() {
     catch { setCheckinStorageError(true) }
   }
   const [messages, setMessages] = useState<Message[]>([])
+  const [chatSession, setChatSession] = useState(0)
   const [selectedProgram, setSelectedProgram] = useState<Program>(programs[0])
   const [chatProgram, setChatProgram] = useState<Program>()
   const [chatCenter, setChatCenter] = useState<PublicCenter>()
@@ -307,7 +309,8 @@ export default function App() {
     const value = text.trim()
     if (!value) return
     setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined)
-    setMessages(prev => [...prev, { role: 'user', text: value }])
+    setMessages([{ role: 'user', text: value }])
+    setChatSession(value => value + 1)
     setScreen('chat')
   }
   const toggleSave = (id: string) => setSavedIds(prev => prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id])
@@ -344,7 +347,7 @@ export default function App() {
   const navigate = (next: Screen) => { if (next === 'setup') startSetup(); else setScreen(next) }
   const useProfileForPolicies = () => { policyData.resetCriteria(); setPolicyView(initialPolicyView) }
 
-  const chatPage = <PolicyJoyPanel checkinAnswers={policyAnswers} answerDecisions={setup.decisions} preferProfile={setup.interestSource==='profile'} scheduleContext={chatSchedule} center={chatCenter} schedule={{ events, save:saveEvent, remove:id=>setEvents(prev=>prev.filter(e=>e.id!==id)), open:()=>setScreen('calendar'), recordApplication:p=>setApplications(prev=>prev.some(a=>a.id===`reported:${p.id}`)?prev:[{id:`reported:${p.id}`,title:p.title,status:'신청 완료',date:localDate().replaceAll('-','.'),note:'사용자가 직접 신청했다고 확인한 기록 · 기관 접수 확인 아님'},...prev]) }} program={chatProgram} personal={personal} activity={activity} initialMessages={messages} onBack={() => setScreen(chatSchedule?'calendar':chatCenter?'center-list':'policy-list')} onSavePersonal={savePersonal} onSaveActivity={saveActivity} onNew={() => { setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined); setMessages([]) }} onSave={() => { if (chatProgram) toggleSave(chatProgram.id) }} saved={!!chatProgram && savedIds.includes(chatProgram.id)} />
+  const chatPage = <PolicyJoyPanel key={chatSession} startFresh={chatSession > 0} checkinAnswers={policyAnswers} answerDecisions={setup.decisions} preferProfile={setup.interestSource==='profile'} scheduleContext={chatSchedule} center={chatCenter} schedule={{ events, save:saveEvent, remove:id=>setEvents(prev=>prev.filter(e=>e.id!==id)), open:()=>setScreen('calendar'), recordApplication:p=>setApplications(prev=>prev.some(a=>a.id===`reported:${p.id}`)?prev:[{id:`reported:${p.id}`,title:p.title,status:'신청 완료',date:localDate().replaceAll('-','.'),note:'사용자가 직접 신청했다고 확인한 기록 · 기관 접수 확인 아님'},...prev]) }} program={chatProgram} personal={personal} activity={activity} initialMessages={messages} onBack={() => setScreen(chatSchedule?'calendar':chatCenter?'center-list':'policy-list')} onSavePersonal={savePersonal} onSaveActivity={saveActivity} onNew={() => { setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined); setMessages([]) }} onSave={() => { if (chatProgram) toggleSave(chatProgram.id) }} saved={!!chatProgram && savedIds.includes(chatProgram.id)} />
 
   const page = useMemo(() => {
     switch (screen) {
@@ -376,6 +379,7 @@ export default function App() {
     <div className="app-shell">
       <Header screen={screen} onNavigate={setScreen} />
       <main className="main-container"><div style={{display:screen==='chat'?'block':'none'}} aria-hidden={screen!=='chat'}>{chatPage}</div>{['profile', 'profile-edit', 'activity-edit', 'state-check', 'records'].includes(screen) ? <AccountLayout screen={screen as AccountScreen} onNavigate={setScreen}>{page}</AccountLayout> : page}</main>
+      {import.meta.env.DEV && <button className="text-button" onClick={()=>{for(const key of ['personal','activity','setup'])localStorage.removeItem(`dos-tres.${key}.v1`);localStorage.removeItem(HISTORY_KEY);setPersonal({...initialPersonalInformation});setActivity({...initialActivityInformation});setCheckinHistory([]);setStateCheck(initialCurrentState);setSetup(readSetup());setChatProgram(undefined);setChatCenter(undefined);setChatSchedule(undefined);setMessages([]);setChatSession(value=>value+1);setScreen('home');notify('내 정보를 초기화했어요. 다시 입력할 수 있어요.')}}>내 정보만 초기화</button>}
       {import.meta.env.DEV && <button className="text-button" style={{margin:'12px 24px'}} onClick={async()=>{for(const key of Object.keys(localStorage)){if(key.startsWith('dos-tres.'))localStorage.removeItem(key)}for(const key of Object.keys(sessionStorage)){if(key.startsWith('dos-tres.'))sessionStorage.removeItem(key)}if('caches' in window){for(const key of await caches.keys())await caches.delete(key)}window.location.reload()}}>시연 데이터 초기화</button>}
       <Footer onAbout={() => setScreen('about')} />
       {storageError && <p role="alert">이 브라우저에 저장하지 못했어요. 새로고침하면 수정 내용이 사라질 수 있어요.</p>}

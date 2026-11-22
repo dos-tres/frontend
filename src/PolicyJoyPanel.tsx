@@ -19,7 +19,7 @@ import type { ActivityInformationValue } from './ActivityInformation'
 import { ageFromBirthDate, applicationLabel, periodLabel, requestCatalogItem, safePolicyUrl } from './policy-api'
 
 type Turn = { role: 'assistant' | 'user'; text: string; recommendations?:NonNullable<ChatReply['results']> }
-type Props = { checkinAnswers?: Answers; answerDecisions?: Record<string,string>; preferProfile?: boolean; scheduleContext?: {date:string}; center?: PublicCenter; schedule?: ScheduleBridge; program?: Program; personal: PersonalInformation; activity: ActivityInformationValue; initialMessages: Turn[]; onBack: () => void; onSavePersonal: (value: PersonalInformation) => void; onSaveActivity: (value: ActivityInformationValue) => void; onNew: () => void; onSave: () => void; saved: boolean }
+type Props = { startFresh?: boolean; checkinAnswers?: Answers; answerDecisions?: Record<string,string>; preferProfile?: boolean; scheduleContext?: {date:string}; center?: PublicCenter; schedule?: ScheduleBridge; program?: Program; personal: PersonalInformation; activity: ActivityInformationValue; initialMessages: Turn[]; onBack: () => void; onSavePersonal: (value: PersonalInformation) => void; onSaveActivity: (value: ActivityInformationValue) => void; onNew: () => void; onSave: () => void; saved: boolean }
 type SavedChat = {id:string;title:string;updatedAt:string;turns:Turn[];draft:string;reply:ChatReply|null;answers:Answers;detail?:Program;profileStep?:number|null;profileQueue?:number[]}
 const CHAT_KEY='dos-tres.chat-history.v1'
 function readChats():{activeId:string;entries:SavedChat[]} {
@@ -29,11 +29,13 @@ function readChats():{activeId:string;entries:SavedChat[]} {
 const choices = ['내가 신청할 수 있어?', '신청 준비 도와줘']
 const short = (value?: string) => value && value.length > 420 ? `${value.slice(0, 420)}…` : value
 
-export default function PolicyJoyPanel({ checkinAnswers={}, answerDecisions={}, preferProfile=false, scheduleContext, center, schedule, program, personal, activity, initialMessages, onSavePersonal, onSaveActivity, onNew, onSave, saved }: Props) {
+export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, answerDecisions={}, preferProfile=false, scheduleContext, center, schedule, program, personal, activity, initialMessages, onSavePersonal, onSaveActivity, onNew, onSave, saved }: Props) {
   const [savedChats,setSavedChats] = useState(readChats)
-  const [activeChatId,setActiveChatId] = useState(()=>readChats().activeId||crypto.randomUUID())
-  const restoreChat = useRef<SavedChat|null>(readChats().entries.find(c=>c.id===readChats().activeId)||null)
+  const [activeChatId,setActiveChatId] = useState(()=>startFresh?crypto.randomUUID():readChats().activeId||crypto.randomUUID())
+  const restoreChat = useRef<SavedChat|null>(startFresh?null:readChats().entries.find(c=>c.id===readChats().activeId)||null)
   const [saveFailed,setSaveFailed] = useState(false)
+  const flushChat=useRef(()=>{})
+  useEffect(()=>()=>flushChat.current(),[])
   const [activeRecommendation,setActiveRecommendation] = useState<RecommendationItem|null>(null)
   const [pendingAction,setPendingAction] = useState('')
   const [chatBusy,setChatBusy] = useState(false)
@@ -86,9 +88,10 @@ export default function PolicyJoyPanel({ checkinAnswers={}, answerDecisions={}, 
   const age = context.local.age
   const official = detail && safePolicyUrl(detail.referenceUrl || detail.applyUrl)
   useEffect(()=>{
-    if(!turns.length&&!draft)return
+    if(!turns.length&&!draft){flushChat.current=()=>{};return}
     const entry:SavedChat={id:activeChatId,title:(turns.find(t=>t.role==='user')?.text||'작성 중인 대화').slice(0,36),updatedAt:new Date().toISOString(),turns,draft,reply:chatReply,answers:chatAnswers,detail,profileStep,profileQueue}
     const persist=()=>{try{const existing=readChats();const entries=[entry,...existing.entries.filter(c=>c.id!==activeChatId)].slice(0,20);localStorage.setItem(CHAT_KEY,JSON.stringify({activeId:activeChatId,entries}));setSavedChats({activeId:activeChatId,entries});setSaveFailed(false)}catch{setSaveFailed(true)}}
+    flushChat.current=persist
     const timer=window.setTimeout(persist,250);window.addEventListener('beforeunload',persist)
     return()=>{window.clearTimeout(timer);window.removeEventListener('beforeunload',persist)}
   },[turns,draft,chatReply,chatAnswers,detail,activeChatId,profileStep,profileQueue])
@@ -172,7 +175,14 @@ export default function PolicyJoyPanel({ checkinAnswers={}, answerDecisions={}, 
   }
   useEffect(()=>{if(pendingAction&&detail&&!busy){setPendingAction('');answer(pendingAction)}},[pendingAction,detail,busy])
   useEffect(()=>{ scheduler.reset(); if(scheduleContext)scheduler.begin(scheduleContext.date) },[program?.id,center?.id,scheduleContext?.date])
-  useEffect(()=>{ const last=initialMessages[initialMessages.length-1];const key=last?`${initialMessages.length}:${last.text}`:'';if(handledInitial.current===key)return;handledInitial.current=key;if(!program&&!center&&!scheduleContext&&last?.role==='user')answer(last.text) },[initialMessages])
+  useEffect(()=>{
+    const last=initialMessages[initialMessages.length-1]
+    const key=last?`${initialMessages.length}:${last.text}`:''
+    if(handledInitial.current===key)return
+    // StrictMode replays mount effects: defer the first request so cleanup can cancel it.
+    const timer=window.setTimeout(()=>{handledInitial.current=key;if(!program&&!center&&!scheduleContext&&last?.role==='user')answer(last.text)},0)
+    return()=>window.clearTimeout(timer)
+  },[initialMessages])
   const submit = (event: FormEvent) => { event.preventDefault(); answer(draft) }
   return <div className="assistant-workspace">
     <aside className="assistant-sidebar">
