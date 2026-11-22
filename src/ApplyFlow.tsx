@@ -6,7 +6,7 @@ import type {PersonalInformation} from './ProfileSettings'
 import './apply-flow.css'
 
 type Question = {id:string; label:string; kind:string; required:boolean; options?:string[]; description?:string; hint?:string; fill_key?:string; other?:boolean; can_draft?:boolean; rows?:{id:string;label:string;required:boolean}[]}
-type Start = {submission_ready?:boolean;replica?:boolean;source_form_url?:string;available:boolean; form_revision?:string; test_only?:boolean; reason?:string; questions?:Question[]; filled?:{id:string;label:string;value:string}[]; item:{id:string;title:string}}
+type Start = {read_only?:boolean;submission_ready?:boolean;replica?:boolean;source_form_url?:string;available:boolean; form_revision?:string; test_only?:boolean; reason?:string; questions?:Question[]; filled?:{id:string;label:string;value:string}[]; item:{id:string;title:string}}
 export type ApplyResult = {status:string;confirmed_by:string;submitted_at:string;item:{id:string;title:string}}
 type Answers = Record<string,string|string[]>
 const reviewLabel=(q:Question)=>({name:'이름',age:'나이',region:'거주 지역',phone:'연락처',email:'이메일',birth_date:'생년월일'}[q.fill_key||'']||(/동의/.test(q.label)?'참여 동의':q.kind==='long'?q.label.replace(/^\d+\.\s*/, ''):/피드백/.test(q.label)?'받고 싶은 도움':/취업 준비/.test(q.label)?'준비 상태':q.label.replace(/\s*\([^)]*\)/g,'')))
@@ -66,10 +66,10 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
     setError('');setStage('review')
   }
   const submit=async()=>{
-    if(lock.current)return
+    if(lock.current||!form?.replica||form?.submission_ready!==true)return
     lock.current=true;setBusy(true);setError('')
     try {
-      const data:ApplyResult=form?.replica ? await request('submit',{item_id:itemId,form_revision:form.form_revision,answers}) : {status:'simulated',confirmed_by:'local',submitted_at:new Date().toISOString(),item:{id:itemId,title:form?.item.title||''}}
+      const data:ApplyResult=await request('submit',{item_id:itemId,form_revision:form.form_revision,answers})
       setResult(data);setStage('done');onComplete?.(data);return
     } catch(e) {
       const failure=e as {code?:string;missing?:string[];invalid?:string[]}
@@ -83,7 +83,7 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
   return <section ref={panel} className="apply-flow" aria-label="프로그램 신청">
     <header><h3>신청할 내용을 같이 채워볼게요</h3><button className="text-button" disabled={busy} onClick={onClose}>닫기</button></header>
 
-    <p>{demoFor||form?.item.title}</p><p className="apply-test-label">{form?.replica?'원본 질문 그대로 작성해요. 응답은 팀 소유 복제 폼에만 저장돼요. 가상 정보만 입력해 주세요.':'시연용이며 실제 기관에 접수되지 않아요.'}</p>{form?.source_form_url&&<a className="text-button" href={safePolicyUrl(form.source_form_url)} target="_blank" rel="noopener noreferrer">원본 구글폼 확인 ↗</a>}
+    <p>{demoFor||form?.item.title}</p><p className="apply-test-label">{form?.replica?'원본 질문 그대로 작성해요. 응답은 팀 소유 복제 폼에만 저장돼요. 가상 정보만 입력해 주세요.':'신청서 확인과 답변 작성만 가능해요. 지금은 제출되지 않아요.'}</p>{form?.source_form_url&&<a className="text-button" href={safePolicyUrl(form.source_form_url)} target="_blank" rel="noopener noreferrer">원본 구글폼 확인 ↗</a>}
     {stage==='loading'&&<p role="status">신청서 문항을 확인하고 있어요…</p>}
     {error&&<p role="alert">{error}</p>}
     {stage==='edit'&&<>
@@ -97,7 +97,7 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
         {invalid.includes(q.id)&&<p role="alert">이 항목을 확인해 주세요.</p>}
       </div>)}
       <div className="assistant-profile-actions"><button className="text-button" disabled={step===0||editingReview} onClick={()=>setStep(i=>i-1)}>이전 항목</button><button className="btn btn-primary" onClick={()=>{const q=questions.find(q=>q.id===queue[step]);const v=q?answers[q.id]:undefined;if(q?.required&&(!v||(Array.isArray(v)?!v.length:!String(v).trim()))){setInvalid([q.id]);setError('이 항목에 답해 주세요.');return}setError('');if(editingReview){setEditingReview(false);review()}else if(step<queue.length-1)setStep(i=>i+1);else review()}}>{editingReview?'수정 완료':step<queue.length-1?'다음':'전체 내용 확인'}</button></div></>}
-    {stage==='review'&&<><h4>이 내용으로 신청할까요?</h4><dl className="apply-review">{questions.map((q,i)=><div key={q.id}><dt>{reviewLabel(q)}</dt><dd>{/동의/.test(q.label)?(answers[q.id]&&(!Array.isArray(answers[q.id])||(answers[q.id] as string[]).length)?'동의했어요':'미동의'):q.kind==='multi_grid'?(q.rows?.filter(r=>Array.isArray(answers[r.id])&&answers[r.id].length).map(r=>`${r.label}: ${(answers[r.id] as string[]).join(', ')}`).join(' / ')||'선택하지 않음'):Array.isArray(answers[q.id])?(answers[q.id] as string[]).join(', '):answers[q.id]||'미입력'}</dd><button className="text-button" aria-label={`${q.label} 수정`} onClick={()=>{setQueue(questions.map(q=>q.id));setStep(i);setEditingReview(true);setStage('edit')}}>수정</button></div>)}</dl><button className="btn btn-primary" disabled={busy||form?.submission_ready===false} onClick={submit}>{form?.submission_ready===false?'복제 폼 게시 승인 대기':busy?'처리 중…':'이 내용으로 신청'}</button></>}
+    {stage==='review'&&<><h4>{form?.submission_ready?'이 내용으로 신청할까요?':'작성한 내용을 확인해 주세요'}</h4><dl className="apply-review">{questions.map((q,i)=><div key={q.id}><dt>{reviewLabel(q)}</dt><dd>{/동의/.test(q.label)?(answers[q.id]&&(!Array.isArray(answers[q.id])||(answers[q.id] as string[]).length)?'동의했어요':'미동의'):q.kind==='multi_grid'?(q.rows?.filter(r=>Array.isArray(answers[r.id])&&answers[r.id].length).map(r=>`${r.label}: ${(answers[r.id] as string[]).join(', ')}`).join(' / ')||'선택하지 않음'):Array.isArray(answers[q.id])?(answers[q.id] as string[]).join(', '):answers[q.id]||'미입력'}</dd><button className="text-button" aria-label={`${q.label} 수정`} onClick={()=>{setQueue(questions.map(q=>q.id));setStep(i);setEditingReview(true);setStage('edit')}}>수정</button></div>)}</dl><button className="btn btn-primary" disabled={busy||form?.submission_ready!==true} onClick={submit}>{form?.submission_ready!==true?'제출은 지원하지 않아요':busy?'처리 중…':'이 내용으로 신청'}</button></>}
     {stage==='done'&&result&&<><h4>신청 시연이 완료됐어요</h4><p>작성일: {new Date(result.submitted_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}</p><button className="btn btn-primary" onClick={()=>onSchedule(result)}>일정 등록하기</button><p className="settings-help">신청한 날짜로 기록하고 이 대화를 연결해요.</p></>}
     {stage==='unavailable'&&<><h4>{form?.reason==='closed'?'현재 접수가 마감됐어요':'신청 방법을 함께 확인해요'}</h4><p>이 기관 신청서는 현재 둘셋의 자동 제출 연결 대상이 아니에요. 실제 신청은 공식 신청서에서 진행하고, 필요한 내용은 함께 준비할 수 있어요.</p>{safePolicyUrl(officialUrl)&&<a className="text-button" href={safePolicyUrl(officialUrl)} target="_blank" rel="noopener noreferrer">공식 신청서 열기 ↗</a>}{onTest&&<><p>신청 과정을 체험하려면 별도 팀 소유 취업 클래스 테스트 폼으로 이어갈 수 있어요. 이 기관 신청으로 접수되지는 않아요.</p><button className="btn btn-secondary" onClick={onTest}>취업 클래스 테스트 신청 이어가기</button></>}<button className="btn btn-ghost" onClick={()=>onSchedule()}>문의할 일정 등록</button></>}
     {stage==='uncertain'&&<div role="alert"><h4>접수 여부를 확인하지 못했어요</h4><p>중복 신청을 막기 위해 다시 제출하지 않을게요. 신청처에서 접수 여부를 확인해 주세요.</p><button className="btn btn-ghost" onClick={()=>onSchedule()}>확인할 일정 등록</button></div>}
