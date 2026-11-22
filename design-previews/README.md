@@ -1,29 +1,15 @@
-# 실서비스 스타일 패치
+# 파랑 실서비스 스타일
 
-기존 둘셋의 콘텐츠와 기능을 유지하면서 글자 위계, 메뉴, 입력창, 버튼, 카드와 여백을 정돈하는 선택 스타일입니다. 원본 CSS와 앱 진입점은 변경하지 않았습니다.
+파랑 실서비스 스타일은 `src/main.tsx`에서 `src/service-style.css`를 불러와 **기본 앱에 적용**됩니다. 별도 미리보기 주소 없이 `/`에서 확인할 수 있습니다.
 
-## 미리보기
+정책 목록에는 카드 안쪽 여백, 본문과 버튼 열 분리, 태그 간격 및 모바일 하단 버튼 정렬을 적용했습니다. 기존 로고·조이 이미지·기능은 유지합니다.
 
-개발 서버 실행 후 `/design-previews/service.html`을 엽니다. 이 페이지는 실제 앱을 iframe으로 열고 해당 창에만 `src/service-style.css`를 적용합니다. 상단 버튼으로 기존 스타일과 비교할 수 있습니다. 배포 빌드에서는 `/src/` 경로를 제공하지 않으므로 이 미리보기는 Vite 개발 서버 전용입니다.
+## 파일
 
-미리보기 안의 앱 기능은 실제로 동작합니다. 디자인만 확인할 때는 신청 제출이나 개인 데이터 변경을 실행하지 마세요.
+- 기본 스타일: `src/service-style.css`
+- 연결 위치: `src/main.tsx`
+- 기존 비교 페이지: `/design-previews/service.html` (Vite 개발 서버 전용)
 
-## 적용
+`apply-service.patch`는 과거 선택 적용을 위한 import 패치입니다. 현재는 이미 적용된 상태이므로 다시 실행할 필요가 없습니다. 초록·섬 등 다른 스타일 대안은 기본 적용에 포함하지 않습니다.
 
-프론트 저장소 루트에서:
-
-```sh
-git apply --check design-previews/apply-service.patch
-git apply design-previews/apply-service.patch
-npm run build
-```
-
-패치는 `src/main.tsx`에 `import './service-style.css'` 한 줄을 추가합니다. `src/service-style.css`는 이미 포함돼 있습니다. 다른 선택 스타일을 사용 중이면 먼저 해당 import를 제거합니다.
-
-## 적용 해제
-
-```sh
-git apply -R design-previews/apply-service.patch
-```
-
-또는 `src/main.tsx`에서 추가한 import 한 줄만 제거합니다. 현재 PR은 스타일을 기본 적용하지 않습니다.
+파랑 스타일을 해제하려면 `src/main.tsx`에서 해당 import 한 줄을 제거합니다. 원본 `styles.css`는 그대로 남아 있습니다.
