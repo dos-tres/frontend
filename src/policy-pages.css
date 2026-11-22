@@ -143,3 +143,36 @@
 .center-tags{color:var(--ink);font-weight:400;text-align:left}
 .center-directory-row .center-name{display:block;color:var(--ink);font-size:20px;font-weight:800;line-height:1.45;letter-spacing:-.02em}.center-directory-row .center-summary{font-size:15px;font-weight:400;color:var(--ink);line-height:1.7;margin:8px 0 12px}.center-directory-row .center-address{font-size:13px;font-weight:400;color:var(--muted);line-height:1.6}.center-directory-row .center-count strong{font-size:13px;font-weight:650}.center-introduction h1{font-size:32px;font-weight:800;line-height:1.3}.center-introduction>p:first-of-type{font-size:14px;color:var(--muted)}.center-introduction .center-introduction-text{font-size:16px;font-weight:400;line-height:1.8;margin:14px 0 20px}.center-guide-section h2,.center-detail-grid>.panel>h2,.center-notices h2{font-size:22px;font-weight:800;color:var(--ink);margin-bottom:20px}.center-guide-section h3{font-size:16px;font-weight:750;padding-top:18px;border-top:1px solid var(--line);margin-top:24px;margin-bottom:8px}.center-guide-section p{font-size:15px;font-weight:400;line-height:1.9;color:var(--ink);max-width:80ch}.center-detail-grid .detail-list dt{font-size:13px;font-weight:650;color:var(--muted)}.center-detail-grid .detail-list dd{font-size:15px;font-weight:400;color:var(--ink);line-height:1.8}.center-notice-row span{font-size:15px;font-weight:600}.center-notice-row time{color:var(--muted);font-weight:400}@media(max-width:760px){.center-directory-row .center-name{font-size:18px}.center-introduction h1{font-size:26px}.center-directory-row .center-summary{font-size:14px}}
 .center-directory-row{padding:18px 20px;gap:16px}.center-directory-row .center-name{font-size:18px}.center-directory-row .center-row-content{flex:1;min-width:0}.center-directory-row .center-summary{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;overflow:hidden;font-size:14px;max-width:72ch;margin:4px 0 8px}.center-directory-row .center-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px;border:0;padding:0;width:auto;max-width:100%}.center-directory-row .center-tag{display:inline-flex;flex:0 0 auto;align-self:flex-start;width:auto;white-space:nowrap}.center-directory-row .center-address{white-space:normal;overflow:visible;font-size:13px}.center-directory-row .center-count{max-width:180px}.center-directory-row .center-count .center-distance{font-size:15px}@media(max-width:760px){.center-directory-row{padding:16px;gap:10px}.center-directory-row .center-name{font-size:17px}.center-directory-row .center-count{max-width:none}}
+.assistant-profile-context{font-size:13px;color:var(--ink);margin:12px 0}.assistant-profile-context summary{cursor:pointer;font-weight:650}.assistant-profile-context ul{padding-left:18px;margin:10px 0;line-height:1.9}.assistant-profile-context p{font-size:12px;color:var(--muted)}
+
+/* Profile answers and navigation are separate groups. */
+.assistant-profile-editor { width:100%; }
+.assistant-profile-options { display:flex; flex-wrap:wrap; gap:8px; padding:8px 0 16px; }
+.assistant-profile-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:12px 0; border-top:1px solid var(--line); }
+.assistant-composer .assistant-profile-progress { margin:0 0 4px; font-size:13px; color:var(--ink); font-weight:600; }
+.app-shell .assistant-profile-actions .btn-primary { background:var(--blue); color:white; border-color:var(--blue); }
+
+.assistant-question { margin:20px 0 24px 48px; padding:22px; background:var(--surface); border:1px solid var(--line); border-radius:16px; max-width:620px; }
+.assistant-question-step { display:block; font-size:12px; color:var(--muted); margin-bottom:8px; }
+.assistant-question h3 { font-size:18px; line-height:1.5; margin:0 0 6px; }
+.assistant-question p { margin:0 0 16px; color:var(--muted); font-size:14px; }
+.assistant-question button { font:inherit; cursor:pointer; }
+.assistant-question .assistant-profile-options button { padding:10px 16px; border:1px solid var(--line); border-radius:10px; background:var(--surface); color:var(--ink); min-height:44px; }
+.assistant-question .assistant-profile-options button[aria-pressed="true"] { border-color:var(--blue); background:var(--blue-pale); color:var(--blue-dark); font-weight:600; }
+.assistant-question form { display:flex; gap:8px; }
+.assistant-question form input { min-width:0; flex:1; padding:12px; border:1px solid var(--line); border-radius:10px; font:inherit; }
+.assistant-question form button { border:0; background:var(--blue); color:white; border-radius:10px; padding:0 20px; }
+.assistant-question button:disabled { opacity:.45; cursor:not-allowed; }
+.assistant-question .assistant-profile-actions { margin-top:12px; padding-bottom:0; }
+.assistant-question .assistant-profile-actions .text-button { border:0; background:transparent; color:var(--muted); padding:8px; font-size:13px; }
+.assistant-next-actions { margin:12px 0 24px 48px; display:flex; flex-direction:column; align-items:flex-start; gap:10px; }
+.assistant-next-actions > span { font-size:12px; color:var(--muted); }
+.app-shell .assistant-next-actions .assistant-choices button { background:var(--blue); color:white; border-color:var(--blue); font-weight:600; min-height:44px; }
+.assistant-next-actions .assistant-choices { margin:0; }
+@media(max-width:760px) { .assistant-question,.assistant-next-actions { margin-left:0; } .assistant-question {padding:18px;} }
+
+/* Keep sender identity visible even under the service theme. */
+.app-shell .assistant-turn.user > div { background:#e8f0ff; color:#193a70; border:1px solid #d5e3ff; }
+.app-shell .assistant-turn.assistant > div { background:#f5f6f8; color:var(--ink); }
+.assistant-inline-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+.assistant-inline-actions .btn {font-size:14px;line-height:1.5;min-height:42px;}

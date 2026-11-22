@@ -8,6 +8,7 @@ export function useAssistantSchedule(bridge:ScheduleBridge|undefined, center:Pub
  const [pending,setPending]=useState<Partial<CalendarEvent>>(),[editing,setEditing]=useState<CalendarEvent>(),[deleting,setDeleting]=useState<CalendarEvent>()
  const handle=(text:string):boolean=>{
   if(!bridge)return false
+  if((pending||deleting)&&/신청|자격|추천|프로그램|정책|서류|지원|왜|뭐|어떤|알려|설명/.test(text)&&!/일정.*(?:등록|변경|삭제)/.test(text)){setPending(undefined);setDeleting(undefined);return false}
   if(text==='취소'){setPending(undefined);setEditing(undefined);setDeleting(undefined);say(text,'일정 변경을 취소했어요.');return true}
   if(deleting){if(text==='삭제 확인'){bridge.remove(deleting.id);say(text,'일정을 삭제했어요.');setDeleting(undefined)}else say(text,'삭제할 일정이 맞으면 ‘삭제 확인’, 아니면 ‘취소’를 눌러 주세요.');return true}
   if(pending){
@@ -30,15 +31,16 @@ export function useAssistantSchedule(bridge:ScheduleBridge|undefined, center:Pub
    if(/삭제/.test(text)){setDeleting(matches[0]);say(text,`${eventLabel(matches[0])}\n이 일정을 삭제할까요?`)}else {const patch=parseSchedule(text); if(patch.date||patch.startTime||patch.reminderMinutes!==undefined){setPending({...matches[0],...patch,title:matches[0].title,notifiedAt:undefined});say(text,`${eventLabel({...matches[0],...patch,title:matches[0].title})}\n변경 내용을 확인한 뒤 ‘저장 확인’을 눌러 주세요.`)}else {setEditing(matches[0]);say(text,'수정할 내용을 확인하고 저장해 주세요.');}}return true
   }
   if(/일정|예약|방문|상담.*(내일|요일|시)|(?:내일|모레|요일).*(?:시|등록|추가)/.test(text)){
-   const parsed=parseSchedule(text), next:Partial<CalendarEvent>={...parsed,title:parsed.title|| (center?`${center.name} 방문`:program?program.title:undefined),location:center?.address||'',centerId:center?.id,itemId:program?.id}
+   const parsed=parseSchedule(text), next:Partial<CalendarEvent>={...parsed,title:parsed.title|| (center?`${center.name} 방문`:program?program.title:undefined),location:/문의/.test(text)?'전화 문의':center?.address||program?.place||'',centerId:center?.id,itemId:program?.id}
+   if(next.title==='문의')next.title=program?`${program.title} 준비물 문의`:'프로그램 준비물 문의'
    if(next.title?.match(/^(일정|센터|방문할래|등록|추가)$/))next.title=center?`${center.name} 방문`:program?.title
    setPending(next);say(text,!next.title?'어떤 일정을 등록할까요?':!next.date?'언제인가요? 날짜를 알려주세요.':!next.startTime?'몇 시인가요? 오전·오후와 시간을 알려주세요. 시간 미정으로도 등록할 수 있어요.':`${eventLabel(next as CalendarEvent)}\n이대로 등록할까요?`);return true
   }
   return false
  }
- const controls=bridge?<div className="schedule-review"><div className="assistant-choices"><button disabled={!!pending||!!deleting} onClick={()=>handle('내 일정 보여줘')}>내 일정 확인</button><button disabled={!!pending||!!deleting} onClick={()=>handle(center?'센터 방문 일정 등록':'일정 등록')}>{center?'센터 방문 일정':'일정 등록'}</button><button onClick={bridge.open}>내 일정으로 이동</button>{program&&!pending&&!deleting&&<button onClick={()=>handle('신청했어')}>직접 신청한 내역 기록</button>}{pending&&<><button onClick={()=>setEditing({id:Date.now(),title:'',date:'',type:'개인 일정',source:'assistant',...pending} as CalendarEvent)}>시간·장소·알림 설정</button><button onClick={()=>handle('취소')}>취소</button></>}{deleting&&<><button onClick={()=>handle('삭제 확인')}>삭제 확인</button><button onClick={()=>handle('취소')}>취소</button></>}</div>{editing&&<ScheduleEditor event={editing} date={editing.date} onClose={()=>setEditing(undefined)} onSave={e=>{bridge.save(e);setEditing(undefined);setPending(undefined);say('일정 저장',`${eventLabel(e)}\n저장했어요.`)}}/>}</div>:null
+ const controls=bridge?<div className="schedule-review"><div className="assistant-choices"><button disabled={!!pending||!!deleting} onClick={()=>handle(center?'센터 방문 일정 등록':'일정 등록')}>{center?'센터 방문 일정':'일정 등록'}</button><button onClick={bridge.open}>내 일정 보기</button>{program&&!pending&&!deleting&&<button onClick={()=>handle('신청했어')}>직접 신청한 내역 기록</button>}{pending&&<><button onClick={()=>setEditing({id:Date.now(),title:'',date:'',type:'개인 일정',source:'assistant',...pending} as CalendarEvent)}>시간·장소·알림 설정</button><button onClick={()=>handle('취소')}>취소</button></>}{deleting&&<><button onClick={()=>handle('삭제 확인')}>삭제 확인</button><button onClick={()=>handle('취소')}>취소</button></>}</div>{editing&&<ScheduleEditor event={editing} date={editing.date} onClose={()=>setEditing(undefined)} onSave={e=>{bridge.save(e);setEditing(undefined);setPending(undefined);say('일정 저장',`${eventLabel(e)}\n저장했어요.`)}}/>}</div>:null
  const preview=pending?.title && pending.date && !validateEvent(pending as CalendarEvent) && bridge ? <ScheduleConfirmation event={pending as CalendarEvent} onConfirm={()=>handle('저장 확인')} onEdit={()=>setEditing({id:Date.now(),type:'개인 일정',source:'assistant',...pending} as CalendarEvent)} onCancel={()=>handle('취소')} /> : null
- return {handle,controls,preview,begin:(date:string)=>setPending({date}),reset:()=>{setPending(undefined);setEditing(undefined);setDeleting(undefined)}}
+ return {handle,controls,preview,active:!!pending||!!editing||!!deleting,begin:(date:string)=>setPending({date}),reset:()=>{setPending(undefined);setEditing(undefined);setDeleting(undefined)}}
 }
 
 export function ScheduleConfirmation({event,onConfirm,onEdit,onCancel}:{event:CalendarEvent;onConfirm:()=>void;onEdit:()=>void;onCancel:()=>void}) {

@@ -7,6 +7,7 @@ root = Path(__file__).resolve().parents[1]
 backend = root.parent / 'backend'
 sys.path.insert(0, str(backend))
 from app.catalog.rows import build_rows
+from app.catalog.program_facts import presentation
 
 def clean(value):
     text = str(value or '').strip()
@@ -46,6 +47,12 @@ for filename, kind in [('policies_serving.json', 'policy'), ('programs_serving.j
             'category': p.get('mclsfNm') or '지역 프로그램', 'domains': row['domains'],
             'evergreen': bool(p.get('evergreen')), 'updatedAt': p.get('lastMdfcnDt') or '',
         })
+for item in items:
+    if item['type']=='프로그램':
+        row=next(r for r in build_rows('program',json.loads((backend/'data/seed/serving/programs_serving.json').read_text())) if r['id']==item['id'])
+        public=presentation(row)
+        for source,target in [('summary','summary'),('summary','support'),('target','target'),('method','method'),('activity_place','place'),('documents','documents'),('apply_url','applyUrl')]:
+            item[target]=public.get(source) or ''
 regions = json.loads((root / 'src/data/administrative-regions.json').read_text())['districts']
 output = {'generatedAt': '2026-11-19', 'items': items, 'regionGroups': groups, 'regions': regions}
 path = root / 'src/data/policy-catalog.json'
