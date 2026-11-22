@@ -1,0 +1,198 @@
+/*
+ * 둘셋 — 실서비스 스타일 선택 패치
+ * Direction: readable finance-service typography + clear public-service controls.
+ * Standalone alternative to eatssue-style.css. Load only one alternative stylesheet.
+ * Existing logo, text, data and interactions are retained. Not imported by default.
+ */
+:root {
+  --service-ink: #191f28;
+  --service-secondary: #4e5968;
+  --service-muted: #6b7684;
+  --service-border: #e5e8eb;
+  --service-bg: #f7f8fa;
+  --service-primary: #3182f6;
+  --service-primary-hover: #1b64da;
+  --service-content: 1180px;
+}
+.app-shell {
+  --ink: var(--service-ink);
+  --muted: var(--service-muted);
+  --line: var(--service-border);
+  --surface: #fff;
+  --gray-soft: #f7f8fa;
+  --blue: var(--service-primary);
+  --blue-dark: var(--service-primary-hover);
+  --blue-soft: #edf4ff;
+  --blue-pale: #f5f8fd;
+  --text-body: 15px;
+  --text-label: 15px;
+  --text-section: 20px;
+  color: var(--service-ink);
+  background: var(--service-bg);
+  letter-spacing: -.025em;
+}
+.app-shell button, .app-shell input, .app-shell select, .app-shell textarea { font-family: inherit; }
+.app-shell button:focus-visible, .app-shell a:focus-visible,
+.app-shell input:focus-visible, .app-shell select:focus-visible,
+.app-shell textarea:focus-visible { outline: 3px solid #3182f6; outline-offset: 3px; }
+.app-shell .topbar {
+  height: 76px; background: #fff; border-bottom: 1px solid var(--service-border);
+  backdrop-filter: none;
+}
+.app-shell .topbar-inner { max-width: var(--service-content); padding: 0 24px; gap: 32px; }
+.app-shell .brand-mark img { width: 44px; height: 44px; }
+.app-shell .brand-name { font-size: 24px; letter-spacing: -.05em; }
+.app-shell .nav-links { justify-content: flex-end; gap: 24px; }
+.app-shell .nav-link {
+  position: relative; min-height: 76px; padding: 0 3px; gap: 6px;
+  border-radius: 0; font-size: 15px; font-weight: 650;
+  background: transparent; color: var(--service-secondary);
+}
+.app-shell .nav-link svg { width: 17px; height: 17px; }
+.app-shell .nav-link:hover, .app-shell .nav-link.active { color: var(--service-primary); background: transparent; }
+.app-shell .nav-link.active:after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--service-primary); }
+.app-shell .header-ask { min-height: 40px; padding: 8px 14px; font-size: 14px; border-color: var(--service-border); background: #fff; color: var(--service-secondary); }
+.app-shell .main-container { width: min(100% - 48px,var(--service-content)); padding: 40px 0 64px; }
+.app-shell .page-title { margin-bottom: 28px; }
+.app-shell .page-title h1 { color: var(--service-ink); font-size: 30px; line-height: 1.4; font-weight: 750; letter-spacing: -.045em; margin-bottom: 10px; }
+.app-shell .page-title p { color: var(--service-muted); font-size: 15px; line-height: 1.8; }
+.app-shell .panel { padding: 28px; border: 1px solid var(--service-border); border-radius: 14px; box-shadow: none; background: #fff; }
+.app-shell :is(.panel-blue,.panel-green,.panel-lavender,.panel-gray) { border-color: var(--service-border); background: #fff; }
+.app-shell .btn {
+  min-height: 46px; padding: 11px 18px; border-radius: 9px; font-size: 15px;
+  font-weight: 650; line-height: 1.5; box-shadow: none;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+.app-shell .btn:hover { transform: none; box-shadow: none; }
+.app-shell .btn-primary { background: var(--service-primary); color: #fff; }
+.app-shell .btn-primary:hover { background: var(--service-primary-hover); }
+.app-shell .btn-secondary { color: var(--service-secondary); border-color: #d1d6db; background: #fff; }
+.app-shell .btn-secondary:hover { background: #f7f8fa; border-color: #8b95a1; }
+.app-shell .btn-soft { color: #1b64da; background: #edf4ff; border-color: transparent; }
+.app-shell .btn-ghost, .app-shell .text-button { color: var(--service-secondary); }
+.app-shell :is(input,select,textarea):not([type=checkbox]):not([type=radio]) { font-size: 15px; color: var(--service-ink); }
+.app-shell input::placeholder, .app-shell textarea::placeholder { color: #8b95a1; opacity: 1; }
+.app-shell :is(.section-head,.panel-heading) h3 { color: var(--service-ink); font-size: 20px; font-weight: 700; }
+.app-shell .section-label { color: var(--service-ink); font-size: 20px; letter-spacing: -.035em; }
+
+/* Keep the current home content; typography and surfaces carry the hierarchy. */
+.app-shell .joy-home { padding: 0; }
+.app-shell .joy-home-hero {
+  position: relative; display: grid;
+  grid-template-columns: minmax(0,1fr) 260px;
+  grid-template-areas: 'title mascot' 'description mascot' 'composer composer' 'starters starters';
+  column-gap: 36px; max-width: none; text-align: left;
+  padding: 36px 40px 30px; margin: 0;
+  border: 1px solid var(--service-border); border-radius: 16px; background: #fff;
+}
+.app-shell .joy-home-hero h1 {
+  grid-area: title; align-self: end; font-size: clamp(30px,3vw,38px);
+  line-height: 1.4; letter-spacing: -.055em; font-weight: 750;
+  color: var(--service-ink); margin: 0 0 14px;
+}
+.app-shell .joy-home-description { grid-area: description; align-self: start; margin: 0; max-width: 600px; font-size: 15px; color: var(--service-muted); line-height: 1.8; }
+.app-shell .joy-home-greeting { grid-area: mascot; margin: 0; gap: 0; justify-content: center; align-self: center; }
+.app-shell .joy-home-mascot-stage { width: 230px; height: 190px; }
+.app-shell .joy-home-mascot { width: 210px; height: 180px; left: 10px; top: 0; }
+.app-shell .joy-home-greeting .joy-home-mascot-image { width: 210px; height: 180px; animation: none; will-change: auto; }
+.app-shell .joy-home-mascot:hover .joy-home-mascot-image { animation: joy-home-curious 1.7s ease-in-out; }
+.app-shell :is(.joy-home-mascot-glow,.joy-home-mascot-shadow,.joy-home-sparkle) { display: none; }
+.app-shell .joy-home-greeting > .joy-home-speech { background: transparent; padding: 4px 0; min-height: 28px; color: var(--service-muted); font-size: 12px; }
+.app-shell .joy-home-speech svg { display: none; }
+.app-shell .joy-home-composer {
+  grid-area: composer; margin-top: 28px; padding: 20px;
+  border: 1px solid #d1d6db; border-radius: 12px; box-shadow: none;
+}
+.app-shell .joy-home-composer:focus-within { border-color: var(--service-primary); box-shadow: 0 0 0 1px var(--service-primary); }
+.app-shell .joy-home-input-label { color: var(--service-secondary); font-size: 14px; font-weight: 650; margin-bottom: 10px; }
+.app-shell .joy-home-composer textarea { min-height: 62px; font-size: 16px; line-height: 1.7; }
+.app-shell .joy-home-composer-footer { margin-top: 12px; }
+.app-shell .joy-home-composer-footer > span { color: var(--service-muted); font-size: 13px; }
+.app-shell .joy-home-composer-footer button { border-radius: 8px; min-height: 44px; padding: 10px 20px; font-size: 14px; background: var(--service-primary); }
+.app-shell .joy-home-composer-footer button:disabled { background: #e5e8eb; color: #6b7684; }
+.app-shell .joy-home-starters { grid-area: starters; margin-top: 18px; }
+.app-shell .joy-home-starters > p { color: var(--service-muted); font-size: 12px; margin-bottom: 10px; }
+.app-shell .joy-home-starters > div { justify-content: flex-start; gap: 8px; }
+.app-shell .joy-home-starters button {
+  min-height: 40px; border: 1px solid var(--service-border); border-radius: 8px;
+  padding: 8px 12px; font-size: 13px; background: #fff; color: var(--service-secondary);
+}
+.app-shell .joy-home-starters button:hover { background: #f7f8fa; border-color: #b0b8c1; }
+.app-shell .joy-home-shortcuts {
+  display: grid; grid-template-columns: repeat(3,minmax(0,1fr));
+  align-items: stretch; gap: 16px; border: 0; padding: 0; margin: 36px 0 0;
+}
+.app-shell .joy-home-shortcut-heading { grid-column: 1/-1; margin: 0 0 4px; }
+.app-shell .joy-home-shortcut-heading > span { font-size: 21px; font-weight: 700; color: var(--service-ink); letter-spacing: -.04em; }
+.app-shell .joy-home-shortcut-heading p { font-size: 14px; margin-top: 5px; }
+.app-shell .joy-home-shortcuts > button { border: 1px solid var(--service-border); background: #fff; border-radius: 12px; padding: 24px 20px; gap: 14px; }
+.app-shell .joy-home-shortcuts > button:hover { background: #fafbfc; border-color: #b0b8c1; }
+.app-shell .joy-home-shortcut-icon { border-radius: 10px; width: 42px; height: 42px; background: #f2f4f6; color: var(--service-secondary); }
+.app-shell .joy-home-shortcuts strong { color: var(--service-ink); font-size: 17px; letter-spacing: -.035em; }
+.app-shell .joy-home-shortcuts small { color: var(--service-muted); font-size: 13px; line-height: 1.6; margin-top: 5px; }
+.app-shell .joy-home-onboarding { margin-top: 20px; padding: 22px 24px; border: 1px solid var(--service-border); background: #fff; border-radius: 12px; }
+.app-shell .joy-home-onboarding strong { font-size: 15px; color: var(--service-ink); }
+.app-shell .joy-home-onboarding span { color: var(--service-muted); font-size: 13px; }
+.app-shell .joy-home-onboarding button { color: var(--service-primary-hover); font-weight: 650; }
+
+/* Functional screens: preserve status colors, map size and calendar positioning. */
+.app-shell :is(.result-card,.center-list-row,.assistant-result-item,.apply-flow) { border-radius: 12px; border-color: var(--service-border); box-shadow: none; background: #fff; }
+.app-shell .policy-title-button { color: var(--service-ink); font-weight: 700; letter-spacing: -.03em; }
+.app-shell .policy-list-row { padding: 26px 0; }
+.app-shell .policy-keywords span { background: #f2f4f6; border-color: transparent; border-radius: 6px; color: var(--service-secondary); }
+.app-shell .assistant-workspace { border: 1px solid var(--service-border); border-radius: 14px; overflow: hidden; }
+.app-shell .assistant-sidebar { background: #f9fafb; }
+.app-shell .assistant-heading { padding: 18px 28px; }
+.app-shell .assistant-transcript { gap: 28px; }
+.app-shell .assistant-turn > div { font-size: 15px; line-height: 1.85; }
+.app-shell .assistant-turn.user > div { background: #f2f4f6; color: var(--service-ink); border-radius: 14px; }
+.app-shell .assistant-composer { padding: 18px 28px; }
+.app-shell .assistant-choices button { border-radius: 8px; color: var(--service-secondary); }
+.app-shell :is(.settings-region-picker,.settings-experience,.schedule-confirmation) { border-radius: 12px; }
+.app-shell .footer { width: min(100% - 48px,var(--service-content)); font-size: 12px; color: var(--service-muted); border-top-color: var(--service-border); padding: 24px 0; }
+
+@media(max-width:1050px) {
+  .app-shell .topbar-inner { gap: 20px; }
+  .app-shell .nav-links { gap: 14px; }
+  .app-shell .nav-link { font-size: 13px; }
+  .app-shell .joy-home-hero { padding: 30px; grid-template-columns: minmax(0,1fr) 210px; gap: 0 22px; }
+  .app-shell .joy-home-mascot-stage { width: 200px; }
+  .app-shell .joy-home-mascot, .app-shell .joy-home-greeting .joy-home-mascot-image { width: 190px; }
+  .app-shell .joy-home-shortcuts { gap: 12px; }
+  .app-shell .joy-home-shortcuts > button { padding: 20px 14px; }
+  .app-shell .joy-home-onboarding span { display: block; margin: 6px 0 0; }
+}
+@media(max-width:767px) {
+  .app-shell .topbar { height: auto; min-height: 64px; }
+  .app-shell .topbar-inner { min-height: 64px; padding: 0 16px; flex-wrap: wrap; }
+  .app-shell .nav-link { min-height: 44px; padding: 8px 10px; border-radius: 8px; }
+  .app-shell .nav-link.active { background: var(--blue-soft); }
+  .app-shell .nav-link.active:after { display: none; }
+  .app-shell .main-container { width: calc(100% - 32px); padding: 24px 0 40px; }
+  .app-shell .joy-home-hero { padding: 24px 20px; grid-template-columns: minmax(0,1fr); grid-template-areas: 'mascot' 'title' 'description' 'composer' 'starters'; }
+  .app-shell .joy-home-greeting { align-items: flex-start; margin-bottom: 16px; }
+  .app-shell .joy-home-mascot-stage { width: 104px; height: 88px; }
+  .app-shell .joy-home-mascot { width: 104px; height: 88px; left: 0; }
+  .app-shell .joy-home-greeting .joy-home-mascot-image { width: 104px; height: 88px; }
+  .app-shell .joy-home-greeting > .joy-home-speech { font-size: 11px; }
+  .app-shell .joy-home-hero h1 { font-size: 28px; line-height: 1.45; margin-bottom: 12px; }
+  .app-shell .joy-home-description { font-size: 14px; line-height: 1.8; }
+  .app-shell .joy-home-composer { padding: 16px; margin-top: 22px; }
+  .app-shell .joy-home-composer textarea { font-size: 16px; min-height: 84px; }
+  .app-shell .joy-home-composer-footer { gap: 8px; flex-wrap: wrap; }
+  .app-shell .joy-home-composer-footer > span { font-size: 12px; }
+  .app-shell .joy-home-starters > div { display: flex; flex-wrap: wrap; }
+  .app-shell .joy-home-starters button { font-size: 12px; padding: 8px 10px; }
+  .app-shell .joy-home-shortcuts { grid-template-columns: minmax(0,1fr); margin-top: 28px; }
+  .app-shell .joy-home-shortcut-heading > span { font-size: 20px; }
+  .app-shell .joy-home-shortcuts > button { padding: 20px; }
+  .app-shell .joy-home-onboarding { padding: 20px; flex-wrap: wrap; }
+  .app-shell .panel { padding: 20px; }
+  .app-shell .page-title h1 { font-size: 26px; }
+  .app-shell .assistant-heading, .app-shell .assistant-composer { padding: 16px; }
+  .app-shell .footer { width: calc(100% - 32px); flex-wrap: wrap; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell .btn, .app-shell .joy-home-composer { transition: none; }
+  .app-shell .joy-home-mascot:hover .joy-home-mascot-image { animation: none; }
+}
