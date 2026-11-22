@@ -278,6 +278,8 @@ export default function App() {
   }
   const [messages, setMessages] = useState<Message[]>([])
   const [chatSession, setChatSession] = useState(0)
+  const [chatRestore,setChatRestore]=useState<{id:string;nonce:number}>()
+  const [calendarDate,setCalendarDate]=useState(localDate())
   const [selectedProgram, setSelectedProgram] = useState<Program>(programs[0])
   const [chatProgram, setChatProgram] = useState<Program>()
   const [chatCenter, setChatCenter] = useState<PublicCenter>()
@@ -309,6 +311,7 @@ export default function App() {
     const value = text.trim()
     if (!value) return
     setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined)
+    setChatRestore(undefined)
     setMessages([{ role: 'user', text: value }])
     setChatSession(value => value + 1)
     setScreen('chat')
@@ -347,7 +350,7 @@ export default function App() {
   const navigate = (next: Screen) => { if (next === 'setup') startSetup(); else setScreen(next) }
   const useProfileForPolicies = () => { policyData.resetCriteria(); setPolicyView(initialPolicyView) }
 
-  const chatPage = <PolicyJoyPanel key={chatSession} startFresh={chatSession > 0} checkinAnswers={policyAnswers} answerDecisions={setup.decisions} preferProfile={setup.interestSource==='profile'} scheduleContext={chatSchedule} center={chatCenter} schedule={{ events, save:saveEvent, remove:id=>setEvents(prev=>prev.filter(e=>e.id!==id)), open:()=>setScreen('calendar'), recordApplication:p=>setApplications(prev=>prev.some(a=>a.id===`reported:${p.id}`)?prev:[{id:`reported:${p.id}`,title:p.title,status:'신청 완료',date:localDate().replaceAll('-','.'),note:'사용자가 직접 신청했다고 확인한 기록 · 기관 접수 확인 아님'},...prev]) }} program={chatProgram} personal={personal} activity={activity} initialMessages={messages} onBack={() => setScreen(chatSchedule?'calendar':chatCenter?'center-list':'policy-list')} onSavePersonal={savePersonal} onSaveActivity={saveActivity} onNew={() => { setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined); setMessages([]) }} onSave={() => { if (chatProgram) toggleSave(chatProgram.id) }} saved={!!chatProgram && savedIds.includes(chatProgram.id)} />
+  const chatPage = <PolicyJoyPanel restoreRequest={chatRestore} key={chatSession} startFresh={chatSession > 0} checkinAnswers={policyAnswers} answerDecisions={setup.decisions} preferProfile={setup.interestSource==='profile'} scheduleContext={chatSchedule} center={chatCenter} schedule={{ events, save:saveEvent, remove:id=>setEvents(prev=>prev.filter(e=>e.id!==id)), open:date=>{if(date)setCalendarDate(date);setScreen('calendar')}, recordApplication:p=>setApplications(prev=>prev.some(a=>a.id===`reported:${p.id}`)?prev:[{id:`reported:${p.id}`,title:p.title,status:'신청 완료',date:localDate().replaceAll('-','.'),note:'사용자가 직접 신청했다고 확인한 기록 · 기관 접수 확인 아님'},...prev]) }} program={chatProgram} personal={personal} activity={activity} initialMessages={messages} onBack={() => setScreen(chatSchedule?'calendar':chatCenter?'center-list':'policy-list')} onSavePersonal={savePersonal} onSaveActivity={saveActivity} onNew={() => { setChatRestore(undefined);setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined); setMessages([]) }} onSave={() => { if (chatProgram) toggleSave(chatProgram.id) }} saved={!!chatProgram && savedIds.includes(chatProgram.id)} />
 
   const page = useMemo(() => {
     switch (screen) {
@@ -363,7 +366,7 @@ export default function App() {
       case 'policy-detail': return <PolicyDetailPage onBack={() => setScreen('policy-list')} program={selectedProgram} onApply={() => { setChatProgram(selectedProgram); setScreen('chat') }} onSave={() => toggleSave(selectedProgram.id)} isSaved={savedIds.includes(selectedProgram.id)} />
       case 'center-list': return <CenterListPage onSelect={openCenter} savedRegion={personal.regionCode ? profileRegionLabel(personal.regionCode) : ''} />
       case 'center-detail': return <CenterDetailPage onAsk={center=>{setChatCenter(center);setChatSchedule(undefined);setChatProgram(undefined);setMessages([]);setScreen('chat')}} id={selectedCenterId} onBack={() => setScreen('center-list')} onProgram={openProgram} />
-      case 'calendar': return <SchedulePage initialDate={chatSchedule?.date} onAsk={date=>{setChatProgram(undefined);setChatCenter(undefined);setMessages([]);setChatSchedule({date});setScreen('chat')}} onNotifications={enableNotifications} events={events} onAdd={date => { setEditingEvent(undefined); setEventDate(date); setShowEventModal(true) }} onEdit={event => { setEditingEvent(event); setEventDate(event.date); setShowEventModal(true) }} onDelete={id => setEvents(prev => prev.filter(e => e.id !== id))} onApplications={() => setScreen('applications')} />
+      case 'calendar': return <SchedulePage onOpenChat={event=>{setChatProgram(undefined);setChatCenter(undefined);setChatSchedule(undefined);setChatRestore({id:event.chatId!,nonce:Date.now()});setScreen('chat')}} initialDate={chatSchedule?.date||calendarDate} onAsk={date=>{setChatProgram(undefined);setChatCenter(undefined);setMessages([]);setChatSchedule({date});setScreen('chat')}} onNotifications={enableNotifications} events={events} onAdd={date => { setEditingEvent(undefined); setEventDate(date); setShowEventModal(true) }} onEdit={event => { setEditingEvent(event); setEventDate(event.date); setShowEventModal(true) }} onDelete={id => setEvents(prev => prev.filter(e => e.id !== id))} onApplications={() => setScreen('applications')} />
       case 'applications': return <ApplicationsPage applications={applications} onChangeStatus={changeApplication} onCalendar={() => setScreen('calendar')} />
       case 'profile': return <MyPage onRecords={() => setScreen('records')} personal={personal} activity={activity} completed={checkinHistory.some(record => record.completed)} savedCount={savedIds.filter(id => id.startsWith('policy:') || id.startsWith('program:')).length} onEdit={() => setScreen('profile-edit')} onActivity={() => setScreen('activity-edit')} onCheck={() => setScreen('state-check')} onSaved={() => { setPolicyView({ ...initialPolicyView, onlySaved: true }); setScreen('policy-list') }} onBrowse={() => setScreen('policy-list')} />
       case 'profile-edit': return <ProfileSettings value={personal} onBack={() => setScreen('profile')} onSave={next => { savePersonal(next); setScreen('profile'); notify('기본 정보를 수정했어요.') }} />
@@ -373,7 +376,7 @@ export default function App() {
       case 'about': return <AboutPage />
       default: return <HomeLanding completed={checkinHistory.some(record => record.completed)} onNavigate={navigate} onSend={sendMessage} />
     }
-  }, [screen, personal, activity, stateCheck, checkinHistory, checkinStorageError, messages, selectedProgram, selectedCenterId, savedIds, applications, events, policyData, policyView, setup, chatProgram, chatCenter, chatSchedule, policyAnswers])
+  }, [screen, personal, activity, stateCheck, checkinHistory, checkinStorageError, messages, selectedProgram, selectedCenterId, savedIds, applications, events, policyData, policyView, setup, chatProgram, chatCenter, chatSchedule, policyAnswers, calendarDate, chatRestore])
 
   return (
     <div className="app-shell">

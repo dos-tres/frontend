@@ -12,7 +12,7 @@ export function readLocal<T>(key: string, fallback: T): T {
     if (key === 'events' && !(value as unknown[]).every(v => {
       if (!matches(v, { id: 0, title: '', date: '', type: '' })) return false
       const e = v as Record<string, unknown>
-      return ['startTime','endTime','location','notifiedAt','itemId','centerId'].every(k=>e[k]===undefined||typeof e[k]==='string') && (e.reminderMinutes===undefined || (typeof e.reminderMinutes==='number' && Number.isFinite(e.reminderMinutes) && e.reminderMinutes>=0))
+      return ['startTime','endTime','location','notifiedAt','itemId','centerId','chatId','applicationAt'].every(k=>e[k]===undefined||typeof e[k]==='string') && (e.reminderMinutes===undefined || (typeof e.reminderMinutes==='number' && Number.isFinite(e.reminderMinutes) && e.reminderMinutes>=0))
     })) return fallback
     if (key === 'applications' && !(value as unknown[]).every(v => matches(v, { id: '', title: '', status: '', date: '', note: '' }))) return fallback
     if (key === 'activity') {

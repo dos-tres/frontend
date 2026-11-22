@@ -1,3 +1,4 @@
+import {applicationCalendarEvent,type ApplicationCompletion} from './schedule'
 import AssistantCatalog from './AssistantCatalog'
 import ChatRecommendations from './ChatRecommendations'
 import {requestAssistantChat, type ChatReply} from './chat-api'
@@ -18,9 +19,9 @@ import { profileRegionLabel } from './ProfileSettings'
 import type { ActivityInformationValue } from './ActivityInformation'
 import { ageFromBirthDate, applicationLabel, periodLabel, requestCatalogItem, safePolicyUrl } from './policy-api'
 
-type Turn = { role: 'assistant' | 'user'; text: string; recommendations?:NonNullable<ChatReply['results']> }
-type Props = { startFresh?: boolean; checkinAnswers?: Answers; answerDecisions?: Record<string,string>; preferProfile?: boolean; scheduleContext?: {date:string}; center?: PublicCenter; schedule?: ScheduleBridge; program?: Program; personal: PersonalInformation; activity: ActivityInformationValue; initialMessages: Turn[]; onBack: () => void; onSavePersonal: (value: PersonalInformation) => void; onSaveActivity: (value: ActivityInformationValue) => void; onNew: () => void; onSave: () => void; saved: boolean }
-type SavedChat = {id:string;title:string;updatedAt:string;turns:Turn[];draft:string;reply:ChatReply|null;answers:Answers;detail?:Program;profileStep?:number|null;profileQueue?:number[];selectedInterests?:string[]}
+type Turn = { role: 'assistant' | 'user'; text: string; calendarDate?:string; recommendations?:NonNullable<ChatReply['results']> }
+type Props = { restoreRequest?:{id:string;nonce:number}; startFresh?: boolean; checkinAnswers?: Answers; answerDecisions?: Record<string,string>; preferProfile?: boolean; scheduleContext?: {date:string}; center?: PublicCenter; schedule?: ScheduleBridge; program?: Program; personal: PersonalInformation; activity: ActivityInformationValue; initialMessages: Turn[]; onBack: () => void; onSavePersonal: (value: PersonalInformation) => void; onSaveActivity: (value: ActivityInformationValue) => void; onNew: () => void; onSave: () => void; saved: boolean }
+type SavedChat = {id:string;title:string;updatedAt:string;turns:Turn[];draft:string;reply:ChatReply|null;answers:Answers;detail?:Program;profileStep?:number|null;profileQueue?:number[];selectedInterests?:string[];completedApplication?:ApplicationCompletion}
 const CHAT_KEY='dos-tres.chat-history.v1'
 function readChats():{activeId:string;entries:SavedChat[]} {
   try {const data=JSON.parse(localStorage.getItem(CHAT_KEY)||'null');if(data&&Array.isArray(data.entries))return {activeId:String(data.activeId||''),entries:data.entries.filter((c:SavedChat)=>typeof c.id==='string'&&Array.isArray(c.turns)&&c.turns.every(t=>['user','assistant'].includes(t.role)&&typeof t.text==='string')).slice(0,20)}}catch{}
@@ -29,11 +30,12 @@ function readChats():{activeId:string;entries:SavedChat[]} {
 const choices = ['내가 신청할 수 있어?', '신청 준비 도와줘']
 const short = (value?: string) => value && value.length > 420 ? `${value.slice(0, 420)}…` : value
 
-export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, answerDecisions={}, preferProfile=false, scheduleContext, center, schedule, program, personal, activity, initialMessages, onSavePersonal, onSaveActivity, onNew, onSave, saved }: Props) {
+export default function PolicyJoyPanel({ restoreRequest, startFresh=false, checkinAnswers={}, answerDecisions={}, preferProfile=false, scheduleContext, center, schedule, program, personal, activity, initialMessages, onSavePersonal, onSaveActivity, onNew, onSave, saved }: Props) {
   const [savedChats,setSavedChats] = useState(readChats)
   const [activeChatId,setActiveChatId] = useState(()=>startFresh?crypto.randomUUID():readChats().activeId||crypto.randomUUID())
   const restoreChat = useRef<SavedChat|null>(startFresh?null:readChats().entries.find(c=>c.id===readChats().activeId)||null)
   const [saveFailed,setSaveFailed] = useState(false)
+  const [completedApplication,setCompletedApplication]=useState<ApplicationCompletion>()
   const flushChat=useRef(()=>{})
   useEffect(()=>()=>flushChat.current(),[])
   const [activeRecommendation,setActiveRecommendation] = useState<RecommendationItem|null>(null)
@@ -69,7 +71,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
     const signature=`${program?.id||''}:${center?.id||''}:${scheduleContext?.date||''}:${revision}`
     if(contextSignature.current===signature)return
     if(!program)contextSignature.current=signature
-    if(!program&&!center&&!scheduleContext&&restoreChat.current){const c=restoreChat.current;setTurns(c.turns);setDraft(c.draft||'');setChatReply(c.reply||null);setChatAnswers(c.answers||{});setDetail(c.detail);setProfileStep(c.profileStep??null);setProfileQueue(c.profileQueue||[]);setSelectedInterests(c.selectedInterests||activity.interests);return}
+    if(!program&&!center&&!scheduleContext&&restoreChat.current){const c=restoreChat.current;setTurns(c.turns);setDraft(c.draft||'');setChatReply(c.reply||null);setChatAnswers(c.answers||{});setDetail(c.detail);setProfileStep(c.profileStep??null);setProfileQueue(c.profileQueue||[]);setSelectedInterests(c.selectedInterests||activity.interests);setCompletedApplication(c.completedApplication);return}
     chatRequest.current?.abort(); chatRequest.current=null; setChatBusy(false); setChatError(''); setChatReply(null); setChatAnswers({})
     setActiveRecommendation(null);setCatalogMode(null); setPolicyExample(false); setApplying(false); setDetail(program); setFailed(false); setDraft(''); setProfileStep(null)
     setTurns(scheduleContext ? [{role:'assistant',text:`내 일정에서 ${scheduleContext.date} 일정을 함께 정리하러 왔어요. 어떤 약속이나 할 일을 등록할까요?`}] : center ? [{role:'assistant',text:`‘${center.name}’에 대해 함께 알아봐요. ${center.guide?.summary || ''}\n이용 안내를 물어보거나 방문 일정을 말해 주세요.`}] : program ? [{ role: 'user', text: `‘${program.title}’에 대해 알아보고 싶어.` }] : [])
@@ -85,24 +87,26 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
   }, [program?.id, center?.id, scheduleContext?.date, revision])
   useEffect(() => { const node = transcript.current; if (node) node.scrollTop = node.scrollHeight }, [turns, busy, profileStep, chatReply, applying])
   useEffect(() => { window.scrollTo(0, 0) }, [program?.id])
-  const scheduler = useAssistantSchedule(schedule, center, activeRecommendation?toProgram(activeRecommendation):detail, (user,assistant)=>setTurns(prev=>[...prev,{role:'user',text:user},{role:'assistant',text:assistant}]))
+  const scheduler = useAssistantSchedule(schedule, center, activeRecommendation?toProgram(activeRecommendation):detail, (user,assistant)=>setTurns(prev=>[...prev,{role:'user',text:user},{role:'assistant',text:assistant}]),activeChatId)
   const context = buildAssistantContext(personal,activity,checkinAnswers,answerDecisions,preferProfile)
   const contextLines = assistantContextLines(context)
   const age = context.local.age
   const official = detail && safePolicyUrl(detail.referenceUrl || detail.applyUrl)
   useEffect(()=>{
     if(!turns.length&&!draft){flushChat.current=()=>{};return}
-    const entry:SavedChat={id:activeChatId,title:(turns.find(t=>t.role==='user')?.text||'작성 중인 대화').slice(0,36),updatedAt:new Date().toISOString(),turns,draft,reply:chatReply,answers:chatAnswers,detail,profileStep,profileQueue,selectedInterests}
+    const entry:SavedChat={id:activeChatId,title:(turns.find(t=>t.role==='user')?.text||'작성 중인 대화').slice(0,36),updatedAt:new Date().toISOString(),turns,draft,reply:chatReply,answers:chatAnswers,detail,profileStep,profileQueue,selectedInterests,completedApplication}
     const persist=()=>{try{const existing=readChats();const entries=[entry,...existing.entries.filter(c=>c.id!==activeChatId)].slice(0,20);localStorage.setItem(CHAT_KEY,JSON.stringify({activeId:activeChatId,entries}));setSavedChats({activeId:activeChatId,entries});setSaveFailed(false)}catch{setSaveFailed(true)}}
     flushChat.current=persist
     const timer=window.setTimeout(persist,250);window.addEventListener('beforeunload',persist)
     return()=>{window.clearTimeout(timer);window.removeEventListener('beforeunload',persist)}
-  },[turns,draft,chatReply,chatAnswers,detail,activeChatId,profileStep,profileQueue,selectedInterests])
+  },[turns,draft,chatReply,chatAnswers,detail,activeChatId,profileStep,profileQueue,selectedInterests,completedApplication])
   const openSavedChat = (c:SavedChat) => {
     flushChat.current()
-    chatRequest.current?.abort();chatRequest.current=null;setChatBusy(false);setChatError('');restoreChat.current=c;setActiveRecommendation(null);setActiveChatId(c.id);setTurns(c.turns);setDraft(c.draft||'');setChatReply(c.reply||null);setChatAnswers(c.answers||{});setDetail(c.detail);setProfileStep(c.profileStep??null);setProfileQueue(c.profileQueue||[]);setSelectedInterests(c.selectedInterests||activity.interests);setApplying(false);setPolicyExample(false);setCatalogMode(null);onNew()
+    chatRequest.current?.abort();chatRequest.current=null;setChatBusy(false);setChatError('');restoreChat.current=c;setActiveRecommendation(null);setActiveChatId(c.id);setTurns(c.turns);setDraft(c.draft||'');setChatReply(c.reply||null);setChatAnswers(c.answers||{});setDetail(c.detail);setProfileStep(c.profileStep??null);setProfileQueue(c.profileQueue||[]);setSelectedInterests(c.selectedInterests||activity.interests);setCompletedApplication(c.completedApplication);setApplying(false);setPolicyExample(false);setCatalogMode(null);onNew()
   }
+  useEffect(()=>{if(!restoreRequest)return;flushChat.current();const c=readChats().entries.find(c=>c.id===restoreRequest.id);if(c)openSavedChat(c);else setChatError('이 기기에서 연결된 대화 이력을 찾지 못했어요. 최근 20개 대화만 보관해요.')},[restoreRequest?.nonce])
   const selectCatalogItem = (item:Program) => {
+    if(completedApplication?.itemId!==item.id)setCompletedApplication(undefined)
     setCatalogMode(null); setDetail(item); setApplying(false); setPolicyExample(false); setFailed(false)
     setTurns(prev=>[...prev,{role:'user',text:`‘${item.title}’ 알아볼래`},{role:'assistant',text:`${short(item.summary)||'공고의 안내를 함께 확인해요.'}\n\n신청 기간: ${periodLabel(item.period)}\n궁금한 내용을 물어보세요. 신청 조건부터 함께 확인해 볼까요?`}])
   }
@@ -160,6 +164,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
   }
   const actOnRecommendation = async (action:string,selected=activeRecommendation) => {
     if(!selected||busy||chatBusy)return
+    if(completedApplication?.itemId!==selected.id)setCompletedApplication(undefined)
     if(action==='question'){setActiveRecommendation(selected);setDetail(toProgram(selected));setDraft('');setChatReply(null);setTurns(prev=>[...prev,{role:'assistant',text:`‘${selected.title}’에서 더 궁금한 점을 편하게 물어보세요. 지원 내용, 참여 조건, 준비물이나 신청 방법을 공고에 맞춰 설명해 드릴게요.`}]);return}
     setBusy(true);setFailed(false)
     try {
@@ -170,9 +175,18 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
     } catch {setChatError('공고를 불러오지 못했어요. 잠시 후 다시 눌러주세요.')}
     finally {setBusy(false)}
   }
+  const recordApplicationSchedule=(application:ApplicationCompletion)=>{
+    if(!schedule)return
+    const existing=schedule.events.find(e=>e.kind==='application'&&e.itemId===application.itemId&&e.applicationAt===application.at)
+    const event=existing||applicationCalendarEvent(application,activeChatId)
+    if(!existing)schedule.save(event)
+    setCompletedApplication({...application,scheduled:true});setApplying(false);setChatReply(null);scheduler.reset()
+    setTurns(prev=>[...prev,{role:'assistant',text:`${event.date}에 신청한 기록을 ${existing?'이미 저장했어요':'일정에 등록했어요'}. ${application.simulation?'신청 시연 기록이며 실제 기관 접수는 아니에요. ':''}참여일·문의 일정과 구분해서 표시하고, 이 대화도 연결했어요.`,calendarDate:event.date}])
+  }
   const answer = (text: string) => {
     const value = text.trim(); if (!value || chatRequest.current) return
     if (profileField) { respondProfile(value, /^(건너뛰기|건너뛸게|나중에)$/.test(value)); return }
+    if(/^일정\s*등록(?:해\s*줘|하기)?$/.test(value)&&completedApplication&&!completedApplication.scheduled){recordApplicationSchedule(completedApplication);return}
     if (scheduler.handle(value)) { setDraft('');setChatReply(null); return }
     if (/내\s*정보.*(입력|수정|등록)/.test(value)) { beginProfile(); return }
     if (busy) return
@@ -194,7 +208,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
   return <div className="assistant-workspace">
     <aside className="assistant-sidebar">
       <div className="assistant-sidebar-title"><MessageCircle size={20} /><h1>AI 비서</h1></div>
-      <button className="btn btn-secondary" onClick={() => { flushChat.current();restoreChat.current=null;setActiveRecommendation(null);const id=crypto.randomUUID();setActiveChatId(id);try{const existing=readChats();localStorage.setItem(CHAT_KEY,JSON.stringify({...existing,activeId:id}))}catch{} chatRequest.current?.abort(); chatRequest.current=null; setChatBusy(false);setChatError('');setChatReply(null);setChatAnswers({}); setCatalogMode(null); setDetail(undefined); setPolicyExample(false); setApplying(false); scheduler.reset(); setTurns([]); setProfileStep(null); setDraft(''); onNew() }}><Plus size={16} /> 새 대화</button>
+      <button className="btn btn-secondary" onClick={() => { flushChat.current();restoreChat.current=null;setCompletedApplication(undefined);setActiveRecommendation(null);const id=crypto.randomUUID();setActiveChatId(id);try{const existing=readChats();localStorage.setItem(CHAT_KEY,JSON.stringify({...existing,activeId:id}))}catch{} chatRequest.current?.abort(); chatRequest.current=null; setChatBusy(false);setChatError('');setChatReply(null);setChatAnswers({}); setCatalogMode(null); setDetail(undefined); setPolicyExample(false); setApplying(false); scheduler.reset(); setTurns([]); setProfileStep(null); setDraft(''); onNew() }}><Plus size={16} /> 새 대화</button>
       <details className="assistant-profile-context" open><summary>대화 이력</summary><p>이 브라우저에 최근 20개를 저장해요.</p>{savedChats.entries.map(c=><button className="chat-history-entry" aria-current={c.id===activeChatId?'true':undefined} key={c.id} onClick={()=>openSavedChat(c)}><strong>{c.title}</strong><small>{new Date(c.updatedAt).toLocaleDateString('ko-KR')}</small></button>)}</details>
       <p className="assistant-sidebar-label">함께 살펴보는 정보</p>{scheduleContext && <div className="assistant-context"><h2>내 일정에서 이어진 대화</h2><p>{scheduleContext.date} 선택</p><p>정리한 일정을 달력에서 확인한 뒤 등록해요.</p></div>}{center && <div className="assistant-context"><h2>{center.name}</h2><p>{center.address}</p><p>{center.guide?.summary}</p></div>}
       {detail ? <div className="assistant-context"><span className={`policy-period-status status-${detail.applicationStatus || 'unknown'}`}>{applicationLabel(detail)}</span><h2>{detail.title}</h2><p>{detail.region} · {detail.categories?.join(' · ')}</p><p>신청 기간<br />{periodLabel(detail.period)}</p>{detail.id===program?.id && <button className="text-button" onClick={onSave} aria-pressed={saved}><Bookmark size={14} /> {saved ? '관심 해제' : '관심 저장'}</button>}{official && <a className="policy-official-link" href={official} target="_blank" rel="noopener noreferrer">공식 공고 <ExternalLink size={12} /></a>}</div> : <p className="settings-help">{scheduleContext?'선택한 날짜의 약속이나 할 일을 말해 주세요.':center?'센터 이용 안내와 방문 일정을 함께 살펴봐요.':'관심 있는 정책이나 프로그램을 가져와 조이와 함께 알아보세요.'}</p>}
@@ -208,7 +222,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
       <div className="assistant-transcript" ref={transcript} role="log" aria-label="대화 내용" aria-live="polite">
         {!detail && !center && !scheduleContext && !catalogMode && !turns.length && <div className="assistant-welcome"><img src={joyImage} alt="" /><h2>어떤 도움이 필요하세요?</h2><p>지금 필요한 도움을 편하게 말해 주세요.</p><div className="assistant-choices"><button onClick={()=>answer('월세 지원 알아보고 싶어')}>월세 지원 알아보고 싶어</button><button onClick={()=>answer('참여할 프로그램 추천해 줘')}>참여할 활동을 찾고 있어</button></div></div>}
 
-        {turns.map((turn, index) => turn.recommendations ? <ChatRecommendations key={index} items={[...turn.recommendations.programs,...turn.recommendations.policies]} onActive={setActiveRecommendation} onAction={(action,item)=>void actOnRecommendation(action,item)} busy={busy||chatBusy}/> : chatReply?.results && !turns.some(t=>t.recommendations) && turn.role==='assistant' && !turns.slice(index+1).some(t=>t.role==='user') ? null : <div className={`assistant-turn ${turn.role}`} key={index}>{turn.role === 'assistant' && <img src={joyImage} alt="조이" />}<div>{turn.text}{index===turns.length-1 && turn.role==='assistant' && !chatBusy && !profileField && !!chatReply?.choices.length && <div className="assistant-inline-actions">{chatReply?.choices.map((choice,i)=><button className="btn btn-secondary" key={i} onClick={()=>{const answers=choice.type==='answer'&&choice.question_id&&choice.code?{...chatAnswers,[choice.question_id]:choice.code}:chatAnswers;if(choice.type==='answer')void sendChat(choice.text||choice.label,answers);else answer(choice.text||choice.label)}}>{choice.label}</button>)}</div>}</div></div>)}
+        {turns.map((turn, index) => turn.recommendations ? <ChatRecommendations key={index} items={[...turn.recommendations.programs,...turn.recommendations.policies]} onActive={setActiveRecommendation} onAction={(action,item)=>void actOnRecommendation(action,item)} busy={busy||chatBusy}/> : chatReply?.results && !turns.some(t=>t.recommendations) && turn.role==='assistant' && !turns.slice(index+1).some(t=>t.role==='user') ? null : <div className={`assistant-turn ${turn.role}`} key={index}>{turn.role === 'assistant' && <img src={joyImage} alt="조이" />}<div>{turn.text}{turn.calendarDate&&<div className="assistant-inline-actions"><button className="chat-reply-option" onClick={()=>schedule?.open(turn.calendarDate)}>등록한 일정 보기</button></div>}{index===turns.length-1 && turn.role==='assistant' && !chatBusy && !profileField && !!chatReply?.choices.length && <div className="assistant-inline-actions">{chatReply?.choices.map((choice,i)=><button className="btn btn-secondary" key={i} onClick={()=>{const answers=choice.type==='answer'&&choice.question_id&&choice.code?{...chatAnswers,[choice.question_id]:choice.code}:chatAnswers;if(choice.type==='answer')void sendChat(choice.text||choice.label,answers);else answer(choice.text||choice.label)}}>{choice.label}</button>)}</div>}</div></div>)}
         {profileField && <section className="assistant-question" aria-label="필요한 정보 입력">
           <span className="assistant-question-step">추가로 필요한 정보 · {profileQueue.indexOf(profileStep!)+1} / {profileQueue.length}</span>
           <h3>{profileField==='birthDate'?'생년월일을 알려주세요':profileField==='regionCode'?'어느 지역에 살고 있나요?':profileField==='employment'?'지금 어떤 상태인가요?':profileField==='school'?'현재 재학 상태를 알려주세요':profileField==='name'?'이름을 수정해 주세요':'관심 있는 분야를 골라주세요'}</h3>
@@ -225,7 +239,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
         {chatReply?.results && !turns.some(t=>t.recommendations) && <ChatRecommendations key={turns.length} items={[...chatReply.results.programs,...chatReply.results.policies]} onActive={setActiveRecommendation} onAction={(action,item)=>void actOnRecommendation(action,item)} busy={busy||chatBusy} />}
         {catalogMode && <AssistantCatalog mode={catalogMode} query={catalogQuery} criteria={{age:context.local.age,region:context.profile?.sigungu_cd||'',job:context.local.employment,school:context.local.school}} answers={context.checkin} onSelect={selectCatalogItem} />}
         {policyExample && <PolicyApplicationExample personal={personal} onClose={()=>setPolicyExample(false)} onSchedule={()=>{setPolicyExample(false);answer('월세 지원 조건·서류 확인 일정 등록')}} />}
-        {applying && detail && <ApplyFlow key={detail.id} itemId={!detail.id.startsWith('demo:')&&/docs\.google\.com\/forms|forms\.gle/.test(detail.applyUrl||'')?'demo:career':detail.id} demoFor={!detail.id.startsWith('demo:')&&/docs\.google\.com\/forms|forms\.gle/.test(detail.applyUrl||'')?detail.title:undefined} personal={personal} motivationContext={[...new Set(turns.filter(t=>t.role==='user'&&!/신청|일정|찾아|추천|알려|어떤|여기|이 상담/.test(t.text)).map(t=>t.text))].slice(-3).join(' ').slice(0,600)} officialUrl={detail.applyUrl||detail.referenceUrl} onTest={()=>{setDetail({id:"demo:career",type:"프로그램",title:"[둘셋 테스트] 자소서·면접 피드백 클래스",summary:"가상 취업 클래스 신청 시연이에요.",region:"온라인 · 가상",target:"취업 준비 청년(시연)",period:"테스트",method:"테스트 폼",place:"온라인(가상)",source:"둘셋 테스트"});setApplying(true)}} onClose={()=>setApplying(false)} onSchedule={()=>{setApplying(false);answer('일정 등록')}} />}
+        {applying && detail && <ApplyFlow key={detail.id} itemId={!detail.id.startsWith('demo:')&&/docs\.google\.com\/forms|forms\.gle/.test(detail.applyUrl||'')?'demo:career':detail.id} demoFor={!detail.id.startsWith('demo:')&&/docs\.google\.com\/forms|forms\.gle/.test(detail.applyUrl||'')?detail.title:undefined} personal={personal} motivationContext={[...new Set(turns.filter(t=>t.role==='user'&&!/신청|일정|찾아|추천|알려|어떤|여기|이 상담/.test(t.text)).map(t=>t.text))].slice(-3).join(' ').slice(0,600)} officialUrl={detail.applyUrl||detail.referenceUrl} onTest={()=>{setDetail({id:"demo:career",type:"프로그램",title:"[둘셋 테스트] 자소서·면접 피드백 클래스",summary:"가상 취업 클래스 신청 시연이에요.",region:"온라인 · 가상",target:"취업 준비 청년(시연)",period:"테스트",method:"테스트 폼",place:"온라인(가상)",source:"둘셋 테스트"});setApplying(true)}} onComplete={r=>setCompletedApplication({itemId:detail.id,title:detail.title,at:r.submitted_at,simulation:r.status==='simulated'})} onClose={()=>setApplying(false)} onSchedule={r=>{if(r)recordApplicationSchedule({itemId:detail.id,title:detail.title,at:r.submitted_at,simulation:r.status==='simulated'});else{setApplying(false);answer('일정 등록')}}} />}
         {!profileField && scheduler.preview}{!profileField && scheduler.editor}
         {busy && <p role="status">선택한 공고를 읽고 있어요…</p>}
         {failed && <div role="alert">공고를 불러오지 못했어요. <button className="text-button" onClick={() => setRevision(n => n + 1)}>다시 시도</button></div>}

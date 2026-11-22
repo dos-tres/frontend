@@ -7,7 +7,7 @@ import './apply-flow.css'
 
 type Question = {id:string; label:string; kind:string; required:boolean; options?:string[]; description?:string; hint?:string; fill_key?:string; other?:boolean; can_draft?:boolean}
 type Start = {available:boolean; form_revision?:string; test_only?:boolean; reason?:string; questions?:Question[]; filled?:{id:string;label:string;value:string}[]; item:{id:string;title:string}}
-type Result = {status:string;confirmed_by:string;submitted_at:string;item:{id:string;title:string}}
+export type ApplyResult = {status:string;confirmed_by:string;submitted_at:string;item:{id:string;title:string}}
 type Answers = Record<string,string|string[]>
 const reviewLabel=(q:Question)=>({name:'이름',age:'나이',region:'거주 지역',phone:'연락처',email:'이메일',birth_date:'생년월일'}[q.fill_key||'']||(/동의/.test(q.label)?'참여 동의':q.kind==='long'?'참여 동기':/피드백/.test(q.label)?'받고 싶은 도움':/취업 준비/.test(q.label)?'준비 상태':q.label.replace(/\s*\([^)]*\)/g,'')))
 const base = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/,'')
@@ -17,11 +17,11 @@ async function request(path:string, body:unknown) {
   if (!response.ok) throw data.error || {code:'UNKNOWN'}
   return data
 }
-export default function ApplyFlow({itemId,personal,onClose,onSchedule,officialUrl,onTest,demoFor,motivationContext=''}:{motivationContext?:string;demoFor?:string;officialUrl?:string;onTest?:()=>void;itemId:string;personal:PersonalInformation;onClose:()=>void;onSchedule:()=>void}) {
+export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete,officialUrl,onTest,demoFor,motivationContext=''}:{motivationContext?:string;demoFor?:string;officialUrl?:string;onTest?:()=>void;itemId:string;personal:PersonalInformation;onClose:()=>void;onSchedule:(result?:ApplyResult)=>void;onComplete?:(result:ApplyResult)=>void}) {
   const panel=useRef<HTMLElement>(null)
   const [form,setForm]=useState<Start>(); const [answers,setAnswers]=useState<Answers>({})
   const [stage,setStage]=useState<'loading'|'edit'|'review'|'done'|'unavailable'|'uncertain'>('loading')
-  const [error,setError]=useState(''); const [busy,setBusy]=useState(false); const [result,setResult]=useState<Result>()
+  const [error,setError]=useState(''); const [busy,setBusy]=useState(false); const [result,setResult]=useState<ApplyResult>()
   const [drafting,setDrafting]=useState('')
   const [queue,setQueue]=useState<string[]>([]);const [step,setStep]=useState(0)
   const [editingReview,setEditingReview]=useState(false)
@@ -69,8 +69,8 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,officialUr
     if(lock.current)return
     lock.current=true;setBusy(true);setError('')
     try {
-      const data:Result={status:'simulated',confirmed_by:'local',submitted_at:new Date().toISOString(),item:{id:itemId,title:form?.item.title||''}}
-      setResult(data);setStage('done');return
+      const data:ApplyResult={status:'simulated',confirmed_by:'local',submitted_at:new Date().toISOString(),item:{id:itemId,title:form?.item.title||''}}
+      setResult(data);setStage('done');onComplete?.(data);return
       /* Live submission is disabled for this demonstration. */
 
     } catch(e) {
@@ -100,8 +100,8 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,officialUr
       </div>)}
       <div className="assistant-profile-actions"><button className="text-button" disabled={step===0||editingReview} onClick={()=>setStep(i=>i-1)}>이전 항목</button><button className="btn btn-primary" onClick={()=>{const q=questions.find(q=>q.id===queue[step]);const v=q?answers[q.id]:undefined;if(q?.required&&(!v||(Array.isArray(v)?!v.length:!String(v).trim()))){setInvalid([q.id]);setError('이 항목에 답해 주세요.');return}setError('');if(editingReview){setEditingReview(false);review()}else if(step<queue.length-1)setStep(i=>i+1);else review()}}>{editingReview?'수정 완료':step<queue.length-1?'다음':'전체 내용 확인'}</button></div></>}
     {stage==='review'&&<><h4>이 내용으로 신청할까요?</h4><dl className="apply-review">{questions.map((q,i)=><div key={q.id}><dt>{reviewLabel(q)}</dt><dd>{/동의/.test(q.label)?(answers[q.id]&&(!Array.isArray(answers[q.id])||(answers[q.id] as string[]).length)?'동의했어요':'미동의'):Array.isArray(answers[q.id])?(answers[q.id] as string[]).join(', '):answers[q.id]||'미입력'}</dd><button className="text-button" aria-label={`${q.label} 수정`} onClick={()=>{setQueue(questions.map(q=>q.id));setStep(i);setEditingReview(true);setStage('edit')}}>수정</button></div>)}</dl><button className="btn btn-primary" disabled={busy} onClick={submit}>{busy?'처리 중…':'이 내용으로 신청'}</button></>}
-    {stage==='done'&&result&&<><h4>신청 시연이 완료됐어요</h4><p>작성일: {new Date(result.submitted_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}</p><button className="btn btn-primary" onClick={onSchedule}>일정 등록하기</button><p className="settings-help">날짜와 시간을 확인한 뒤 일정을 저장해요.</p></>}
-    {stage==='unavailable'&&<><h4>{form?.reason==='closed'?'현재 접수가 마감됐어요':'신청 방법을 함께 확인해요'}</h4><p>이 기관 신청서는 현재 둘셋의 자동 제출 연결 대상이 아니에요. 실제 신청은 공식 신청서에서 진행하고, 필요한 내용은 함께 준비할 수 있어요.</p>{safePolicyUrl(officialUrl)&&<a className="text-button" href={safePolicyUrl(officialUrl)} target="_blank" rel="noopener noreferrer">공식 신청서 열기 ↗</a>}{onTest&&<><p>신청 과정을 체험하려면 별도 팀 소유 취업 클래스 테스트 폼으로 이어갈 수 있어요. 이 기관 신청으로 접수되지는 않아요.</p><button className="btn btn-secondary" onClick={onTest}>취업 클래스 테스트 신청 이어가기</button></>}<button className="btn btn-ghost" onClick={onSchedule}>문의할 일정 등록</button></>}
-    {stage==='uncertain'&&<div role="alert"><h4>접수 여부를 확인하지 못했어요</h4><p>중복 신청을 막기 위해 다시 제출하지 않을게요. 신청처에서 접수 여부를 확인해 주세요.</p><button className="btn btn-ghost" onClick={onSchedule}>확인할 일정 등록</button></div>}
+    {stage==='done'&&result&&<><h4>신청 시연이 완료됐어요</h4><p>작성일: {new Date(result.submitted_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}</p><button className="btn btn-primary" onClick={()=>onSchedule(result)}>일정 등록하기</button><p className="settings-help">신청한 날짜로 기록하고 이 대화를 연결해요.</p></>}
+    {stage==='unavailable'&&<><h4>{form?.reason==='closed'?'현재 접수가 마감됐어요':'신청 방법을 함께 확인해요'}</h4><p>이 기관 신청서는 현재 둘셋의 자동 제출 연결 대상이 아니에요. 실제 신청은 공식 신청서에서 진행하고, 필요한 내용은 함께 준비할 수 있어요.</p>{safePolicyUrl(officialUrl)&&<a className="text-button" href={safePolicyUrl(officialUrl)} target="_blank" rel="noopener noreferrer">공식 신청서 열기 ↗</a>}{onTest&&<><p>신청 과정을 체험하려면 별도 팀 소유 취업 클래스 테스트 폼으로 이어갈 수 있어요. 이 기관 신청으로 접수되지는 않아요.</p><button className="btn btn-secondary" onClick={onTest}>취업 클래스 테스트 신청 이어가기</button></>}<button className="btn btn-ghost" onClick={()=>onSchedule()}>문의할 일정 등록</button></>}
+    {stage==='uncertain'&&<div role="alert"><h4>접수 여부를 확인하지 못했어요</h4><p>중복 신청을 막기 위해 다시 제출하지 않을게요. 신청처에서 접수 여부를 확인해 주세요.</p><button className="btn btn-ghost" onClick={()=>onSchedule()}>확인할 일정 등록</button></div>}
   </section>
 }

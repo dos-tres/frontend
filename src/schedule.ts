@@ -1,4 +1,4 @@
-export type CalendarEvent = { id: number; title: string; date: string; type: string; startTime?: string; endTime?: string; location?: string; reminderMinutes?: number; notifiedAt?: string; source?: 'manual' | 'assistant' | 'application'; itemId?: string; centerId?: string }
+export type CalendarEvent = { id: number; title: string; date: string; type: string; startTime?: string; endTime?: string; location?: string; reminderMinutes?: number; notifiedAt?: string; source?: 'manual' | 'assistant' | 'application'; itemId?: string; centerId?: string; kind?: 'application'|'activity'|'inquiry'|'personal'; chatId?: string; applicationAt?: string; simulation?: boolean }
 export const localDate = (value = new Date()) => `${value.getFullYear()}-${String(value.getMonth()+1).padStart(2,'0')}-${String(value.getDate()).padStart(2,'0')}`
 export function validateEvent(event: Pick<CalendarEvent,'title'|'date'|'startTime'|'endTime'|'reminderMinutes'>): string {
   if (!event.title.trim()) return '일정 이름을 알려주세요.'
@@ -38,3 +38,11 @@ export function timeBlocks(events: CalendarEvent[]) {
   return {event,start,end,lane}
  })
 }
+
+export type ApplicationCompletion={itemId:string;title:string;at:string;simulation:boolean;scheduled?:boolean}
+export function applicationCalendarEvent(application:ApplicationCompletion,chatId:string,id=Date.now()):CalendarEvent {
+ const at=new Date(application.at)
+ return {id,title:`${application.title} 신청 기록`,date:at.toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}),type:application.simulation?'신청 기록 · 시연':'신청 기록',source:'application',kind:'application',itemId:application.itemId,chatId,applicationAt:application.at,simulation:application.simulation}
+}
+export const scheduleKind=(e:CalendarEvent)=>e.kind||(e.source==='application'?'application':/문의/.test(e.title)?'inquiry':/참여/.test(e.type)?'activity':'personal')
+export const scheduleKindLabel=(e:CalendarEvent)=>({application:'신청 기록',activity:'참여 일정',inquiry:'문의 일정',personal:'개인 일정'}[scheduleKind(e)])
