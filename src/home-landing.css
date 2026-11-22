@@ -10,3 +10,10 @@
 @keyframes joy-home-twinkle{0%,100%{opacity:.3;transform:translateY(0) scale(.85)}50%{opacity:.8;transform:translateY(-4px) scale(1.1)}}
 @media(max-width:600px){.joy-home-greeting{margin-bottom:16px}.joy-home-mascot-stage{height:128px;width:174px}.joy-home-mascot{left:22px;width:130px;height:120px}.joy-home-greeting .joy-home-mascot-image{width:130px;height:120px}.joy-home-mascot-shadow{left:57px;bottom:5px;width:60px}.sparkle-one{left:15px;top:30px}.sparkle-two{right:14px;top:67px}.joy-home-hero h1{font-size:30px}}
 @media(prefers-reduced-motion:reduce){.joy-home-greeting .joy-home-mascot-image,.joy-home-mascot:hover .joy-home-mascot-image,.joy-home-mascot-shadow,.joy-home-sparkle{animation:none!important;will-change:auto}.joy-home-greeting>.joy-home-speech{transition:none}}
+
+/* Start check-in directly when no completed record exists. */
+.joy-home-checkin{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 24px;margin:8px 0 28px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.joy-home-checkin strong{display:block;color:var(--ink);font-size:16px;line-height:1.6}
+.joy-home-checkin p{margin:5px 0 0;color:var(--muted);font-size:14px;line-height:1.7}
+.joy-home-checkin button{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex-shrink:0;min-height:44px;padding:11px 16px;border:0;border-radius:8px;background:var(--blue);color:#fff;font:inherit;font-weight:650}
+@media(max-width:600px){.joy-home-checkin{align-items:flex-start;flex-direction:column;padding:20px;gap:16px}.joy-home-checkin button{width:100%}}
