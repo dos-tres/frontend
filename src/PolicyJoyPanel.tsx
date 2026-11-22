@@ -155,6 +155,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
   }
   const actOnRecommendation = async (action:string,selected=activeRecommendation) => {
     if(!selected||busy||chatBusy)return
+    if(action==='question'){setActiveRecommendation(selected);setDetail(toProgram(selected));setDraft('');setChatReply(null);setTurns(prev=>[...prev,{role:'assistant',text:`‘${selected.title}’에서 더 궁금한 점을 편하게 물어보세요. 지원 내용, 참여 조건, 준비물이나 신청 방법을 공고에 맞춰 설명해 드릴게요.`}]);return}
     setBusy(true);setFailed(false)
     try {
       const item=await requestCatalogItem(selected.id,new AbortController().signal)
@@ -170,7 +171,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
     if (scheduler.handle(value)) { setDraft(''); return }
     if (/내\s*정보.*(입력|수정|등록)/.test(value)) { beginProfile(); return }
     if (busy) return
-    if (detail && /^(신청해\s*줘|신청할래|신청하기|신청 진행)/.test(value)) {setCatalogMode(null);setPolicyExample(false);setApplying(true);setDraft('');return}
+    if ((activeRecommendation||detail) && /^(신청해\s*줘|신청할래|신청하기|신청 진행|신청 같이)/.test(value)) {if(activeRecommendation)setDetail(toProgram(activeRecommendation));setCatalogMode(null);setPolicyExample(false);setApplying(true);setDraft('');return}
     void sendChat(value)
   }
   useEffect(()=>{if(pendingAction&&detail&&!busy){setPendingAction('');answer(pendingAction)}},[pendingAction,detail,busy])
@@ -217,7 +218,7 @@ export default function PolicyJoyPanel({ startFresh=false, checkinAnswers={}, an
         {!profileField && !context.profile && !!chatReply?.needs.includes('profile') && <button className="btn btn-secondary" onClick={beginProfile}>추천에 필요한 내 정보 입력</button>}
         {catalogMode && <AssistantCatalog mode={catalogMode} query={catalogQuery} criteria={{age:context.local.age,region:context.profile?.sigungu_cd||'',job:context.local.employment,school:context.local.school}} answers={context.checkin} onSelect={selectCatalogItem} />}
         {policyExample && <PolicyApplicationExample personal={personal} onClose={()=>setPolicyExample(false)} onSchedule={()=>{setPolicyExample(false);answer('월세 지원 조건·서류 확인 일정 등록')}} />}
-        {applying && detail && <ApplyFlow key={detail.id} itemId={detail.id} personal={personal} onClose={()=>setApplying(false)} onSchedule={()=>{setApplying(false);answer('일정 등록')}} />}
+        {applying && detail && <ApplyFlow key={detail.id} itemId={detail.id} personal={personal} officialUrl={detail.applyUrl||detail.referenceUrl} onTest={()=>{setDetail({id:"demo:career",type:"프로그램",title:"[둘셋 테스트] 자소서·면접 피드백 클래스",summary:"가상 취업 클래스 신청 시연이에요.",region:"온라인 · 가상",target:"취업 준비 청년(시연)",period:"테스트",method:"테스트 폼",place:"온라인(가상)",source:"둘셋 테스트"});setApplying(true)}} onClose={()=>setApplying(false)} onSchedule={()=>{setApplying(false);answer('일정 등록')}} />}
         {!profileField && scheduler.preview}
         {busy && <p role="status">선택한 공고를 읽고 있어요…</p>}
         {failed && <div role="alert">공고를 불러오지 못했어요. <button className="text-button" onClick={() => setRevision(n => n + 1)}>다시 시도</button></div>}
