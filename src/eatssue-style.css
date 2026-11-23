@@ -1,0 +1,154 @@
+/*
+ * 둘셋 / eatssue 스타일 패치 — 선택 적용
+ * Reference: zoo0o/eatssue, master, HomeView.vue / AppHeader.vue / variables.css
+ * Uses Dos Tres's existing colors, logo, character and working components.
+ * Load after styles.css. No JSX changes, external fonts, images or dependencies.
+ */
+:root {
+  --eat-content: 1200px;
+  --eat-radius-control: 10px;
+  --eat-radius-panel: 16px;
+  --eat-border: var(--line);
+  --eat-space-section: 72px;
+}
+.app-shell { background: var(--surface); }
+.app-shell .topbar {
+  height: 68px;
+  border-bottom-color: var(--eat-border);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  backdrop-filter: blur(12px);
+}
+.app-shell .topbar-inner { max-width: var(--eat-content); padding: 0 24px; gap: 32px; }
+.app-shell .brand-mark img { width: 44px; height: 44px; }
+.app-shell .brand-name { font-size: 23px; letter-spacing: -.05em; }
+.app-shell .nav-links { justify-content: flex-end; gap: 26px; }
+.app-shell .nav-link {
+  position: relative; min-height: 68px; padding: 0;
+  border-radius: 0; background: transparent; color: var(--muted);
+  font-size: 14px; font-weight: 600; letter-spacing: -.02em;
+}
+.app-shell .nav-link.active, .app-shell .nav-link:hover { background: transparent; color: var(--blue-dark); }
+.app-shell .nav-link.active::after {
+  content: ''; position: absolute; inset: auto 0 0; height: 3px;
+  border-radius: 3px 3px 0 0; background: var(--blue);
+}
+.app-shell .main-container { width: min(100% - 48px, var(--eat-content)); padding-top: 44px; padding-bottom: 64px; }
+.app-shell .page-title { margin-bottom: 32px; }
+.app-shell .page-title h1 { font-size: clamp(26px, 3vw, 36px); font-weight: 750; line-height: 1.3; letter-spacing: -.05em; }
+.app-shell .page-title p { line-height: 1.8; max-width: 740px; }
+.app-shell .panel { border-color: var(--eat-border); border-radius: var(--eat-radius-panel); padding: 28px; box-shadow: none; }
+.app-shell .btn {
+  min-height: 46px; padding: 11px 19px; border-radius: var(--eat-radius-control);
+  font-size: 14px; font-weight: 650; letter-spacing: -.02em;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+.app-shell .btn:hover { transform: none; }
+.app-shell .btn-primary { box-shadow: none; }
+.app-shell .btn-secondary { border-color: var(--eat-border); color: var(--ink); }
+.app-shell :is(input,select,textarea):not([type=checkbox]):not([type=radio]) { font-size: 15px; }
+.app-shell .section-label { font-size: 21px; letter-spacing: -.04em; }
+.app-shell :is(.section-head,.panel-heading) { gap: 20px; }
+.app-shell :is(.section-head,.panel-heading) h3 { font-size: 20px; letter-spacing: -.04em; }
+
+/* Existing home markup, with eatssue's open hero and spacious sections. */
+.app-shell .joy-home { padding: 0; }
+.app-shell .joy-home-hero {
+  display: grid; grid-template-columns: minmax(0,1fr) minmax(290px,.78fr);
+  grid-template-areas: 'title joy' 'description joy' 'composer joy' 'starters joy';
+  column-gap: 56px; row-gap: 0; align-content: center;
+  max-width: none; margin: 0; text-align: left; padding: 40px 0 64px; min-height: 570px;
+}
+.app-shell .joy-home-hero h1 {
+  grid-area: title; align-self: end; font-size: clamp(38px,4.5vw,58px);
+  line-height: 1.16; letter-spacing: -.065em; font-weight: 800; margin: 0 0 22px;
+}
+.app-shell .joy-home-description { grid-area: description; font-size: 16px; line-height: 1.8; margin: 0 0 27px; max-width: 470px; }
+.app-shell .joy-home-greeting { grid-area: joy; justify-content: center; margin: 0; gap: 16px; min-width: 0; }
+.app-shell .joy-home-mascot-stage { width: 100%; max-width: 380px; height: 340px; }
+.app-shell .joy-home-mascot { top: 10px; left: 0; width: 100%; height: 310px; border-radius: 0; }
+.app-shell .joy-home-greeting .joy-home-mascot-image { width: 100%; height: 310px; }
+.app-shell .joy-home-mascot-glow { inset: 36px 10px 8px; border-radius: 42% 58% 50% 50%; background: var(--blue-pale); }
+.app-shell .joy-home-mascot-shadow { bottom: 14px; left: 35%; width: 30%; }
+.app-shell .joy-home-sparkle.sparkle-one { left: 5%; top: 22%; }
+.app-shell .joy-home-sparkle.sparkle-two { right: 4%; top: 63%; }
+.app-shell .joy-home-greeting > .joy-home-speech { background: var(--surface); border: 1px solid var(--eat-border); border-radius: 12px; padding: 10px 14px; font-size: 12px; }
+.app-shell .joy-home-composer {
+  grid-area: composer; min-width: 0; padding: 16px 18px;
+  border-radius: 12px; border-color: var(--eat-border); box-shadow: none;
+}
+.app-shell .joy-home-composer:focus-within { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-soft); }
+.app-shell .joy-home-input-label { font-size: 12px; margin-bottom: 10px; }
+.app-shell .joy-home-composer textarea { font-size: 16px; line-height: 1.7; min-height: 60px; }
+.app-shell .joy-home-composer-footer { margin-top: 10px; }
+.app-shell .joy-home-composer-footer button { border-radius: 8px; padding: 10px 16px; }
+.app-shell .joy-home-starters { grid-area: starters; margin-top: 18px; }
+.app-shell .joy-home-starters > p { margin-bottom: 8px; }
+.app-shell .joy-home-starters > div { justify-content: flex-start; gap: 8px; }
+.app-shell .joy-home-starters button { border-radius: 8px; min-height: 40px; padding: 8px 11px; font-size: 12px; }
+.app-shell .joy-home-shortcuts {
+  grid-template-columns: repeat(3,minmax(0,1fr)); align-items: stretch;
+  gap: 24px; padding: 48px 0; margin: 0; border-top: 1px solid var(--eat-border);
+}
+.app-shell .joy-home-shortcut-heading { grid-column: 1/-1; margin: 0 0 8px; }
+.app-shell .joy-home-shortcut-heading > span { font-size: 25px; letter-spacing: -.045em; font-weight: 750; }
+.app-shell .joy-home-shortcut-heading p { font-size: 14px; margin-top: 8px; }
+.app-shell .joy-home-shortcuts > button { border: 1px solid var(--eat-border); border-radius: 14px; padding: 24px 20px; gap: 14px; }
+.app-shell .joy-home-shortcut-icon { border-radius: 10px; width: 44px; height: 44px; }
+.app-shell .joy-home-shortcuts strong { font-size: 17px; letter-spacing: -.035em; }
+.app-shell .joy-home-shortcuts small { font-size: 13px; line-height: 1.6; margin-top: 6px; }
+.app-shell .joy-home-onboarding { border: 1px solid var(--eat-border); background: var(--surface); border-radius: 14px; padding: 26px 28px; }
+.app-shell .joy-home-onboarding strong { font-size: 16px; }
+.app-shell .joy-home-onboarding span { font-size: 13px; line-height: 1.7; }
+.app-shell .footer { width: min(100% - 48px,var(--eat-content)); padding: 24px 0; font-size: 12px; border-top-color: var(--eat-border); }
+
+/* Shared surfaces: retain content, controls, maps, modals and calendar geometry. */
+.app-shell :is(.result-card,.center-list-row,.apply-flow,.assistant-result-item) { border-radius: 14px; box-shadow: none; }
+.app-shell .policy-list-row { padding: 26px 0; }
+.app-shell .policy-title-button { font-weight: 700; letter-spacing: -.025em; }
+.app-shell .assistant-workspace { border-radius: 14px; overflow: hidden; }
+.app-shell .assistant-sidebar { background: var(--gray-soft); }
+.app-shell .assistant-heading { padding: 18px 26px; }
+.app-shell .assistant-composer { padding: 18px 26px; }
+.app-shell .assistant-turn > div { font-size: 15px; line-height: 1.85; }
+.app-shell .assistant-choices button { border-radius: 8px; }
+.app-shell :is(.settings-region-picker,.settings-experience,.schedule-confirmation) { border-radius: 12px; }
+
+@media(max-width:1050px) {
+  .app-shell .topbar-inner { gap: 20px; }
+  .app-shell .nav-links { gap: 15px; }
+  .app-shell .nav-link { font-size: 13px; }
+  .app-shell .joy-home-hero { column-gap: 28px; }
+  .app-shell .joy-home-hero h1 { font-size: 42px; }
+  .app-shell .joy-home-shortcuts { gap: 14px; }
+  .app-shell .joy-home-shortcuts > button { padding: 20px 14px; }
+  .app-shell .joy-home-onboarding span { display: block; margin: 6px 0 0; }
+}
+@media(max-width:767px) {
+  .app-shell .topbar { height: auto; min-height: 64px; }
+  .app-shell .topbar-inner { min-height: 64px; padding: 0 16px; flex-wrap: wrap; }
+  .app-shell .nav-links { gap: 10px; }
+  .app-shell .nav-link { min-height: 46px; padding: 8px 10px; border-radius: 8px; }
+  .app-shell .nav-link.active::after { display: none; }
+  .app-shell .nav-link.active { background: var(--blue-pale); }
+  .app-shell .main-container { width: calc(100% - 32px); padding-top: 28px; }
+  .app-shell .joy-home-hero {
+    grid-template-columns: minmax(0,1fr); grid-template-areas: 'title' 'description' 'joy' 'composer' 'starters';
+    min-height: 0; padding: 20px 0 40px;
+  }
+  .app-shell .joy-home-hero h1 { font-size: clamp(32px,6vw,40px); }
+  .app-shell .joy-home-description { font-size: 15px; margin-bottom: 16px; }
+  .app-shell .joy-home-greeting { margin-bottom: 28px; }
+  .app-shell .joy-home-mascot-stage { max-width: 250px; height: 205px; }
+  .app-shell .joy-home-mascot, .app-shell .joy-home-greeting .joy-home-mascot-image { height: 190px; }
+  .app-shell .joy-home-starters > div { display: flex; flex-wrap: wrap; }
+  .app-shell .joy-home-starters button { font-size: 12px; }
+  .app-shell .joy-home-shortcuts { grid-template-columns: minmax(0,1fr); padding: 32px 0; }
+  .app-shell .joy-home-shortcuts > button { padding: 20px; }
+  .app-shell .joy-home-onboarding { padding: 20px; align-items: flex-start; flex-wrap: wrap; }
+  .app-shell .panel { padding: 20px; }
+  .app-shell .footer { width: calc(100% - 32px); flex-wrap: wrap; }
+  .app-shell .assistant-heading, .app-shell .assistant-composer { padding: 16px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell .btn, .app-shell .joy-home-composer { transition: none; }
+}

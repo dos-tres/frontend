@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>둘셋 · 섬 디테일 스타일 비교</title>
+<style>body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',sans-serif;color:#26332f;background:#fff}.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 20px;background:#f7f8f9;border-bottom:1px solid #dde2e6;font-size:13px}.toolbar>span{flex:1}.toolbar label{display:flex;gap:8px;align-items:center}.toolbar select,.toolbar button{font:inherit;padding:8px 12px;border:1px solid #c9d0d7;border-radius:7px;background:#fff;color:inherit}.toolbar button{cursor:pointer}iframe{display:block;width:100%;height:calc(100dvh - 66px);min-height:600px;border:0}@media(max-width:600px){.toolbar{padding:10px 12px}.toolbar>span{display:none}}</style></head>
+<body><div class="toolbar"><strong>섬 디테일 시안</strong><span>현재 앱에는 미적용 · 스타일만 비교</span><label for="variant">스타일<select id="variant" aria-label="스타일"><option value="island">섬 디테일</option><option value="green">초록 메인</option><option value="blue">파랑 메인</option><option value="original">원래 화면</option></select></label><button id="home">홈으로</button></div>
+<iframe id="preview" src="/" title="둘셋 섬 디테일 스타일 미리보기" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+<script>
+const frame=document.getElementById('preview');const select=document.getElementById('variant');
+function apply(){const doc=frame.contentDocument;if(!doc)return;doc.getElementById('service-color-preview')?.remove();if(select.value==='original')return;const link=doc.createElement('link');link.id='service-color-preview';link.rel='stylesheet';link.href=select.value==='island'?'/src/service-island-style.css':select.value==='green'?'/src/service-green-style.css':'/src/service-style.css';doc.head.appendChild(link);}
+frame.addEventListener('load',apply);select.addEventListener('change',apply);document.getElementById('home').addEventListener('click',()=>{frame.src='/'});
+</script></body></html>

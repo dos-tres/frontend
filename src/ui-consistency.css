@@ -1,0 +1,86 @@
+/* Shared type scale and a stable header across every screen. */
+:root {
+  --text-body: 16px;
+  --text-label: 16px;
+  --text-section: 22px;
+  --text-caption: 14px;
+  --header-height: 76px;
+  scrollbar-gutter: stable;
+  scroll-padding-top: calc(var(--header-height) + 16px);
+}
+.app-shell {
+  --text-body: 16px;
+  --text-label: 16px;
+  --text-section: 22px;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  padding-top: var(--header-height);
+}
+.app-shell > .topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: auto;
+  height: var(--header-height);
+  z-index: 100;
+}
+.app-shell .topbar-inner { width: 100%; }
+.app-shell .nav-link { font-size: 16px; white-space: nowrap; }
+.app-shell .header-ask { font-size: 14px; }
+.app-shell .page-title h1,
+.app-shell .joy-home .joy-home-hero h1 { font-size: 32px; line-height: 1.4; }
+.app-shell :is(.page-title p, .joy-home .joy-home-description,
+  .assistant-turn > div, .policy-list-row .result-content > p,
+  .center-directory-row .center-summary, .detail-list,
+  .account-info-rows, .about-step small, .about-main p, .about-notes p) {
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+.app-shell :is(.btn, .field-label, .assistant-composer textarea),
+.app-shell :is(input,select,textarea):not([type=checkbox]):not([type=radio]) {
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+.app-shell :is(.section-head,.panel-heading) :is(h2,h3),
+.app-shell .section-label { font-size: var(--text-section); line-height: 1.5; }
+.app-shell :is(.policy-list-row .result-content h3, .center-directory-row .center-name,
+  .chat-recommendation-card h4, .account-card h3, .about-step strong) {
+  font-size: 20px;
+  line-height: 1.5;
+}
+.app-shell :is(.footer, .mini-label, .small-tag, .search-helper,
+  .chat-history-entry small, .assistant-history-entry small,
+  .joy-home .joy-home-eyebrow, .joy-home .joy-home-starters > p,
+  .joy-home .joy-home-starters button, .joy-home .joy-home-shortcuts small,
+  .joy-home .joy-home-shortcut-list small,
+  .policy-list-row .result-content > small, .center-directory-row .center-address,
+  .policy-list-row .policy-keywords span, .chat-recommendation-meta,
+  .chat-recommendation-why, .chat-recommendation-summary) {
+  font-size: var(--text-caption);
+  line-height: 1.5;
+}
+/* Fixed positioning removes the header from the flex flow in chat and home. */
+@media (min-width: 1100px) and (min-height: 720px) {
+  .app-shell:has(.joy-home.joy-home-professional) {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+}
+@media (max-width: 900px) {
+  :root { --header-height: 64px; }
+  .app-shell .topbar-inner { min-height: 64px; flex-wrap: nowrap; gap: 12px; padding: 0 16px; }
+  .app-shell .brand-name { font-size: 22px; }
+  .app-shell .mobile-menu { display: grid; place-items: center; margin-left: auto; width: 44px; height: 44px; border: 1px solid var(--line); background: white; color: var(--ink); border-radius: 10px; }
+  .app-shell .nav-links { display: none; position: absolute; top: 64px; left: 12px; right: 12px; padding: 8px; background: white; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); flex-direction: column; align-items: stretch; gap: 4px; max-height: calc(100dvh - 80px); overflow-y: auto; }
+  .app-shell .nav-links.nav-open { display: flex; }
+  .app-shell .nav-link { justify-content: flex-start; min-height: 44px; padding: 8px 12px; border-radius: 8px; }
+  .app-shell .nav-link.active { background: var(--blue-soft); }
+  .app-shell .nav-link.active::after { display: none; }
+  .app-shell .header-ask { padding: 8px 12px; min-height: 44px; }
+  .app-shell .header-ask svg { display: none; }
+  .app-shell .page-title h1,
+  .app-shell .joy-home .joy-home-hero h1 { font-size: 28px; }
+}
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .test-reset-launcher { display: none; }

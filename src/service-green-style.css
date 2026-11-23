@@ -1,0 +1,54 @@
+/*
+ * 둘셋 — 초록 메인 실서비스 스타일 (선택 적용)
+ * Inherits the existing service layout; changes action and selection colors only.
+ * Import this file alone, instead of service-style.css. Not enabled by default.
+ * Existing logos, character artwork and status/error colors remain intact.
+ */
+@import './service-style.css';
+
+:root {
+  --service-primary: var(--brand-green, #426B4A);
+  --service-primary-hover: var(--brand-green, #426B4A);
+}
+.app-shell {
+  --blue: var(--service-primary);
+  --blue-dark: var(--service-primary-hover);
+  --blue-soft: color-mix(in srgb, var(--brand-light-green, #91AE72) 18%, white);
+  --blue-pale: color-mix(in srgb, var(--brand-light-green, #91AE72) 8%, white);
+  --green: var(--brand-green, #426B4A);
+  --green-soft: var(--blue-soft);
+}
+.app-shell button:focus-visible,
+.app-shell a:focus-visible,
+.app-shell input:focus-visible,
+.app-shell select:focus-visible,
+.app-shell textarea:focus-visible {
+  outline-color: var(--service-primary);
+}
+.app-shell .btn-soft { color: var(--service-primary-hover); background: var(--blue-soft); }
+.app-shell .btn-secondary:hover { border-color: var(--service-primary); }
+.app-shell .joy-home-starters button:hover { border-color: var(--service-primary); background: var(--blue-pale); }
+.app-shell .joy-home-shortcuts > button:hover { border-color: var(--service-primary); background: #fafcf9; }
+.app-shell .joy-home-composer-footer button:disabled { background: #e5e8eb; color: #6b7684; }
+.app-shell .assistant-result-item:hover { border-color: var(--service-primary); background: var(--blue-pale); }
+.app-shell .assistant-result-item em { color: var(--service-primary-hover); }
+.app-shell .assistant-result-item:focus-visible,
+.app-shell .apply-flow button:focus-visible { outline-color: var(--service-primary); }
+.app-shell .apply-steps li { background: #f2f4f6; }
+.app-shell .apply-steps [aria-current=step] { background: var(--blue-soft); color: var(--service-primary-hover); }
+.app-shell .policy-region-tag { color: var(--service-primary-hover); background: var(--blue-soft); }
+.app-shell .policy-profile-link { color: var(--service-primary-hover); }
+.app-shell .settings-choice input,
+.app-shell .policy-checkbox input,
+.app-shell .settings-progress { accent-color: var(--service-primary); }
+/* Do not recolor photos, map tiles, the blue scarf, or validation/status messages. */
+
+/* Use the exact logo green for actions; the logo light green softens selections. */
+.app-shell .nav-link.active { color: var(--brand-green, #426B4A); }
+.app-shell .joy-home-input-label { color: var(--brand-green, #426B4A); }
+.app-shell .joy-home-shortcut-icon { color: var(--brand-green, #426B4A); background: var(--blue-soft); }
+.app-shell .btn-primary:hover,
+.app-shell .joy-home-composer-footer button:not(:disabled):hover { background: var(--brand-green, #426B4A); filter: brightness(.94); }
+.app-shell .joy-home-starters button:hover,
+.app-shell .assistant-choices button:hover { color: var(--brand-green, #426B4A); background: var(--blue-pale); border-color: var(--brand-light-green, #91AE72); }
+.app-shell .btn-secondary:hover { color: var(--brand-green, #426B4A); background: var(--blue-pale); }

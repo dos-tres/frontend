@@ -2,7 +2,7 @@ import './management-actions.css'
 import { useCenterDistance } from './use-center-distance'
 import { centerDistanceOrigin, distanceLabel, orderCenters, type CenterSort } from './center-distance'
 import KakaoCenterMap from './KakaoCenterMap'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, Building2, ExternalLink, MapPin, Search } from 'lucide-react'
 import type { Program } from './data'
 import { safePolicyUrl, applicationLabel } from './policy-api'
@@ -63,6 +63,7 @@ export function CenterDetailPage({ id, onBack, onProgram, onAsk }: { onAsk?: (ce
 
 export function CenterDetailContent({ data, onProgram, onAsk }: { onAsk?: (center: PublicCenter) => void; data: CenterDetail; onProgram: (p: Program) => void }) {
   const center = data.item
+  const [spaceOpen,setSpaceOpen] = useState(false)
   const official = center.official
   const hours = official?.hours || center.guide?.hours
   const homepage = safePolicyUrl(official?.homepage || center.guide?.homepage || center.homepage || '') || safePolicyUrl(center.guide?.source.url || '')
@@ -71,7 +72,7 @@ export function CenterDetailContent({ data, onProgram, onAsk }: { onAsk?: (cente
     <header className="page-title center-introduction"><div className="center-title-actions"><h1>{center.name}</h1>{onAsk&&<button className="btn btn-primary" onClick={()=>onAsk(center)}>조이에게 물어보기</button>}</div><p>{center.province} · {center.district}</p>{center.guide && <><CenterTags kind={center.guide.kind} /><p className="center-introduction-text">{official?.summary || center.guide.summary}</p></>}</header>
     <div className={`center-detail-grid ${programs.length ? '' : 'center-detail-single'}`}>
       <section className="panel">
-        {official ? <section className="center-guide-section"><h2>공간소개</h2>{!center.guide && official.summary && <p>{official.summary}</p>}{official.sections.map((section,index)=><div key={index}><h3>{section.title}</h3><p>{section.body}</p></div>)}{official.usage && <><h3>공간 이용방법</h3><p>{official.usage}</p></>}{official.directions && <><h3>오시는 길</h3><p>{official.directions}</p></>}</section> : center.guide && <CenterGuideSection guide={center.guide} showSummary={false} showSource={false} />}
+
         <h2>위치·운영 정보</h2>
         <dl className="detail-list">
           {center.address && <div><dt>주소</dt><dd>{center.address}</dd></div>}
@@ -79,12 +80,24 @@ export function CenterDetailContent({ data, onProgram, onAsk }: { onAsk?: (cente
           {homepage && <div><dt>공식 홈페이지</dt><dd><a className="policy-official-link" href={homepage} target="_blank" rel="noopener noreferrer">바로가기 <ExternalLink size={13}/></a></dd></div>}
         </dl>
         <KakaoCenterMap name={center.name} address={center.address} province={center.province} district={center.district} />
+        {(official || center.guide) && <div className="center-space-entry"><div><h3>공간소개</h3><p>시설과 공간 이용방법을 확인해 보세요.</p></div><button className="btn btn-secondary" onClick={()=>setSpaceOpen(true)}>공간소개 보기 <ArrowRight size={15}/></button></div>}
       </section>
       {programs.length > 0 && <section className="panel"><div className="section-head"><h2>현재 모집 중인 프로그램</h2><span>{programs.length}개</span></div>{programs.map(p=><div className="center-program" key={p.id}><span className={`policy-period-status status-${p.applicationStatus}`}>{applicationLabel(p)}</span><h3>{p.title}</h3><p>{p.summary}</p><button className="btn btn-secondary" onClick={()=>onProgram(p)}>조이와 알아보기 <ArrowRight size={15}/></button></div>)}</section>}
     </div>
+    {spaceOpen && <CenterSpaceModal center={center} onClose={()=>setSpaceOpen(false)}/>}
     {!official && safePolicyUrl(center.guide?.notice_url || '') && <section className="panel center-notices"><h2>공지사항</h2><a className="policy-official-link" href={safePolicyUrl(center.guide?.notice_url || '')} target="_blank" rel="noopener noreferrer">공식 공지사항 보기 <ExternalLink size={13}/></a></section>}
     {official && <section className="panel center-notices"><div className="section-head"><h2>공지사항</h2>{safePolicyUrl(official.notice_url) && <a className="policy-official-link" href={safePolicyUrl(official.notice_url)} target="_blank" rel="noopener noreferrer">전체 공지 보기 <ExternalLink size={13}/></a>}</div>{official.notices?.map(notice=>safePolicyUrl(notice.url)&&<a className="center-notice-row" key={notice.id} href={safePolicyUrl(notice.url)} target="_blank" rel="noopener noreferrer"><span>{notice.title}</span>{notice.date&&<time dateTime={notice.date}>{notice.date}</time>}<ExternalLink size={13}/></a>)}</section>}
   </>
+}
+
+export function CenterSpaceContent({center}:{center:PublicCenter}) {
+ const official=center.official
+ return official ? <section className="center-guide-section"><h2>공간소개</h2>{official.summary&&<p>{official.summary}</p>}{official.sections.map((section,index)=><div key={index}><h3>{section.title}</h3><p>{section.body}</p></div>)}{official.usage&&<><h3>공간 이용방법</h3><p>{official.usage}</p></>}{official.directions&&<><h3>오시는 길</h3><p>{official.directions}</p></>}</section> : center.guide ? <CenterGuideSection guide={center.guide} showSummary showSource={false}/> : null
+}
+function CenterSpaceModal({center,onClose}:{center:PublicCenter;onClose:()=>void}) {
+ const dialog=useRef<HTMLDialogElement>(null)
+ useEffect(()=>{const node=dialog.current;if(!node)return;const previous=document.activeElement as HTMLElement|null;const overflow=document.body.style.overflow;document.body.style.overflow='hidden';node.showModal();return()=>{node.close();document.body.style.overflow=overflow;previous?.focus()}},[])
+ return <dialog ref={dialog} className="center-space-modal" aria-labelledby="center-space-modal-title" onCancel={e=>{e.preventDefault();onClose()}} onClick={e=>{if(e.target!==e.currentTarget)return;const rect=e.currentTarget.getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)onClose()}}><header><h2 id="center-space-modal-title">{center.name} · 공간소개</h2><button className="btn btn-ghost" onClick={onClose} autoFocus aria-label="공간소개 닫기">닫기</button></header><CenterSpaceContent center={center}/><div className="center-space-modal-footer"><button className="btn btn-secondary" onClick={onClose}>확인했어요</button></div></dialog>
 }
 
 export function CenterGuideSection({ guide, showSummary = true, showSource = true }: { guide: CenterGuide; showSummary?: boolean; showSource?: boolean }) {
