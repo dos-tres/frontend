@@ -290,19 +290,19 @@
    단, 창이 낮거나 좁을 때는 내용이 잘리지 않도록 스크롤을 허용한다. */
 @media (min-width: 1100px) and (min-height: 720px) {
   .app-shell:has(.joy-home.joy-home-professional) {
-    height: 100dvh;
+    height: auto;
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
   }
   .app-shell:has(.joy-home.joy-home-professional) > .topbar { flex: 0 0 76px; }
   .app-shell:has(.joy-home.joy-home-professional) > .main-container {
     flex: 1 1 auto;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     min-height: 0;
-    padding: 12px 0;
+    padding: clamp(48px, 7vh, 80px) 0 28px;
   }
   .app-shell:has(.joy-home.joy-home-professional) > .main-container > .joy-home {
     flex: 0 1 auto;
@@ -371,4 +371,16 @@
 @media (prefers-reduced-motion: reduce) {
   .app-shell .joy-home .joy-home-starters button,
   .app-shell .joy-home .joy-home-shortcut-list > button { transition: none; transform: none; }
+}
+
+/* The composer provides its own focus treatment. */
+.app-shell .joy-home .joy-home-composer textarea:focus,
+.app-shell .joy-home .joy-home-composer textarea:focus-visible {
+  outline: none;
+  border: 0;
+  box-shadow: none;
+}
+.app-shell .joy-home .joy-home-composer:focus-within {
+  border-color: #a5a9b4;
+  box-shadow: 0 0 0 2px rgba(57, 54, 83, .06);
 }

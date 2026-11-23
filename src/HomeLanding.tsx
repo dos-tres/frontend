@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { ArrowRight, Building2, CalendarDays, Compass, MessageCircle, Send, Sparkles } from 'lucide-react'
-import joyImage from './assets/joy.png'
+import joyImage from './assets/characters/joy-greeting.svg'
 import './home-landing.css'
 import './home-premium.css'
 

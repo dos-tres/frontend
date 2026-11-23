@@ -1,17 +1,17 @@
 /* Shared type scale and a stable header across every screen. */
 :root {
-  --text-body: 16px;
-  --text-label: 16px;
-  --text-section: 22px;
+  --text-body: 14px;
+  --text-label: 14px;
+  --text-section: 18px;
   --text-caption: 14px;
   --header-height: 76px;
   scrollbar-gutter: stable;
   scroll-padding-top: calc(var(--header-height) + 16px);
 }
 .app-shell {
-  --text-body: 16px;
-  --text-label: 16px;
-  --text-section: 22px;
+  --text-body: 14px;
+  --text-label: 14px;
+  --text-section: 18px;
   font-size: var(--text-body);
   line-height: 1.5;
   padding-top: var(--header-height);
@@ -84,3 +84,185 @@
   .app-shell .joy-home .joy-home-hero h1 { font-size: 28px; }
 }
 .app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .test-reset-launcher { display: none; }
+
+/* Shared typography for account, preferences and check-in screens. */
+.app-shell :is(button, input, select, textarea) { font-family: inherit; }
+.app-shell :is(.account-layout, .profile-settings, .checkin-survey) {
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+.app-shell .account-layout .page-title h1 { font-size: 28px; }
+.app-shell :is(.account-overview h2, .account-navigation h2,
+  .account-card h3, .account-next h3, .settings-section h2,
+  .settings-section h3, .checkin-group-heading h2) {
+  font-size: var(--text-section);
+  line-height: 1.5;
+}
+.app-shell :is(.settings-question-title, .checkin-survey-question legend) {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.app-shell :is(.account-card-help, .settings-help, .settings-save small,
+  .account-overview .mini-label) { font-size: var(--text-caption); }
+.app-shell:has(.account-layout) {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.app-shell:has(.account-layout) > .main-container {
+  min-height: 0;
+  flex: 1 0 auto;
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+.app-shell:has(.account-layout) > .footer { padding-block: 12px; }
+.app-shell .account-layout .page-title { margin-bottom: 20px; }
+.app-shell .account-layout .panel { padding: 20px; }
+.app-shell .account-stats { margin-block: 16px; }
+.app-shell .account-stats > button { padding: 16px; }
+.app-shell .account-info-rows > div { padding-block: 9px; }
+.app-shell .account-info-rows dd { line-height: 1.5; }
+.app-shell .account-card-help { margin-top: 12px; line-height: 1.5; }
+.app-shell .account-next { margin-top: 16px; gap: 12px; }
+@media (max-width: 700px) {
+  .app-shell .account-layout .page-title h1 { font-size: 26px; }
+  .app-shell .account-layout .panel { padding: 16px; }
+}
+
+/* Account panels share the section scale, including saved records. */
+.app-shell .account-content .panel > h2,
+.app-shell .account-content .panel > h3,
+.app-shell .account-content .section-head > h2 {
+  font-size: var(--text-section);
+  line-height: 1.5;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+.app-shell .account-content .record-entry {
+  font-family: inherit;
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+.app-shell .account-content .panel > p {
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+/* Compact records overview with consistent space between panels. */
+.app-shell .records-page { display: grid; gap: 20px; }
+.app-shell .records-page .page-title { margin-bottom: 0; }
+.app-shell .records-page .panel { margin: 0; min-width: 0; }
+.app-shell .records-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.app-shell .records-page .empty-inline { padding: 16px 0; margin: 0; text-align: left; }
+.app-shell .records-page .settings-help { margin: 8px 0 12px; }
+.app-shell .records-summary-grid .panel > p:last-child { margin-bottom: 0; }
+@media (max-width: 700px) {
+  .app-shell .records-summary-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+
+/* Blue metadata and home actions follow the shared service accent. */
+.app-shell :is(.policy-kind-tag, .policy-category-tag, .policy-region-tag) {
+  padding: 4px 8px;
+  border-radius: 7px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #416ba6;
+  background: #eff5ff;
+  border-color: #dfe8f7;
+}
+.app-shell .joy-home .joy-home-eyebrow { color: #416ba6; }
+.app-shell .joy-home .joy-home-eyebrow-dot { background: #7799e2; box-shadow: 0 0 0 4px #edf3ff; }
+.app-shell .joy-home .joy-home-shortcut-list .joy-home-shortcut-icon { color: #416ba6; background: #edf3ff; }
+.app-shell .joy-home .joy-home-shortcut-list > button:hover { background: #f5f8ff; border-color: #b8cbed; }
+
+.app-shell .assistant-composer .assistant-starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.app-shell .assistant-starters button {
+  min-height: 40px;
+  padding: 8px 12px;
+  color: #416ba6;
+  background: #f5f8ff;
+  border: 1px solid #dfe8f7;
+  border-radius: 12px;
+  font-size: 14px;
+}
+.app-shell .assistant-starters button:hover { background: #edf3ff; }
+.app-shell .assistant-loading > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 18px;
+}
+.assistant-typing-dots { display: inline-flex; align-items: center; gap: 5px; height: 20px; }
+.assistant-typing-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7799e2;
+  animation: assistant-typing 1.2s ease-in-out infinite;
+}
+.assistant-typing-dots i:nth-child(2) { animation-delay: .15s; }
+.assistant-typing-dots i:nth-child(3) { animation-delay: .3s; }
+.assistant-loading-label { font-size: 14px; color: #64748b; }
+@keyframes assistant-typing {
+  0%, 60%, 100% { transform: translateY(0); opacity: .45; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+.app-shell .assistant-retry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid #e1e8f0;
+  border-radius: 12px;
+  color: #64748b;
+  background: #f8fafc;
+  font-size: 14px;
+}
+.app-shell .assistant-retry button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: #3467af;
+  background: #edf3ff;
+  font: inherit;
+}
+.app-shell .assistant-retry button:disabled { opacity: .5; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  .assistant-typing-dots i { animation: none; opacity: .7; }
+}
+
+
+/* Dedicated greeting and thinking artwork from the asset manifest. */
+.app-shell .joy-home .joy-home-mascot-stage { width: 228px; height: 156px; }
+.app-shell .joy-home .joy-home-mascot { left: 0; width: 228px; height: 152px; }
+.app-shell .joy-home .joy-home-greeting .joy-home-mascot-image {
+  width: 228px;
+  height: 152px;
+  object-fit: contain;
+}
+.app-shell .assistant-welcome img { width: 156px; height: 104px; object-fit: contain; }
+.app-shell .assistant-loading > img { width: 56px; height: 56px; object-fit: contain; }
+@media (max-width: 767px) {
+  .app-shell .joy-home .joy-home-intro { grid-template-columns: minmax(0, 1fr) 112px; }
+  .app-shell .joy-home .joy-home-mascot-stage { width: 112px; height: 80px; }
+  .app-shell .joy-home .joy-home-mascot,
+  .app-shell .joy-home .joy-home-greeting .joy-home-mascot-image { width: 112px; height: 80px; }
+}
+@media (max-width: 400px) {
+  .app-shell .joy-home .joy-home-intro { grid-template-columns: minmax(0, 1fr); }
+  .app-shell .joy-home .joy-home-greeting { display: flex; grid-row: 1; margin-bottom: 12px; }
+}
