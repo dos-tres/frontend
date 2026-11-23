@@ -1,3 +1,4 @@
+import {shouldOfferCheckin} from './checkin-intent'
 import PhoneScript from './PhoneScript'
 import {wantsApplicationForm} from './application-intent'
 import {applicationCalendarEvent,type ApplicationCompletion} from './schedule'
@@ -151,7 +152,7 @@ export default function PolicyJoyPanel({ onCheck, restoreRequest, startFresh=fal
   }
   const sendChat = async (value:string, answers:Answers=chatAnswers, requestContext=context, baseTurns:Turn[]=turns, silent=false) => {
     if (chatRequest.current) return
-    if(!silent&&!detail&&!activeRecommendation&&/뭘.*(?:모르|해야)|무엇.*모르|뭐.*해야.*모르|어디(?:서|부터).*시작|막막|잘\s*모르겠|못\s*정하|못\s*정했|뭘.*고르|뭐.*좋을지/.test(value)){
+    if(!silent&&!detail&&!activeRecommendation&&shouldOfferCheckin(value)){
       setTurns([...baseTurns,{role:'user',text:value},{role:'assistant',text:'자가진단하고 맞춤 정책을 추천해드릴게요.',checkinOffer:true}]);setDraft('');setChatReply(null);return
     }
     const controller=new AbortController(); chatRequest.current=controller
