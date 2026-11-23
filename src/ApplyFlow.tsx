@@ -7,7 +7,7 @@ import './apply-flow.css'
 
 type Question = {id:string; label:string; kind:string; required:boolean; options?:string[]; description?:string; hint?:string; fill_key?:string; other?:boolean; can_draft?:boolean; rows?:{id:string;label:string;required:boolean}[]}
 type Start = {read_only?:boolean;submission_ready?:boolean;replica?:boolean;source_form_url?:string;available:boolean; form_revision?:string; test_only?:boolean; reason?:string; questions?:Question[]; filled?:{id:string;label:string;value:string}[]; item:{id:string;title:string}}
-export type ApplyResult = {status:string;confirmed_by:string;submitted_at:string;item:{id:string;title:string}}
+export type ApplyResult = {status:string;confirmed_by:string;submitted_at:string;item:{id:string;title:string}; answers?:{label:string;value:string}[]; sourceUrl?:string}
 type Answers = Record<string,string|string[]>
 const reviewLabel=(q:Question)=>({name:'이름',age:'나이',region:'거주 지역',phone:'연락처',email:'이메일',birth_date:'생년월일'}[q.fill_key||'']||(/동의/.test(q.label)?'참여 동의':q.kind==='long'?q.label.replace(/^\d+\.\s*/, ''):/피드백/.test(q.label)?'받고 싶은 도움':/취업 준비/.test(q.label)?'준비 상태':q.label.replace(/\s*\([^)]*\)/g,'')))
 const base = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/,'')
@@ -17,7 +17,7 @@ async function request(path:string, body:unknown) {
   if (!response.ok) throw data.error || {code:'UNKNOWN'}
   return data
 }
-export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete,onReviewed,officialUrl,onTest,demoFor,motivationContext=''}:{onReviewed?:()=>void;motivationContext?:string;demoFor?:string;officialUrl?:string;onTest?:()=>void;itemId:string;personal:PersonalInformation;onClose:()=>void;onSchedule:(result?:ApplyResult)=>void;onComplete?:(result:ApplyResult)=>void}) {
+export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete,onReviewed,officialUrl,onTest,demoFor,motivationContext=''}:{onReviewed?:(answers:{label:string;value:string}[],sourceUrl?:string)=>void;motivationContext?:string;demoFor?:string;officialUrl?:string;onTest?:()=>void;itemId:string;personal:PersonalInformation;onClose:()=>void;onSchedule:(result?:ApplyResult)=>void;onComplete?:(result:ApplyResult)=>void}) {
   const panel=useRef<HTMLElement>(null)
   const [form,setForm]=useState<Start>(); const [answers,setAnswers]=useState<Answers>({})
   const [stage,setStage]=useState<'loading'|'edit'|'review'|'done'|'unavailable'|'uncertain'>('loading')
@@ -59,6 +59,7 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
     finally {setDrafting('')}
   }
   const questions=form?.questions || []
+  const snapshot=()=>questions.map(q=>({label:q.label,value:q.kind==='multi_grid'?(q.rows||[]).map(r=>`${r.label}: ${(Array.isArray(answers[r.id])?answers[r.id] as string[]:[]).join(', ')}`).join(' / '):Array.isArray(answers[q.id])?(answers[q.id] as string[]).join(', '):String(answers[q.id]||'')}))
   const update=(id:string,value:string|string[])=>{setAnswers(a=>({...a,[id]:value}));setInvalid(ids=>ids.filter(v=>v!==id));setError('')}
   const review=(resetPage=true)=>{
     const malformed=questions.filter(q=>{const value=String(answers[q.id]||'');return !!value&&((q.fill_key==='phone'&&!/^01[016789]-?\d{3,4}-?\d{4}$/.test(value))||(q.fill_key==='age'&&!/^\d{1,3}$/.test(value))) }).map(q=>q.id)
@@ -72,7 +73,7 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
     lock.current=true;setBusy(true);setError('')
     try {
       const data:ApplyResult=await request('submit',{item_id:itemId,form_revision:form.form_revision,answers})
-      setResult(data);setStage('done');onComplete?.(data);return
+      data.answers=snapshot();data.sourceUrl=form?.source_form_url;setResult(data);setStage('done');onComplete?.(data);return
     } catch(e) {
       const failure=e as {code?:string;missing?:string[];invalid?:string[]}
       if(failure.code==='APPLY_FORM_CHANGED'){setStage('unavailable');setError('작성 중 신청서 문항이 바뀌었어요. 닫고 다시 열어 내용을 확인해 주세요.')}
@@ -108,7 +109,7 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
         <button className="text-button" aria-label={`${q.label} 수정`} onClick={()=>{setQueue(questions.map(q=>q.id));setStep(reviewPage*3+offset);setEditingReview(true);setStage('edit')}}>수정</button>
       </div>)}</dl>
       <div className="apply-review-footer"><button className="btn btn-secondary" disabled={reviewPage===0||busy} onClick={()=>setReviewPage(p=>p-1)}>이전</button>
-      {reviewPage<Math.ceil(questions.length/3)-1?<button className="btn btn-primary" onClick={()=>setReviewPage(p=>p+1)}>다음 내용 확인</button>:form?.submission_ready===true?<button className="btn btn-primary" disabled={busy} onClick={submit}>{busy?'제출 중…':'이 내용으로 제출하기'}</button>:<button className="btn btn-primary" onClick={()=>{onReviewed?.();onClose()}}>작성 완료</button>}</div>
+      {reviewPage<Math.ceil(questions.length/3)-1?<button className="btn btn-primary" onClick={()=>setReviewPage(p=>p+1)}>다음 내용 확인</button>:form?.submission_ready===true?<button className="btn btn-primary" disabled={busy} onClick={submit}>{busy?'제출 중…':'이 내용으로 제출하기'}</button>:<button className="btn btn-primary" onClick={()=>{onReviewed?.(snapshot(),form?.source_form_url);onClose()}}>작성 완료</button>}</div>
     </section>}
     {stage==='done'&&result&&<><h4>신청 시연이 완료됐어요</h4><p>작성일: {new Date(result.submitted_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}</p><button className="btn btn-primary" onClick={()=>onSchedule(result)}>일정 등록하기</button><p className="settings-help">신청한 날짜로 기록하고 이 대화를 연결해요.</p></>}
     {stage==='unavailable'&&<><h4>{form?.reason==='closed'?'현재 접수가 마감됐어요':'신청 방법을 함께 확인해요'}</h4><p>원본 신청서를 읽지 못했어요. 지원하지 않는 형식이거나 접근이 제한됐을 수 있어요. 질문을 임의로 만들지 않고, 공식 신청서에서 확인할 수 있도록 안내할게요.</p>{safePolicyUrl(officialUrl)&&<a className="text-button" href={safePolicyUrl(officialUrl)} target="_blank" rel="noopener noreferrer">공식 신청서 열기 ↗</a>}<button className="btn btn-ghost" onClick={()=>onSchedule()}>문의할 일정 등록</button></>}

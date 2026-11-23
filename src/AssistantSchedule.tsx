@@ -3,7 +3,7 @@ import { localDate, eventLabel, parseSchedule, validateEvent, type CalendarEvent
 import { ScheduleEditor } from './SchedulePages'
 import type { PublicCenter } from './center-api'
 import type { Program } from './data'
-export type ScheduleBridge = { events: CalendarEvent[]; save:(e:CalendarEvent)=>void; remove:(id:number)=>void; open:(date?:string)=>void; openApplications?:()=>void; recordDraft?:(program:Program)=>void; recordApplication?:(program:Program)=>void }
+export type ScheduleBridge = { events: CalendarEvent[]; save:(e:CalendarEvent)=>void; remove:(id:number)=>void; open:(date?:string)=>void; openApplications?:()=>void; recordDraft?:(program:Program, answers?:{label:string;value:string}[], submitted?:boolean, sourceUrl?:string)=>void; recordApplication?:(program:Program)=>void }
 export function useAssistantSchedule(bridge:ScheduleBridge|undefined, center:PublicCenter|undefined, program:Program|undefined, say:(user:string,assistant:string)=>void,chatId?:string) {
  const [pending,setPending]=useState<Partial<CalendarEvent>>(),[editing,setEditing]=useState<CalendarEvent>(),[deleting,setDeleting]=useState<CalendarEvent>()
  const handle=(text:string):boolean=>{

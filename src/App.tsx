@@ -191,7 +191,7 @@ function ApplicationsPage({ applications, onChangeStatus, onCalendar }: { applic
       <div className="application-layout">
         <Panel tone="gray" className="application-list-panel">
           <div className="filter-row">
-            {['전체', '신청 전', '신청 완료', '결과 대기', '참여 완료'].map(f => <button key={f} className={`filter-chip ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f}</button>)}
+            {['전체', '작성 완료', '신청 전', '신청 완료', '결과 대기', '참여 완료'].map(f => <button key={f} className={`filter-chip ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f}</button>)}
           </div>
           {filtered.map(a => <button className={`application-row ${active?.id === a.id ? 'selected' : ''}`} key={a.id} onClick={() => setSelected(a.id)}>
             <span><strong>{a.title}</strong><small>{a.date} · {a.note}</small></span><em className={`status status-${a.status.replaceAll(' ', '')}`}>{a.status}</em>
@@ -207,9 +207,10 @@ function ApplicationsPage({ applications, onChangeStatus, onCalendar }: { applic
               <div><dt>현재 상태</dt><dd>{active.status}</dd></div>
               <div><dt>메모</dt><dd>{active.note}</dd></div>
             </dl>
+            {!!active.answers?.length&&<details><summary>작성한 신청 내용 보기 · 이 기기에 저장됨</summary><dl className="detail-list compact">{active.answers.map((a,i)=><div key={i}><dt>{a.label}</dt><dd>{a.value||'입력하지 않았어요'}</dd></div>)}</dl></details>}
             <label className="field-label">상태 변경
               <select value={active.status} onChange={e => onChangeStatus(active.id, e.target.value as Application['status'])}>
-                {['신청 전', '신청 완료', '결과 대기', '참여 완료'].map(s => <option key={s}>{s}</option>)}
+                {['작성 완료', '신청 전', '신청 완료', '결과 대기', '참여 완료'].map(s => <option key={s}>{s}</option>)}
               </select>
             </label>
           </> : <p className="empty-inline">기록이 없어요.</p>}
@@ -351,7 +352,7 @@ export default function App() {
   const navigate = (next: Screen) => { if (next === 'setup') startSetup(); else setScreen(next) }
   const useProfileForPolicies = () => { policyData.resetCriteria(); setPolicyView(initialPolicyView) }
 
-  const chatPage = <PolicyJoyPanel restoreRequest={chatRestore} key={chatSession} startFresh={chatSession > 0} checkinAnswers={policyAnswers} answerDecisions={setup.decisions} preferProfile={setup.interestSource==='profile'} scheduleContext={chatSchedule} center={chatCenter} schedule={{ openApplications:()=>setScreen('applications'), recordDraft:p=>setApplications(prev=>[{id:`draft:${p.id}`,title:p.title,status:'신청 전',date:localDate().replaceAll('-','.'),note:'작성·확인 완료 · 실제 기관 미제출'},...prev.filter(a=>a.id!==`draft:${p.id}`)]), events, save:saveEvent, remove:id=>setEvents(prev=>prev.filter(e=>e.id!==id)), open:date=>{if(date)setCalendarDate(date);setScreen('calendar')}, recordApplication:p=>setApplications(prev=>prev.some(a=>a.id===`reported:${p.id}`)?prev:[{id:`reported:${p.id}`,title:p.title,status:'신청 완료',date:localDate().replaceAll('-','.'),note:'사용자가 직접 신청했다고 확인한 기록 · 기관 접수 확인 아님'},...prev]) }} program={chatProgram} personal={personal} activity={activity} initialMessages={messages} onBack={() => setScreen(chatSchedule?'calendar':chatCenter?'center-list':'policy-list')} onSavePersonal={savePersonal} onSaveActivity={saveActivity} onNew={() => { setChatRestore(undefined);setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined); setMessages([]) }} onSave={() => { if (chatProgram) toggleSave(chatProgram.id) }} saved={!!chatProgram && savedIds.includes(chatProgram.id)} />
+  const chatPage = <PolicyJoyPanel restoreRequest={chatRestore} key={chatSession} startFresh={chatSession > 0} checkinAnswers={policyAnswers} answerDecisions={setup.decisions} preferProfile={setup.interestSource==='profile'} scheduleContext={chatSchedule} center={chatCenter} schedule={{ openApplications:()=>setScreen('applications'), recordDraft:(p,answers,submitted,sourceUrl)=>setApplications(prev=>[{id:`draft:${p.id}`,title:p.title,status:submitted?'신청 완료':'작성 완료',date:localDate().replaceAll('-','.'),note:submitted?'팀 소유 복제 폼 제출 확인 · 실제 기관 접수 아님':'작성·확인 완료 · 실제 기관 미제출',answers,sourceUrl},...prev.filter(a=>a.id!==`draft:${p.id}`)]), events, save:saveEvent, remove:id=>setEvents(prev=>prev.filter(e=>e.id!==id)), open:date=>{if(date)setCalendarDate(date);setScreen('calendar')}, recordApplication:p=>setApplications(prev=>prev.some(a=>a.id===`reported:${p.id}`)?prev:[{id:`reported:${p.id}`,title:p.title,status:'신청 완료',date:localDate().replaceAll('-','.'),note:'사용자가 직접 신청했다고 확인한 기록 · 기관 접수 확인 아님'},...prev]) }} program={chatProgram} personal={personal} activity={activity} initialMessages={messages} onBack={() => setScreen(chatSchedule?'calendar':chatCenter?'center-list':'policy-list')} onSavePersonal={savePersonal} onSaveActivity={saveActivity} onNew={() => { setChatRestore(undefined);setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined); setMessages([]) }} onSave={() => { if (chatProgram) toggleSave(chatProgram.id) }} saved={!!chatProgram && savedIds.includes(chatProgram.id)} />
 
   const page = useMemo(() => {
     switch (screen) {
