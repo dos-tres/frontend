@@ -95,7 +95,7 @@ export default function CurrentStateCheck({ value, profile, defaultInterests, pr
         {serverSummary?.interests?.length ? <p>관심 분야: {serverSummary.interests.join(', ')}</p> : null}
         {serverSummary?.satisfaction && <p>생활 만족도: {{ good: '만족하는 편', normal: '보통', bad: '아쉬운 편' }[serverSummary.satisfaction] || serverSummary.satisfaction}</p>}
         <p className="settings-help">{serverSummary?.disclaimer || '응답을 바탕으로 정리한 현재 상태예요. 의학적 진단이나 위험 등급이 아니에요.'}</p>
-        <div className="settings-survey-actions"><button className="btn btn-secondary" onClick={() => setEditing(true)}>답변 수정하고 다시 저장</button><button className="btn btn-secondary" onClick={restart}>다시 점검하기</button><button className="btn btn-secondary" onClick={onChat}>{onboarding ? '추천 살펴보기' : '조이와 이야기하기'}</button></div>
+        <div className="settings-survey-actions"><button className="btn btn-secondary" onClick={() => setEditing(true)}>답변 수정하고 다시 저장</button><button className="btn btn-secondary" onClick={restart}>다시 점검하기</button><button className="btn btn-secondary" onClick={onChat}>{onboarding ? '조이와 대화 시작하기' : '조이와 이야기하기'}</button></div>
         {!storageError && <p role="status" className="settings-help">결과가 이 브라우저에 저장됐어요. 다음 방문에도 이력에서 확인할 수 있어요.</p>}
       </section>
       <section className="panel settings-section" aria-busy={recommendations.busy}><h2>지금 살펴볼 정책과 프로그램</h2>

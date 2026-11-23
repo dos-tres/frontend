@@ -318,7 +318,7 @@ export default function App() {
     setChatRestore(undefined)
     setMessages([{ role: 'user', text: value }])
     setChatSession(value => value + 1)
-    setScreen('chat')
+    if(!personal.birthDate||!personal.regionCode||!checkinHistory.some(r=>r.completed)){setSetup(prev=>({...prev,step:1,finished:false}));setScreen('setup')}else setScreen('chat')
   }
   const toggleSave = (id: string) => setSavedIds(prev => prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id])
   const openProgram = (p: Program) => { setChatCenter(undefined); setChatSchedule(undefined); setSelectedProgram(p); setChatProgram(p); setScreen('chat') }
@@ -345,13 +345,13 @@ export default function App() {
   const savePersonal = (next: PersonalInformation) => { setPersonal(next); setSetup(prev => ({ ...prev, personal: next.birthDate || next.regionCode ? 'answered' : 'skipped' })) }
   const saveActivity = (next: ActivityInformationValue) => { setActivity(next); setSetup(prev => ({ ...prev, preferences: next.employment || next.school || next.interests.length || next.participation || next.groupSize ? 'answered' : 'skipped', ...(JSON.stringify(next.interests) !== JSON.stringify(activity.interests) ? { interestSource: 'profile', decisions: { ...prev.decisions, interests: 'answered' as const } } : {}) })) }
   const decideQuestion = (id: string, decision: AnswerDecision) => setSetup(prev => ({ ...prev, decisions: { ...prev.decisions, [id]: decision } }))
-  const finishSetup = () => { setSetup(prev => ({ ...prev, finished: true, personal: prev.personal === 'unanswered' ? 'skipped' : prev.personal, preferences: prev.preferences === 'unanswered' ? 'skipped' : prev.preferences, checkin: prev.checkin === 'unanswered' ? 'skipped' : prev.checkin })); setScreen('policy-list') }
+  const finishSetup = () => { setSetup(prev => ({ ...prev, finished: true, personal: prev.personal === 'unanswered' ? 'skipped' : prev.personal, preferences: prev.preferences === 'unanswered' ? 'skipped' : prev.preferences, checkin: prev.checkin === 'unanswered' ? 'skipped' : prev.checkin })); setScreen('chat') }
   const skipSetup = () => { setSetup(prev => ({ ...prev, [(['', 'personal', 'preferences', 'checkin'] as const)[prev.step] || 'checkin']: 'skipped', step: Math.min(3, prev.step + 1), ...(prev.step === 3 ? { finished: true } : {}) })); if (setup.step === 3) setScreen('policy-list') }
   const startSetup = () => {
-    if (checkinHistory.some(record => record.completed)) { setScreen('profile'); return }
-    setSetup(prev => ({ ...prev, step: Math.max(1, prev.step), finished: false })); setScreen('setup')
+    if (personal.birthDate&&personal.regionCode&&checkinHistory.some(record => record.completed)) {setChatProgram(undefined);setChatCenter(undefined);setChatSchedule(undefined);setChatRestore(undefined);setMessages([]);setChatSession(v=>v+1);setScreen('chat');return}
+    setSetup(prev => ({ ...prev, step: 1, finished: false })); setScreen('setup')
   }
-  const navigate = (next: Screen) => { if (next === 'setup') startSetup(); else setScreen(next) }
+  const navigate = (next: Screen) => { if (next === 'setup') startSetup(); else if(next==='chat'&&(!personal.birthDate||!personal.regionCode||!checkinHistory.some(r=>r.completed)))startSetup();else setScreen(next) }
   const useProfileForPolicies = () => { policyData.resetCriteria(); setPolicyView(initialPolicyView) }
 
   const chatPage = <PolicyJoyPanel onCheck={()=>setScreen(personal.birthDate&&personal.regionCode?'state-check':'setup')} restoreRequest={chatRestore} key={chatSession} startFresh={chatSession > 0} checkinAnswers={policyAnswers} answerDecisions={setup.decisions} preferProfile={setup.interestSource==='profile'} scheduleContext={chatSchedule} center={chatCenter} schedule={{ openApplications:()=>setScreen('applications'), recordDraft:(p,answers,submitted,sourceUrl)=>setApplications(prev=>[{id:`draft:${p.id}`,title:p.title,status:submitted?'신청 완료':'작성 완료',date:localDate().replaceAll('-','.'),note:submitted?'팀 소유 복제 폼 제출 확인 · 실제 기관 접수 아님':'작성·확인 완료 · 실제 기관 미제출',answers,sourceUrl},...prev.filter(a=>a.id!==`draft:${p.id}`)]), events, save:saveEvent, remove:id=>setEvents(prev=>prev.filter(e=>e.id!==id)), open:date=>{if(date)setCalendarDate(date);setScreen('calendar')}, recordApplication:p=>setApplications(prev=>prev.some(a=>a.id===`reported:${p.id}`)?prev:[{id:`reported:${p.id}`,title:p.title,status:'신청 완료',date:localDate().replaceAll('-','.'),note:'사용자가 직접 신청했다고 확인한 기록 · 기관 접수 확인 아님'},...prev]) }} program={chatProgram} personal={personal} activity={activity} initialMessages={messages} onBack={() => setScreen(chatSchedule?'calendar':chatCenter?'center-list':'policy-list')} onSavePersonal={savePersonal} onSaveActivity={saveActivity} onNew={() => { setChatRestore(undefined);setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined); setMessages([]) }} onSave={() => { if (chatProgram) toggleSave(chatProgram.id) }} saved={!!chatProgram && savedIds.includes(chatProgram.id)} />
