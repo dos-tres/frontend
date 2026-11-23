@@ -118,9 +118,11 @@ export const centers: Center[] = [
 export type Application = {
   id: string
   title: string
-  status: '신청 전' | '신청 완료' | '결과 대기' | '참여 완료'
+  status: '작성 완료' | '신청 전' | '신청 완료' | '결과 대기' | '참여 완료'
   date: string
   note: string
+  answers?: {label:string;value:string}[]
+  sourceUrl?: string
 }
 
 export const initialApplications: Application[] = [

@@ -1,3 +1,4 @@
+import './management-actions.css'
 import { useCenterDistance } from './use-center-distance'
 import { centerDistanceOrigin, distanceLabel, orderCenters, type CenterSort } from './center-distance'
 import KakaoCenterMap from './KakaoCenterMap'
@@ -67,8 +68,7 @@ export function CenterDetailContent({ data, onProgram, onAsk }: { onAsk?: (cente
   const homepage = safePolicyUrl(official?.homepage || center.guide?.homepage || center.homepage || '') || safePolicyUrl(center.guide?.source.url || '')
   const programs = centerPrograms(data).filter(p=>p.applicationStatus === 'open' || p.applicationStatus === 'always_open')
   return <>
-    <header className="page-title center-introduction"><h1>{center.name}</h1><p>{center.province} · {center.district}</p>{center.guide && <><CenterTags kind={center.guide.kind} /><p className="center-introduction-text">{official?.summary || center.guide.summary}</p></>}</header>
-    {onAsk && <button className="btn btn-primary" onClick={()=>onAsk(center)}>조이에게 센터 물어보기 · 방문 일정 잡기</button>}
+    <header className="page-title center-introduction"><div className="center-title-actions"><h1>{center.name}</h1>{onAsk&&<button className="btn btn-primary" onClick={()=>onAsk(center)}>조이에게 물어보기</button>}</div><p>{center.province} · {center.district}</p>{center.guide && <><CenterTags kind={center.guide.kind} /><p className="center-introduction-text">{official?.summary || center.guide.summary}</p></>}</header>
     <div className={`center-detail-grid ${programs.length ? '' : 'center-detail-single'}`}>
       <section className="panel">
         {official ? <section className="center-guide-section"><h2>공간소개</h2>{!center.guide && official.summary && <p>{official.summary}</p>}{official.sections.map((section,index)=><div key={index}><h3>{section.title}</h3><p>{section.body}</p></div>)}{official.usage && <><h3>공간 이용방법</h3><p>{official.usage}</p></>}{official.directions && <><h3>오시는 길</h3><p>{official.directions}</p></>}</section> : center.guide && <CenterGuideSection guide={center.guide} showSummary={false} showSource={false} />}

@@ -1,3 +1,5 @@
+import ApplicationScheduleNav from './ApplicationScheduleNav'
+import TestDataReset from './TestDataReset'
 import HomeLanding from './HomeLanding'
 import { SchedulePage, ScheduleEditor } from './SchedulePages'
 import { localDate, dueReminders, type CalendarEvent } from './schedule'
@@ -47,7 +49,7 @@ const navItems = [
   { id: 'assistant', label: 'AI 비서', icon: Bot },
   { id: 'policies', label: '정책·활동 찾기', icon: Search },
   { id: 'centers', label: '주변센터', icon: MapPin },
-  { id: 'schedule', label: '내 일정', icon: CalendarDays },
+  { id: 'schedule', label: '신청·일정 관리', icon: CalendarDays },
 ] as const
 
 function sectionFor(screen: Screen) {
@@ -186,11 +188,12 @@ function ApplicationsPage({ applications, onChangeStatus, onCalendar }: { applic
   const active = filtered.find(a => a.id === selected) ?? filtered[0]
   return (
     <>
-      <PageTitle title="내 일정 · 신청 이력 관리" description="정책 신청부터 참여까지 기록하고, 추후 필요한 행동을 확인하는 곳이에요." />
+      <PageTitle title="신청·일정 관리" description="정책 신청부터 참여까지 기록하고, 추후 필요한 행동을 확인하는 곳이에요." />
+      <ApplicationScheduleNav active="applications" onApplications={()=>{}} onCalendar={onCalendar} />
       <div className="application-layout">
         <Panel tone="gray" className="application-list-panel">
           <div className="filter-row">
-            {['전체', '신청 전', '신청 완료', '결과 대기', '참여 완료'].map(f => <button key={f} className={`filter-chip ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f}</button>)}
+            {['전체', '작성 완료', '신청 전', '신청 완료', '결과 대기', '참여 완료'].map(f => <button key={f} className={`filter-chip ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>{f}</button>)}
           </div>
           {filtered.map(a => <button className={`application-row ${active?.id === a.id ? 'selected' : ''}`} key={a.id} onClick={() => setSelected(a.id)}>
             <span><strong>{a.title}</strong><small>{a.date} · {a.note}</small></span><em className={`status status-${a.status.replaceAll(' ', '')}`}>{a.status}</em>
@@ -206,9 +209,10 @@ function ApplicationsPage({ applications, onChangeStatus, onCalendar }: { applic
               <div><dt>현재 상태</dt><dd>{active.status}</dd></div>
               <div><dt>메모</dt><dd>{active.note}</dd></div>
             </dl>
+            {!!active.answers?.length&&<details><summary>작성한 신청 내용 보기 · 이 기기에 저장됨</summary><dl className="detail-list compact">{active.answers.map((a,i)=><div key={i}><dt>{a.label}</dt><dd>{a.value||'입력하지 않았어요'}</dd></div>)}</dl></details>}
             <label className="field-label">상태 변경
               <select value={active.status} onChange={e => onChangeStatus(active.id, e.target.value as Application['status'])}>
-                {['신청 전', '신청 완료', '결과 대기', '참여 완료'].map(s => <option key={s}>{s}</option>)}
+                {['작성 완료', '신청 전', '신청 완료', '결과 대기', '참여 완료'].map(s => <option key={s}>{s}</option>)}
               </select>
             </label>
           </> : <p className="empty-inline">기록이 없어요.</p>}
@@ -341,16 +345,16 @@ export default function App() {
   const savePersonal = (next: PersonalInformation) => { setPersonal(next); setSetup(prev => ({ ...prev, personal: next.birthDate || next.regionCode ? 'answered' : 'skipped' })) }
   const saveActivity = (next: ActivityInformationValue) => { setActivity(next); setSetup(prev => ({ ...prev, preferences: next.employment || next.school || next.interests.length || next.participation || next.groupSize ? 'answered' : 'skipped', ...(JSON.stringify(next.interests) !== JSON.stringify(activity.interests) ? { interestSource: 'profile', decisions: { ...prev.decisions, interests: 'answered' as const } } : {}) })) }
   const decideQuestion = (id: string, decision: AnswerDecision) => setSetup(prev => ({ ...prev, decisions: { ...prev.decisions, [id]: decision } }))
-  const finishSetup = () => { setSetup(prev => ({ ...prev, finished: true, personal: prev.personal === 'unanswered' ? 'skipped' : prev.personal, preferences: prev.preferences === 'unanswered' ? 'skipped' : prev.preferences, checkin: prev.checkin === 'unanswered' ? 'skipped' : prev.checkin })); setScreen('policy-list') }
+  const finishSetup = () => { setSetup(prev => ({ ...prev, finished: true, personal: prev.personal === 'unanswered' ? 'skipped' : prev.personal, preferences: prev.preferences === 'unanswered' ? 'skipped' : prev.preferences, checkin: prev.checkin === 'unanswered' ? 'skipped' : prev.checkin })); setScreen('chat') }
   const skipSetup = () => { setSetup(prev => ({ ...prev, [(['', 'personal', 'preferences', 'checkin'] as const)[prev.step] || 'checkin']: 'skipped', step: Math.min(3, prev.step + 1), ...(prev.step === 3 ? { finished: true } : {}) })); if (setup.step === 3) setScreen('policy-list') }
   const startSetup = () => {
-    if (checkinHistory.some(record => record.completed)) { setScreen('profile'); return }
-    setSetup(prev => ({ ...prev, step: Math.max(1, prev.step), finished: false })); setScreen('setup')
+    if (personal.birthDate&&personal.regionCode&&checkinHistory.some(record => record.completed)) {setChatProgram(undefined);setChatCenter(undefined);setChatSchedule(undefined);setChatRestore(undefined);setMessages([]);setChatSession(v=>v+1);setScreen('chat');return}
+    setSetup(prev => ({ ...prev, step: 1, finished: false })); setScreen('setup')
   }
   const navigate = (next: Screen) => { if (next === 'setup') startSetup(); else setScreen(next) }
   const useProfileForPolicies = () => { policyData.resetCriteria(); setPolicyView(initialPolicyView) }
 
-  const chatPage = <PolicyJoyPanel restoreRequest={chatRestore} key={chatSession} startFresh={chatSession > 0} checkinAnswers={policyAnswers} answerDecisions={setup.decisions} preferProfile={setup.interestSource==='profile'} scheduleContext={chatSchedule} center={chatCenter} schedule={{ events, save:saveEvent, remove:id=>setEvents(prev=>prev.filter(e=>e.id!==id)), open:date=>{if(date)setCalendarDate(date);setScreen('calendar')}, recordApplication:p=>setApplications(prev=>prev.some(a=>a.id===`reported:${p.id}`)?prev:[{id:`reported:${p.id}`,title:p.title,status:'신청 완료',date:localDate().replaceAll('-','.'),note:'사용자가 직접 신청했다고 확인한 기록 · 기관 접수 확인 아님'},...prev]) }} program={chatProgram} personal={personal} activity={activity} initialMessages={messages} onBack={() => setScreen(chatSchedule?'calendar':chatCenter?'center-list':'policy-list')} onSavePersonal={savePersonal} onSaveActivity={saveActivity} onNew={() => { setChatRestore(undefined);setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined); setMessages([]) }} onSave={() => { if (chatProgram) toggleSave(chatProgram.id) }} saved={!!chatProgram && savedIds.includes(chatProgram.id)} />
+  const chatPage = <PolicyJoyPanel renderCheckin={(onDone,onCancel)=><CurrentStateCheck onFinished={onDone} startInSurvey decisions={setup.decisions} onDecision={decideQuestion} preferProfile={setup.interestSource==='profile'} defaultInterests={defaultInterests} profile={{birthDate:personal.birthDate,regionLabel:profileRegionLabel(personal.regionCode),regionCode:personal.regionCode,employment:activity.employment,school:activity.school}} onOpenPolicy={openProgram} onEditProfile={() => setScreen('profile-edit')} value={stateCheck} history={checkinHistory} storageError={checkinStorageError} onSave={saveCheckin} onBack={onCancel} onChat={onCancel}/>} onCheck={()=>setScreen(personal.birthDate&&personal.regionCode?'state-check':'setup')} restoreRequest={chatRestore} key={chatSession} startFresh={chatSession > 0} checkinAnswers={policyAnswers} answerDecisions={setup.decisions} preferProfile={setup.interestSource==='profile'} scheduleContext={chatSchedule} center={chatCenter} schedule={{ openApplications:()=>setScreen('applications'), recordDraft:(p,answers,submitted,sourceUrl)=>setApplications(prev=>[{id:`draft:${p.id}`,title:p.title,status:submitted?'신청 완료':'작성 완료',date:localDate().replaceAll('-','.'),note:submitted?'팀 소유 복제 폼 제출 확인 · 실제 기관 접수 아님':'작성·확인 완료 · 실제 기관 미제출',answers,sourceUrl},...prev.filter(a=>a.id!==`draft:${p.id}`)]), events, save:saveEvent, remove:id=>setEvents(prev=>prev.filter(e=>e.id!==id)), open:date=>{if(date)setCalendarDate(date);setScreen('calendar')}, recordApplication:p=>setApplications(prev=>prev.some(a=>a.id===`reported:${p.id}`)?prev:[{id:`reported:${p.id}`,title:p.title,status:'신청 완료',date:localDate().replaceAll('-','.'),note:'사용자가 직접 신청했다고 확인한 기록 · 기관 접수 확인 아님'},...prev]) }} program={chatProgram} personal={personal} activity={activity} initialMessages={messages} onBack={() => setScreen(chatSchedule?'calendar':chatCenter?'center-list':'policy-list')} onSavePersonal={savePersonal} onSaveActivity={saveActivity} onNew={() => { setChatRestore(undefined);setChatProgram(undefined); setChatCenter(undefined); setChatSchedule(undefined); setMessages([]) }} onSave={() => { if (chatProgram) toggleSave(chatProgram.id) }} saved={!!chatProgram && savedIds.includes(chatProgram.id)} />
 
   const page = useMemo(() => {
     switch (screen) {
@@ -382,8 +386,7 @@ export default function App() {
     <div className="app-shell">
       <Header screen={screen} onNavigate={setScreen} />
       <main className="main-container"><div style={{display:screen==='chat'?'block':'none'}} aria-hidden={screen!=='chat'}>{chatPage}</div>{['profile', 'profile-edit', 'activity-edit', 'state-check', 'records'].includes(screen) ? <AccountLayout screen={screen as AccountScreen} onNavigate={setScreen}>{page}</AccountLayout> : page}</main>
-      {import.meta.env.DEV && <button className="text-button" onClick={()=>{for(const key of ['personal','activity','setup'])localStorage.removeItem(`dos-tres.${key}.v1`);localStorage.removeItem(HISTORY_KEY);setPersonal({...initialPersonalInformation});setActivity({...initialActivityInformation});setCheckinHistory([]);setStateCheck(initialCurrentState);setSetup(readSetup());setChatProgram(undefined);setChatCenter(undefined);setChatSchedule(undefined);setMessages([]);setChatSession(value=>value+1);setScreen('home');notify('내 정보를 초기화했어요. 다시 입력할 수 있어요.')}}>내 정보만 초기화</button>}
-      {import.meta.env.DEV && <button className="text-button" style={{margin:'12px 24px'}} onClick={async()=>{for(const key of Object.keys(localStorage)){if(key.startsWith('dos-tres.'))localStorage.removeItem(key)}for(const key of Object.keys(sessionStorage)){if(key.startsWith('dos-tres.'))sessionStorage.removeItem(key)}if('caches' in window){for(const key of await caches.keys())await caches.delete(key)}window.location.reload()}}>시연 데이터 초기화</button>}
+      <TestDataReset />
       <Footer onAbout={() => setScreen('about')} />
       {storageError && <p role="alert">이 브라우저에 저장하지 못했어요. 새로고침하면 수정 내용이 사라질 수 있어요.</p>}
       {toast && <div className="toast"><Check size={16} /> {toast}</div>}

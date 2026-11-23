@@ -13,8 +13,8 @@ import { loadQuestions, summarizeAnswers, type Answers, type Question, type Ques
 export type CurrentStateValue = { answers: Answers; ratings?: Record<string, number>; completed: boolean; summary?: Summary; result?: StateResult; id?: string; savedAt?: string }
 export const initialCurrentState: CurrentStateValue = { answers: {}, completed: false }
 
-export default function CurrentStateCheck({ value, profile, defaultInterests, preferProfile = false, onboarding = false, startInSurvey = false, decisions = {}, onDecision, onOpenPolicy, onEditProfile, history, storageError, onSave, onBack, onChat }: {
-  startInSurvey?: boolean; onboarding?: boolean; preferProfile?: boolean; decisions?: Record<string, AnswerDecision>; onDecision?: (id: string, decision: AnswerDecision) => void; value: CurrentStateValue; profile: PolicyProfile; defaultInterests: string[]; onOpenPolicy: (program: Program) => void; onEditProfile: () => void; history: CheckinRecord[]; storageError: boolean; onSave: (value: CheckinRecord) => void; onBack: () => void; onChat: () => void
+export default function CurrentStateCheck({ onFinished, value, profile, defaultInterests, preferProfile = false, onboarding = false, startInSurvey = false, decisions = {}, onDecision, onOpenPolicy, onEditProfile, history, storageError, onSave, onBack, onChat }: {
+  onFinished?:(record:CheckinRecord)=>void; startInSurvey?: boolean; onboarding?: boolean; preferProfile?: boolean; decisions?: Record<string, AnswerDecision>; onDecision?: (id: string, decision: AnswerDecision) => void; value: CurrentStateValue; profile: PolicyProfile; defaultInterests: string[]; onOpenPolicy: (program: Program) => void; onEditProfile: () => void; history: CheckinRecord[]; storageError: boolean; onSave: (value: CheckinRecord) => void; onBack: () => void; onChat: () => void
 }) {
   const [catalog, setCatalog] = useState<Questions>()
   const [answers, setAnswers] = useState<Answers>(() => Object.fromEntries(Object.entries(mergeRecommendationAnswers(startInSurvey ? {} : value.answers, defaultInterests, preferProfile)).filter(([id, answer]) =>
@@ -65,7 +65,7 @@ export default function CurrentStateCheck({ value, profile, defaultInterests, pr
     const nextResult = buildStateResult(answers, summary)
     setServerSummary(summary)
     const record: CheckinRecord = { id: crypto.randomUUID(), savedAt: new Date().toISOString(), answers: { ...answers }, ratings: { ...ratings }, completed: true, summary, result: nextResult }
-    setResult(nextResult); setSelectedId(record.id); setEditing(false); onSave(record)
+    setResult(nextResult); setSelectedId(record.id); setEditing(false); onSave(record); onFinished?.(record)
   }
   const restart = () => { setAnswers({}); setRatings({}); setResult(undefined); setServerSummary(undefined); setSelectedId(undefined); setEditing(true); setHistoryOpen(false) }
   const selectRecord = (record: CheckinRecord) => { setAnswers({ ...record.answers }); setRatings({ ...record.ratings }); setResult(record.result); setServerSummary(record.summary); setSelectedId(record.id); setEditing(false); setHistoryOpen(false) }
@@ -81,11 +81,10 @@ export default function CurrentStateCheck({ value, profile, defaultInterests, pr
       if (!controller.signal.aborted) { saveResult(exampleSummary(answers)) }
     } finally { if (!controller.signal.aborted) setSending(false) }
   }
-  return <SettingsShell title="생활 점검" hideBack={onboarding} description="요즘의 일상과 관계를 돌아보고, 지금 필요한 도움을 확인해요." onBack={onBack}>
+  return <SettingsShell actions={history.length > 0 && !onboarding && <div className="button-row"><button type="button" className="btn btn-secondary" disabled={sending} onClick={() => setHistoryOpen(open => !open)}>{historyOpen ? '점검으로 돌아가기' : '이력 보기'}</button>{!editing && <button type="button" className="btn btn-secondary" onClick={restart}>다시 점검하기</button>}</div>} title="생활 점검" hideBack={onboarding} description="요즘의 일상과 관계를 돌아보고, 지금 필요한 도움을 확인해요." onBack={onBack}>
     {!editing && !historyOpen && serverSummary?.example && <p role="status">서버 연결 실패 또는 시간 초과로 답변 기반 로컬 결과를 표시해요. 서버 계산 결과가 아니에요.</p>}
     {loading && <p role="status">생활 점검 문항을 불러오고 있어요.</p>}
     {storageError && <p role="alert" className="checkin-storage-error">이 브라우저에 결과를 저장하지 못했어요. 현재 화면에서는 볼 수 있지만, 새로고침하면 이 결과가 남지 않을 수 있어요.</p>}
-    {history.length > 0 && !onboarding && <div className="button-row"><button type="button" className="btn btn-secondary" disabled={sending} onClick={() => setHistoryOpen(open => !open)}>{historyOpen ? '점검으로 돌아가기' : '이력 보기'}</button>{!editing && <button type="button" className="btn btn-secondary" onClick={restart}>다시 점검하기</button>}</div>}
     {historyOpen && history.length > 0 && <section className="panel checkin-history"><div className="section-head"><h2>생활 점검 이력</h2></div><div className="checkin-history-list">{history.map(record => <button type="button" key={record.id} aria-pressed={selectedId === record.id && !editing} disabled={sending} onClick={() => selectRecord(record)}><time dateTime={record.savedAt}>{new Date(record.savedAt).toLocaleString('ko-KR')}</time><strong>{record.result.title}</strong><span>결과 보기</span></button>)}</div></section>}
     {!loading && !historyOpen && catalog && (result && !editing ? <div className="checkin-result">
       <section className="panel settings-section"><span className="mini-label">점검 결과</span><h2 ref={heading} tabIndex={-1}>{result.title}</h2><p>{result.description}</p>
@@ -95,7 +94,7 @@ export default function CurrentStateCheck({ value, profile, defaultInterests, pr
         {serverSummary?.interests?.length ? <p>관심 분야: {serverSummary.interests.join(', ')}</p> : null}
         {serverSummary?.satisfaction && <p>생활 만족도: {{ good: '만족하는 편', normal: '보통', bad: '아쉬운 편' }[serverSummary.satisfaction] || serverSummary.satisfaction}</p>}
         <p className="settings-help">{serverSummary?.disclaimer || '응답을 바탕으로 정리한 현재 상태예요. 의학적 진단이나 위험 등급이 아니에요.'}</p>
-        <div className="settings-survey-actions"><button className="btn btn-secondary" onClick={() => setEditing(true)}>답변 수정하고 다시 저장</button><button className="btn btn-secondary" onClick={restart}>다시 점검하기</button><button className="btn btn-secondary" onClick={onChat}>{onboarding ? '추천 살펴보기' : '조이와 이야기하기'}</button></div>
+        <div className="settings-survey-actions"><button className="btn btn-secondary" onClick={() => setEditing(true)}>답변 수정하고 다시 저장</button><button className="btn btn-secondary" onClick={restart}>다시 점검하기</button><button className="btn btn-secondary" onClick={onChat}>{onboarding ? '조이와 대화 시작하기' : '조이와 이야기하기'}</button></div>
         {!storageError && <p role="status" className="settings-help">결과가 이 브라우저에 저장됐어요. 다음 방문에도 이력에서 확인할 수 있어요.</p>}
       </section>
       <section className="panel settings-section" aria-busy={recommendations.busy}><h2>지금 살펴볼 정책과 프로그램</h2>

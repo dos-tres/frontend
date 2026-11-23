@@ -17,10 +17,10 @@ export const initialPersonalInformation: PersonalInformation = {
 }
 export const profileRegionLabel = (code: string) => regions.find(region => region.code === code)?.label ?? '거주 지역을 선택해 주세요'
 
-export function SettingsShell({ title, description, onBack, children, backLabel = '마이페이지로 돌아가기', hideBack = false }: { hideBack?: boolean; backLabel?: string; title: string; description: string; onBack: () => void; children: ReactNode }) {
+export function SettingsShell({ title, description, onBack, children, backLabel = '마이페이지로 돌아가기', hideBack = false, actions }: { actions?:ReactNode; hideBack?: boolean; backLabel?: string; title: string; description: string; onBack: () => void; children: ReactNode }) {
   return <div className="profile-settings">
     {!hideBack && <button type="button" className="btn btn-ghost settings-back" onClick={onBack}><ArrowLeft size={16} /> {backLabel}</button>}
-    <header className="page-title"><h1>{title}</h1><p>{description}</p></header>
+    <header className="page-title"><div className="settings-title-actions"><h1>{title}</h1>{actions}</div><p>{description}</p></header>
     <div className="settings-editor">{children}</div>
   </div>
 }
