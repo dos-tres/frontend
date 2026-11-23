@@ -17,7 +17,7 @@ async function request(path:string, body:unknown) {
   if (!response.ok) throw data.error || {code:'UNKNOWN'}
   return data
 }
-export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete,officialUrl,onTest,demoFor,motivationContext=''}:{motivationContext?:string;demoFor?:string;officialUrl?:string;onTest?:()=>void;itemId:string;personal:PersonalInformation;onClose:()=>void;onSchedule:(result?:ApplyResult)=>void;onComplete?:(result:ApplyResult)=>void}) {
+export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete,onReviewed,officialUrl,onTest,demoFor,motivationContext=''}:{onReviewed?:()=>void;motivationContext?:string;demoFor?:string;officialUrl?:string;onTest?:()=>void;itemId:string;personal:PersonalInformation;onClose:()=>void;onSchedule:(result?:ApplyResult)=>void;onComplete?:(result:ApplyResult)=>void}) {
   const panel=useRef<HTMLElement>(null)
   const [form,setForm]=useState<Start>(); const [answers,setAnswers]=useState<Answers>({})
   const [stage,setStage]=useState<'loading'|'edit'|'review'|'done'|'unavailable'|'uncertain'>('loading')
@@ -35,7 +35,7 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
       setForm(data)
       const local:Record<string,string>=data.replica?{name:'가상수아',birth_date:'2003-01-20',phone:'010-0000-0000',age:'23',region:'서울 강동구 천호동'}:{name:personal.name,birth_date:personal.birthDate,birthDate:personal.birthDate,phone:personal.phone,email:personal.email,age:ageFromBirthDate(personal.birthDate),region:personal.regionCode?profileRegionLabel(personal.regionCode):''}
       const initial:Answers={}
-      for(const q of data.questions || []) if(q.kind!=='agree' && q.fill_key && local[q.fill_key]) initial[q.id]=local[q.fill_key]
+      for(const q of data.questions || []) if(q.kind!=='agree' && q.fill_key && local[q.fill_key] && !(q.fill_key==='region'&&/타\s*지역|거주할\s*경우|거주\s*시|거주하는\s*경우|생활권/.test(q.label))) initial[q.id]=local[q.fill_key]
       setAutofilledLabels((data.questions||[]).filter(q=>initial[q.id]).map(q=>reviewLabel(q).replace(/^\s*\d+\s*[.)、．]\s*/,'')));setAnswers(initial);setQueue((data.questions||[]).map(q=>q.id));setStep(0);setStage(data.available?'edit':'unavailable')
     }).catch(()=>{if(active){setStage('unavailable');setError('신청서를 불러오지 못했어요. 잠시 후 다시 열어 주세요.')}})
     return()=>{active=false}
@@ -108,7 +108,7 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
         <button className="text-button" aria-label={`${q.label} 수정`} onClick={()=>{setQueue(questions.map(q=>q.id));setStep(reviewPage*3+offset);setEditingReview(true);setStage('edit')}}>수정</button>
       </div>)}</dl>
       <div className="apply-review-footer"><button className="btn btn-secondary" disabled={reviewPage===0||busy} onClick={()=>setReviewPage(p=>p-1)}>이전</button>
-      {reviewPage<Math.ceil(questions.length/3)-1?<button className="btn btn-primary" onClick={()=>setReviewPage(p=>p+1)}>다음 내용 확인</button>:form?.submission_ready===true?<button className="btn btn-primary" disabled={busy} onClick={submit}>{busy?'제출 중…':'이 내용으로 제출하기'}</button>:<p className="apply-readonly-note" role="status">내용 확인이 끝났어요. 이 신청서는 제출되지 않아요.</p>}</div>
+      {reviewPage<Math.ceil(questions.length/3)-1?<button className="btn btn-primary" onClick={()=>setReviewPage(p=>p+1)}>다음 내용 확인</button>:form?.submission_ready===true?<button className="btn btn-primary" disabled={busy} onClick={submit}>{busy?'제출 중…':'이 내용으로 제출하기'}</button>:<button className="btn btn-primary" onClick={()=>{onReviewed?.();onClose()}}>작성 완료</button>}</div>
     </section>}
     {stage==='done'&&result&&<><h4>신청 시연이 완료됐어요</h4><p>작성일: {new Date(result.submitted_at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})}</p><button className="btn btn-primary" onClick={()=>onSchedule(result)}>일정 등록하기</button><p className="settings-help">신청한 날짜로 기록하고 이 대화를 연결해요.</p></>}
     {stage==='unavailable'&&<><h4>{form?.reason==='closed'?'현재 접수가 마감됐어요':'신청 방법을 함께 확인해요'}</h4><p>원본 신청서를 읽지 못했어요. 지원하지 않는 형식이거나 접근이 제한됐을 수 있어요. 질문을 임의로 만들지 않고, 공식 신청서에서 확인할 수 있도록 안내할게요.</p>{safePolicyUrl(officialUrl)&&<a className="text-button" href={safePolicyUrl(officialUrl)} target="_blank" rel="noopener noreferrer">공식 신청서 열기 ↗</a>}<button className="btn btn-ghost" onClick={()=>onSchedule()}>문의할 일정 등록</button></>}
