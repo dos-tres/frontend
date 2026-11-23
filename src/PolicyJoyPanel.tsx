@@ -1,3 +1,4 @@
+import PhoneScript from './PhoneScript'
 import {wantsApplicationForm} from './application-intent'
 import {applicationCalendarEvent,type ApplicationCompletion} from './schedule'
 import AssistantCatalog from './AssistantCatalog'
@@ -20,8 +21,8 @@ import { profileRegionLabel } from './ProfileSettings'
 import type { ActivityInformationValue } from './ActivityInformation'
 import { ageFromBirthDate, applicationLabel, periodLabel, requestCatalogItem, safePolicyUrl } from './policy-api'
 
-type Turn = { role: 'assistant' | 'user'; text: string; calendarDate?:string; reviewed?:boolean; actions?:{label:string;text:string}[]; recommendations?:NonNullable<ChatReply['results']> }
-type Props = { restoreRequest?:{id:string;nonce:number}; startFresh?: boolean; checkinAnswers?: Answers; answerDecisions?: Record<string,string>; preferProfile?: boolean; scheduleContext?: {date:string}; center?: PublicCenter; schedule?: ScheduleBridge; program?: Program; personal: PersonalInformation; activity: ActivityInformationValue; initialMessages: Turn[]; onBack: () => void; onSavePersonal: (value: PersonalInformation) => void; onSaveActivity: (value: ActivityInformationValue) => void; onNew: () => void; onSave: () => void; saved: boolean }
+type Turn = { role: 'assistant' | 'user'; text: string; calendarDate?:string; reviewed?:boolean; phoneScript?:boolean; checkinOffer?:boolean; actions?:{label:string;text:string}[]; recommendations?:NonNullable<ChatReply['results']> }
+type Props = { onCheck?:()=>void; restoreRequest?:{id:string;nonce:number}; startFresh?: boolean; checkinAnswers?: Answers; answerDecisions?: Record<string,string>; preferProfile?: boolean; scheduleContext?: {date:string}; center?: PublicCenter; schedule?: ScheduleBridge; program?: Program; personal: PersonalInformation; activity: ActivityInformationValue; initialMessages: Turn[]; onBack: () => void; onSavePersonal: (value: PersonalInformation) => void; onSaveActivity: (value: ActivityInformationValue) => void; onNew: () => void; onSave: () => void; saved: boolean }
 type SavedChat = {id:string;title:string;updatedAt:string;turns:Turn[];draft:string;reply:ChatReply|null;answers:Answers;detail?:Program;profileStep?:number|null;profileQueue?:number[];selectedInterests?:string[];completedApplication?:ApplicationCompletion}
 const CHAT_KEY='dos-tres.chat-history.v1'
 function readChats():{activeId:string;entries:SavedChat[]} {
@@ -32,7 +33,7 @@ const programIntroActions = [{label:'신청 가능 여부 확인',text:'내가 �
 const choices = ['내가 신청할 수 있어?', '신청 준비 도와줘']
 const short = (value?: string) => value && value.length > 420 ? `${value.slice(0, 420)}…` : value
 
-export default function PolicyJoyPanel({ restoreRequest, startFresh=false, checkinAnswers={}, answerDecisions={}, preferProfile=false, scheduleContext, center, schedule, program, personal, activity, initialMessages, onSavePersonal, onSaveActivity, onNew, onSave, saved }: Props) {
+export default function PolicyJoyPanel({ onCheck, restoreRequest, startFresh=false, checkinAnswers={}, answerDecisions={}, preferProfile=false, scheduleContext, center, schedule, program, personal, activity, initialMessages, onSavePersonal, onSaveActivity, onNew, onSave, saved }: Props) {
   const [savedChats,setSavedChats] = useState(readChats)
   const [activeChatId,setActiveChatId] = useState(()=>startFresh?crypto.randomUUID():readChats().activeId||crypto.randomUUID())
   const restoreChat = useRef<SavedChat|null>(startFresh?null:readChats().entries.find(c=>c.id===readChats().activeId)||null)
@@ -150,6 +151,9 @@ export default function PolicyJoyPanel({ restoreRequest, startFresh=false, check
   }
   const sendChat = async (value:string, answers:Answers=chatAnswers, requestContext=context, baseTurns:Turn[]=turns, silent=false) => {
     if (chatRequest.current) return
+    if(!silent&&!detail&&!activeRecommendation&&/뭘.*(?:모르|해야)|무엇.*모르|뭐.*해야.*모르|어디(?:서|부터).*시작|막막|잘\s*모르겠/.test(value)){
+      setTurns([...baseTurns,{role:'user',text:value},{role:'assistant',text:'어디서부터 시작할지 막막하면 자가진단(생활 점검)으로 요즘 상황과 필요한 도움부터 정리해 볼까요? 결과를 맞춤 지원 추천에 참고할 수 있어요.',checkinOffer:true}]);setDraft('');setChatReply(null);return
+    }
     const controller=new AbortController(); chatRequest.current=controller
     const next:Turn[]=silent?baseTurns:[...baseTurns,{role:'user',text:value}]
     const requestTurns:Turn[]=silent?[...next,{role:'user',text:value}]:next
@@ -159,7 +163,7 @@ export default function PolicyJoyPanel({ restoreRequest, startFresh=false, check
       payload.checkin={...payload.checkin,...answers}
       const reply=await requestAssistantChat({...payload,selected_item_id:silent||/다른.*(?:추천|찾)|새로.*(?:추천|찾)|다시.*추천/.test(value)||(/추천\s*해|찾아\s*줘|찾아주세요/.test(value)&&!/신청|서류|준비물|링크/.test(value))?undefined:(activeRecommendation?.id||detail?.id)},controller.signal)
       if(controller.signal.aborted)return
-      setTurns([...next,...(reply.results?[{role:'assistant' as const,text:'',recommendations:reply.results}]:reply.replies.map(text=>({role:'assistant' as const,text})))])
+      setTurns([...next,...(reply.results?[{role:'assistant' as const,text:'',recommendations:reply.results}]:reply.replies.map(text=>({role:'assistant' as const,text,phoneScript:/전화|문의.*대본|물어볼.*말/.test(value)&&/안녕하세요/.test(text)})))])
       setChatReply(reply); setChatAnswers(reply.checkin)
     } catch { if(!controller.signal.aborted){setTurns(silent?next:next.slice(0,-1));if(!silent)setDraft(value);setChatError('답변을 받지 못했어요. 잠시 후 다시 보내주세요.')} }
     finally {if(chatRequest.current===controller){chatRequest.current=null;setChatBusy(false)}}
@@ -214,12 +218,12 @@ export default function PolicyJoyPanel({ restoreRequest, startFresh=false, check
       <details className="assistant-chat-history" open><summary>대화 이력</summary><p className="settings-help">이 브라우저에 최근 20개를 저장해요.</p>{savedChats.entries.map(c=><button className="assistant-history-entry" key={c.id} aria-current={c.id===activeChatId?'true':undefined} onClick={()=>openSavedChat(c)}><strong>{c.title}</strong><small>{new Date(c.updatedAt).toLocaleDateString('ko-KR')}</small></button>)}</details>
     </aside>
     <section className="assistant-conversation" aria-label="조이와 대화">
-      <header className="assistant-heading"><img src={joyImage} alt="" /><div><h2>조이</h2><p>{chatBusy ? '답변하고 있어요' : busy ? '공고를 확인하고 있어요' : '함께 알아보고, 다음 단계까지'}</p></div><span>{scheduleContext?'일정 등록 안내':'공고 기반 안내'}</span></header>
+      <header className="assistant-heading"><img src={joyImage} alt="" /><div><h2>조이</h2><p>{chatBusy ? '답변하고 있어요' : busy ? '공고를 확인하고 있어요' : '함께 알아보고, 다음 단계까지'}</p></div><button className="chat-reply-option assistant-checkin-action" onClick={onCheck}>자가진단</button><span>{scheduleContext?'일정 등록 안내':'공고 기반 안내'}</span></header>
       {saveFailed&&<p role="alert">대화를 이 브라우저에 저장하지 못했어요. 현재 화면에서는 계속할 수 있어요.</p>}
       <div className="assistant-transcript" ref={transcript} role="log" aria-label="대화 내용" aria-live="polite">
         {!detail && !center && !scheduleContext && !catalogMode && !turns.length && <div className="assistant-welcome"><img src={joyImage} alt="" /><h2>어떤 도움이 필요하세요?</h2><p>지금 필요한 도움을 편하게 말해 주세요.</p><div className="assistant-choices"><button onClick={()=>answer('월세 지원 알아보고 싶어')}>월세 지원 알아보고 싶어</button><button onClick={()=>answer('참여할 프로그램 추천해 줘')}>참여할 활동을 찾고 있어</button></div></div>}
 
-        {turns.map((turn, index) => turn.recommendations ? <ChatRecommendations key={index} items={[...turn.recommendations.programs,...turn.recommendations.policies]} onActive={setActiveRecommendation} onAction={(action,item)=>void actOnRecommendation(action,item)} busy={busy||chatBusy}/> : chatReply?.results && !turns.some(t=>t.recommendations) && turn.role==='assistant' && !turns.slice(index+1).some(t=>t.role==='user') ? null : <div className={`assistant-turn ${turn.role}`} key={index}>{turn.role === 'assistant' && <img src={joyImage} alt="조이" />}<div>{turn.text}{index===turns.length-1&&turn.role==='assistant'&&(turn.actions||((detail||activeRecommendation)&&/함께 살펴봐요/.test(turn.text)&&programIntroActions))&&!chatBusy&&<div className="assistant-inline-actions">{(turn.actions||programIntroActions).map(action=><button className="chat-reply-option" key={action.text} onClick={()=>answer(action.text)}>{action.label}</button>)}</div>}{turn.reviewed&&schedule?.openApplications&&<div className="assistant-inline-actions"><button className="chat-reply-option" onClick={schedule.openApplications}>신청 이력 보기</button></div>}{turn.calendarDate&&<div className="assistant-inline-actions"><button className="chat-reply-option" onClick={()=>schedule?.open(turn.calendarDate)}>등록한 일정 보기</button></div>}{index===turns.length-1 && turn.role==='assistant' && !chatBusy && !profileField && !!chatReply?.choices.length && <div className="assistant-inline-actions">{chatReply?.choices.map((choice,i)=><button className="btn btn-secondary" key={i} onClick={()=>{const answers=choice.type==='answer'&&choice.question_id&&choice.code?{...chatAnswers,[choice.question_id]:choice.code}:chatAnswers;if(choice.type==='answer')void sendChat(choice.text||choice.label,answers);else answer(choice.text||choice.label)}}>{choice.label}</button>)}</div>}</div></div>)}
+        {turns.map((turn, index) => turn.recommendations ? <ChatRecommendations key={index} items={[...turn.recommendations.programs,...turn.recommendations.policies]} onActive={setActiveRecommendation} onAction={(action,item)=>void actOnRecommendation(action,item)} busy={busy||chatBusy}/> : chatReply?.results && !turns.some(t=>t.recommendations) && turn.role==='assistant' && !turns.slice(index+1).some(t=>t.role==='user') ? null : <div className={`assistant-turn ${turn.role}`} key={index}>{turn.role === 'assistant' && <img src={joyImage} alt="조이" />}<div>{turn.phoneScript?<PhoneScript text={turn.text}/>:turn.text}{turn.checkinOffer&&onCheck&&<div className="assistant-inline-actions"><button className="chat-reply-option" onClick={onCheck}>자가진단 시작하기</button></div>}{index===turns.length-1&&turn.role==='assistant'&&(turn.actions||((detail||activeRecommendation)&&/함께 살펴봐요/.test(turn.text)&&programIntroActions))&&!chatBusy&&<div className="assistant-inline-actions">{(turn.actions||programIntroActions).map(action=><button className="chat-reply-option" key={action.text} onClick={()=>answer(action.text)}>{action.label}</button>)}</div>}{turn.reviewed&&schedule?.openApplications&&<div className="assistant-inline-actions"><button className="chat-reply-option" onClick={schedule.openApplications}>신청 이력 보기</button></div>}{turn.calendarDate&&<div className="assistant-inline-actions"><button className="chat-reply-option" onClick={()=>schedule?.open(turn.calendarDate)}>등록한 일정 보기</button></div>}{index===turns.length-1 && turn.role==='assistant' && !chatBusy && !profileField && !!chatReply?.choices.length && <div className="assistant-inline-actions">{chatReply?.choices.map((choice,i)=><button className="btn btn-secondary" key={i} onClick={()=>{const answers=choice.type==='answer'&&choice.question_id&&choice.code?{...chatAnswers,[choice.question_id]:choice.code}:chatAnswers;if(choice.type==='answer')void sendChat(choice.text||choice.label,answers);else answer(choice.text||choice.label)}}>{choice.label}</button>)}</div>}</div></div>)}
         {profileField && <section className="assistant-question" aria-label="필요한 정보 입력">
           <span className="assistant-question-step">추가로 필요한 정보 · {profileQueue.indexOf(profileStep!)+1} / {profileQueue.length}</span>
           <h3>{profileField==='birthDate'?'생년월일을 알려주세요':profileField==='regionCode'?'어느 지역에 살고 있나요?':profileField==='employment'?'지금 어떤 상태인가요?':profileField==='school'?'현재 재학 상태를 알려주세요':profileField==='name'?'이름을 수정해 주세요':'관심 있는 분야를 골라주세요'}</h3>
