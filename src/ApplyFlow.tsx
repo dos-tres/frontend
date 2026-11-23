@@ -23,6 +23,7 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
   const [stage,setStage]=useState<'loading'|'edit'|'review'|'done'|'unavailable'|'uncertain'>('loading')
   const [error,setError]=useState(''); const [busy,setBusy]=useState(false); const [result,setResult]=useState<ApplyResult>()
   const [drafting,setDrafting]=useState('')
+  const [autofilledLabels,setAutofilledLabels]=useState<string[]>([])
   const [queue,setQueue]=useState<string[]>([]);const [step,setStep]=useState(0)
   const [editingReview,setEditingReview]=useState(false)
   const [reviewPage,setReviewPage]=useState(0)
@@ -35,7 +36,7 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
       const local:Record<string,string>=data.replica?{name:'가상수아',birth_date:'2003-01-20',phone:'010-0000-0000',age:'23',region:'서울 강동구 천호동'}:{name:personal.name,birth_date:personal.birthDate,birthDate:personal.birthDate,phone:personal.phone,email:personal.email,age:ageFromBirthDate(personal.birthDate),region:personal.regionCode?profileRegionLabel(personal.regionCode):''}
       const initial:Answers={}
       for(const q of data.questions || []) if(q.kind!=='agree' && q.fill_key && local[q.fill_key]) initial[q.id]=local[q.fill_key]
-      setAnswers(initial);setQueue((data.questions||[]).filter(q=>!initial[q.id]).map(q=>q.id));setStep(0);setStage(data.available?'edit':'unavailable')
+      setAutofilledLabels((data.questions||[]).filter(q=>initial[q.id]).map(q=>reviewLabel(q).replace(/^\s*\d+\s*[.)、．]\s*/,'')));setAnswers(initial);setQueue((data.questions||[]).filter(q=>!initial[q.id]).map(q=>q.id));setStep(0);setStage(data.available?'edit':'unavailable')
     }).catch(()=>{if(active){setStage('unavailable');setError('신청서를 불러오지 못했어요. 잠시 후 다시 열어 주세요.')}})
     return()=>{active=false}
   },[itemId])
@@ -89,8 +90,9 @@ export default function ApplyFlow({itemId,personal,onClose,onSchedule,onComplete
     {error&&<p role="alert">{error}</p>}
     {stage==='edit'&&<>
       {!questions.some(q=>q.fill_key)&&<p className="settings-help">현재 신청서는 저장 정보 자동 채움을 지원하지 않아 직접 입력이 필요해요.</p>}
+      {!!autofilledLabels.length&&<p className="settings-help">{autofilledLabels.join('·')}은 저장된 정보로 채웠어요. 마지막에 확인하고 수정할 수 있어요.</p>}
       <p>알려주실 항목 · {Math.min(step+1,queue.length)} / {queue.length}</p>
-      {questions.filter(q=>q.id===queue[step]).map(q=><div className="apply-field" key={q.id}><label htmlFor={`apply-${q.id}`}>{q.label}{q.required?' (필수)':' (선택)'}</label>
+      {questions.filter(q=>q.id===queue[step]).map(q=><div className="apply-field" key={q.id}><label htmlFor={`apply-${q.id}`}>{q.label.replace(/^\s*\d+\s*[.)、．]\s*/,'')}{q.required?' (필수)':' (선택)'}</label>
         {q.description&&<details className="apply-question-description"><summary>질문 안내 보기</summary><p>{q.description}</p></details>}{q.hint&&q.hint!==q.description&&<p className="settings-help">{q.hint}</p>}
         {q.kind==='multi_grid'?<div className="apply-grid">{q.rows?.map(row=><fieldset key={row.id}><legend>{row.label}</legend>{q.options?.map(option=><label key={option}><input type="checkbox" checked={Array.isArray(answers[row.id])&&answers[row.id].includes(option)} onChange={()=>{const current=Array.isArray(answers[row.id])?answers[row.id] as string[]:[];update(row.id,current.includes(option)?current.filter(v=>v!==option):[...current,option])}}/>{option}</label>)}</fieldset>)}</div>:q.options?.length?<fieldset id={`apply-${q.id}`} aria-invalid={invalid.includes(q.id)}><legend className="settings-sr-only">{q.label}</legend>{q.options.map(option=><label key={option}><input type={q.kind==='multi'?'checkbox':'radio'} name={`apply-${q.id}`} checked={q.kind==='multi'?Array.isArray(answers[q.id])&&answers[q.id].includes(option):answers[q.id]===option} onChange={()=>{const current=Array.isArray(answers[q.id])?answers[q.id] as string[]:[];update(q.id,q.kind==='multi'?(current.includes(option)?current.filter(v=>v!==option):[...current,option]):option)}}/>{option}</label>)}</fieldset>:q.kind==='long'?<textarea id={`apply-${q.id}`} placeholder="직접 입력하거나 추천받기를 눌러주세요" rows={4} value={String(answers[q.id]||'')} onChange={e=>update(q.id,e.target.value)} aria-invalid={invalid.includes(q.id)}/>:<input id={`apply-${q.id}`} type={q.kind==='date'?'date':'text'} value={String(answers[q.id]||'')} onChange={e=>update(q.id,e.target.value)} aria-invalid={invalid.includes(q.id)}/>}
         {q.can_draft&&<button className="btn btn-secondary" disabled={!!drafting} onClick={()=>void draftAnswer(q.id)}>{drafting?'답변 만드는 중…':'추천받기'}</button>}

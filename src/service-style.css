@@ -267,10 +267,10 @@
 @media(max-width:760px){.chat-card-explanation{margin-left:0;}}
 
 .chat-reply-options {display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;}
-.app-shell .chat-reply-options .chat-reply-option {display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:7px 12px;border:1px solid #dce3eb;border-radius:18px;background:#fff;color:#42566f;font:inherit;font-size:13px;font-weight:500;line-height:1.5;box-shadow:none;cursor:pointer;transition:background .15s,border-color .15s;}
-.app-shell .chat-reply-options .chat-reply-option:hover {background:#eaf1fb;border-color:#bdcee6;}
-.app-shell .chat-reply-options .chat-reply-option:focus-visible {outline:2px solid #3182f6;outline-offset:3px;}
-.app-shell .chat-reply-options .chat-reply-option:disabled {opacity:.45;cursor:wait;}
+.app-shell :is(.chat-reply-options,.assistant-inline-actions) .chat-reply-option {display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:7px 12px;border:1px solid #dce3eb;border-radius:18px;background:#fff;color:#42566f;font:inherit;font-size:13px;font-weight:500;line-height:1.5;box-shadow:none;cursor:pointer;transition:background .15s,border-color .15s;}
+.app-shell :is(.chat-reply-options,.assistant-inline-actions) .chat-reply-option:hover {background:#eaf1fb;border-color:#bdcee6;}
+.app-shell :is(.chat-reply-options,.assistant-inline-actions) .chat-reply-option:focus-visible {outline:2px solid #3182f6;outline-offset:3px;}
+.app-shell :is(.chat-reply-options,.assistant-inline-actions) .chat-reply-option:disabled {opacity:.45;cursor:wait;}
 
 /* Recommendation content stays compact regardless of card/list defaults. */
 .app-shell .chat-recommendation-card{display:block;min-height:0;height:auto;padding:18px 20px;}
