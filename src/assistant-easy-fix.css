@@ -1,0 +1,136 @@
+/*
+ * DOS TRES — 2026-11-23 quick UI fix
+ * 4) Keep only New chat + Chat history in the AI assistant sidebar.
+ * 5) Keep the chat view within the viewport; scroll only its transcript.
+ *
+ * Scope all viewport rules to the ACTIVE chat screen. The App mounts the chat
+ * component even on other pages but marks its wrapper aria-hidden="true".
+ * Do not lock the scrolling of policy lists, centers, profile, or schedule.
+ */
+
+/* Sidebar: only the title, New conversation and first (history) details. */
+.app-shell .assistant-sidebar > :not(.assistant-sidebar-title):not(.btn):not(details:first-of-type) {
+  display: none !important;
+}
+.app-shell .assistant-sidebar > details:first-of-type {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* All viewport restrictions apply ONLY when AI chat is the visible screen. */
+body:has(.app-shell > .main-container > div[aria-hidden="false"] .assistant-workspace) {
+  height: 100dvh;
+  overflow: hidden;
+}
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) {
+  height: 100dvh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) > .topbar {
+  flex: 0 0 auto;
+}
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) > .main-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) > .main-container > div[aria-hidden="false"] {
+  display: flex !important;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+}
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-workspace {
+  flex: 1 1 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-sidebar {
+  min-height: 0;
+  overflow-y: auto;
+}
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-conversation {
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-heading,
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-composer {
+  flex: 0 0 auto;
+}
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-transcript {
+  min-height: 0;
+  flex: 1 1 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* The ordinary site footer and DEV buttons occupy vertical space in chat. */
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) > .footer,
+.app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) > button.text-button {
+  display: none !important;
+}
+
+/* Small screens: stack compact controls above the chat and keep them usable. */
+@media (max-width: 760px) {
+  .app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) > .main-container {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+  .app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-workspace {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
+  .app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-sidebar {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 9px 12px;
+    max-height: min(27dvh, 140px);
+    overflow-y: auto;
+  }
+  .app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-sidebar-title {
+    display: none;
+  }
+  .app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-sidebar > .btn {
+    display: inline-flex !important;
+    width: auto;
+    min-height: 38px;
+    padding: 7px 12px;
+    margin: 0;
+    flex: 0 0 auto;
+  }
+  .app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-sidebar > details:first-of-type {
+    flex: 1 1 120px;
+    min-width: 0;
+    max-height: 112px;
+    overflow: auto;
+    margin: 0;
+  }
+  .app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-conversation {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+  }
+  .app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-transcript {
+    padding: 12px;
+  }
+  .app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-heading,
+  .app-shell:has(> .main-container > div[aria-hidden="false"] .assistant-workspace) .assistant-composer {
+    padding: 10px 12px;
+  }
+}

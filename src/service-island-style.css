@@ -1,0 +1,94 @@
+/* 둘셋 — 섬의 작은 디테일 / 선택 적용. Import this file alone. */
+@import './service-green-style.css';
+
+.app-shell {
+  --island-sand: #f6f3ed;
+  --island-sea: #eef4f6;
+  --island-shore: #dce9ed;
+  --island-land: #e5ecdc;
+  background: #fff;
+}
+/* Keep the hero open: one island scene, no repeated decorative cards. */
+.app-shell .joy-home-hero {
+  background: #fff;
+  border: 0;
+  border-radius: 0;
+  padding: 32px 12px 40px;
+}
+.app-shell .joy-home-greeting { position: relative; isolation: isolate; }
+.app-shell .joy-home-mascot-stage { isolation: isolate; }
+.app-shell .joy-home-mascot-stage::before {
+  content: ''; position: absolute; pointer-events: none;
+  left: 3%; right: 3%; height: 64px; bottom: -5px;
+  border-radius: 47% 53% 49% 51% / 48% 42% 58% 52%;
+  background: var(--island-sea); transform: rotate(-6deg); z-index: -2;
+}
+.app-shell .joy-home-mascot-stage::after {
+  content: ''; position: absolute; pointer-events: none;
+  left: 18%; right: 15%; height: 37px; bottom: 9px;
+  background: var(--island-land);
+  border: 5px solid var(--island-sand);
+  border-radius: 44% 56% 48% 52% / 46% 42% 58% 54%;
+  transform: rotate(-6deg); z-index: -1;
+}
+.app-shell .joy-home-greeting::after {
+  content: ''; pointer-events: none; position: absolute;
+  width: 38px; height: 6px; top: 177px; right: -2px;
+  border-top: 1px solid var(--island-shore);
+  border-bottom: 1px solid var(--island-shore);
+  transform: rotate(-6deg); border-radius: 50%;
+}
+.app-shell .joy-home-greeting > .joy-home-speech { margin-top: 10px; color: var(--service-muted); }
+/* Neutral conversational chrome; green is reserved for actions. */
+.app-shell .joy-home-input-label { color: var(--service-secondary); }
+.app-shell .joy-home-starters button { border: 0; background: #f5f6f7; color: var(--service-secondary); }
+.app-shell .joy-home-starters button:hover { background: #ebedef; color: var(--service-ink); }
+.app-shell .joy-home-composer { background: #fff; }
+.app-shell .joy-home-composer:focus-within { box-shadow: 0 0 0 1px var(--brand-green); }
+/* One sand-toned section: fine dividers instead of three enclosed tiles. */
+.app-shell .joy-home-shortcuts {
+  padding: 32px 28px 26px;
+  margin-top: 16px;
+  column-gap: 28px; row-gap: 16px;
+  background: var(--island-sand);
+  border-radius: 4px;
+}
+.app-shell .joy-home-shortcut-heading > span { font-size: 20px; }
+.app-shell .joy-home-shortcuts > button {
+  position: relative; border: 0; border-top: 1px solid #dedbd4;
+  background: transparent; border-radius: 0; padding: 22px 0 10px;
+  align-items: flex-start;
+}
+.app-shell .joy-home-shortcuts > button:hover { background: transparent; border-color: #9caaa0; }
+.app-shell .joy-home-shortcut-icon { background: transparent; color: var(--service-secondary); width: 24px; height: 28px; border-radius: 0; }
+.app-shell .joy-home-shortcuts > button > svg { margin-top: 5px; }
+.app-shell .joy-home-shortcuts strong { font-size: 16px; }
+/* A single folded-paper corner, made with CSS, not extra illustration assets. */
+.app-shell .joy-home-shortcuts::after { content: none; }
+.app-shell .joy-home-onboarding {
+  position: relative; margin-top: 26px; padding: 22px 4px;
+  border: 0; border-top: 1px solid var(--service-border); border-radius: 0;
+  background: #fff;
+}
+.app-shell .joy-home-onboarding::after {
+  content: ''; position: absolute; width: 10px; height: 10px;
+  right: 0; top: -1px; pointer-events: none;
+  background: linear-gradient(45deg,#e6e9e5 49%,#fff 50%);
+}
+.app-shell .joy-home-shortcuts .joy-home-shortcut-icon svg { stroke-width: 1.6; }
+@media(max-width:1050px) {
+  .app-shell .joy-home-greeting::after { right: -8px; }
+}
+@media(max-width:767px) {
+  .app-shell .joy-home-hero { padding: 16px 4px 28px; }
+  .app-shell .joy-home-greeting { align-items: center; justify-self: end; margin-bottom: 22px; }
+  .app-shell .joy-home-mascot-stage { width: 128px; height: 110px; }
+  .app-shell .joy-home-mascot { width: 124px; height: 102px; left: 2px; }
+  .app-shell .joy-home-greeting .joy-home-mascot-image { width: 124px; height: 102px; }
+  .app-shell .joy-home-mascot-stage::before { height: 40px; bottom: -4px; }
+  .app-shell .joy-home-mascot-stage::after { height: 23px; bottom: 5px; border-width: 3px; }
+  .app-shell .joy-home-greeting::after { top: 102px; right: -10px; width: 23px; height: 5px; }
+  .app-shell .joy-home-shortcuts { padding: 24px 20px; gap: 14px; }
+  .app-shell .joy-home-shortcuts > button { padding: 18px 0 8px; }
+  .app-shell .joy-home-onboarding { padding: 20px 0; }
+}

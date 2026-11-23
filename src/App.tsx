@@ -111,14 +111,14 @@ function Header({ screen, onNavigate }: { screen: Screen; onNavigate: (screen: S
         <button className="brand-button" onClick={() => { onNavigate('home'); setMobileOpen(false) }} aria-label="둘셋 홈으로">
           <BrandMark />
         </button>
-        <button className="mobile-menu" onClick={() => setMobileOpen(v => !v)} aria-label="메뉴 열기">
+        <button className="mobile-menu" onClick={() => setMobileOpen(v => !v)} aria-label={mobileOpen ? "메뉴 닫기" : "메뉴 열기"} aria-expanded={mobileOpen} aria-controls="primary-navigation">
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <nav className={`nav-links ${mobileOpen ? 'nav-open' : ''}`} aria-label="주요 메뉴">
+        <nav id="primary-navigation" className={`nav-links ${mobileOpen ? 'nav-open' : ''}`} aria-label="주요 메뉴">
           {navItems.map(item => {
             const Icon = item.icon
             return (
-              <button key={item.id} className={`nav-link ${active === item.id ? 'active' : ''}`} onClick={() => navigate(item.id)}>
+              <button key={item.id} aria-current={active === item.id ? "page" : undefined} className={`nav-link ${active === item.id ? 'active' : ''}`} onClick={() => navigate(item.id)}>
                 <Icon size={16} strokeWidth={1.9} />
                 <span>{item.label}</span>
               </button>
@@ -136,7 +136,7 @@ function Header({ screen, onNavigate }: { screen: Screen; onNavigate: (screen: S
 function Footer({ onAbout }: { onAbout: () => void }) {
   return (
     <footer className="footer">
-      <span>둘셋 · 청년의 고민과 정책, 지역 활동을 연결하는 AI 비서</span>
+      <span>둘셋 · 나에게 맞는 지원부터 신청과 일정까지, 조이와 함께</span>
       <button onClick={onAbout}>둘셋 소개 <ArrowRight size={13} /></button>
     </footer>
   )
@@ -238,26 +238,26 @@ function RecordsPage({ saved, applications, events, history, onSelect, onCheck, 
 function AboutPage() {
   return (
     <>
-      <PageTitle title="둘셋 소개" description="둘셋은 청년의 고민과 지원제도, 지역사회 활동을 연결하고 실제 참여를 돕는 AI 비서 서비스예요." />
+      <PageTitle title="둘셋 소개" description="나에게 맞는 청년정책과 프로그램을 찾고, 신청 준비와 일정 관리까지 조이와 함께해요." />
       <div className="about-layout">
         <Panel tone="blue" className="about-main">
           <div className="about-hero">
-            <div><span className="small-tag"><Sparkles size={13} /> HOW IT WORKS</span><h2>기회를 찾아,<br />한 걸음씩 이어가요.</h2><p>조이는 청년의 이야기를 듣고, 필요한 정책과 지역 활동을 함께 찾으며 신청과 참여 준비를 도와요.</p></div>
+            <div><span className="small-tag"><Sparkles size={13} /> 조이와 함께하는 둘셋</span><h2>나에게 맞는 지원부터<br />신청과 일정까지, 조이와.</h2><p>“월세 지원을 받고 싶어.” “동네에서 참여할 활동이 있을까?” 지금 필요한 도움을 알려주세요. 둘셋은 내 상황에 맞는 지원을 살펴보고, 신청할 때 필요한 내용과 다음에 할 일을 함께 정리하는 서비스예요.</p></div>
             <JoyAvatar size="lg" />
           </div>
           {[
-            ['01', '조이와 이야기하기', '취업·경제·주거·관계 등 고민과 필요한 도움 파악'],
-            ['02', '정책과 청년센터 프로그램 찾기', '참여 선호에 맞는 지원과 활동 검색'],
-            ['03', '신청을 돕고 기록 남기기', '공식 신청 경로 안내, 신청 여부 확인, 일정·메모 저장'],
-            ['04', '작은 연결 이어가기', '참여 기록이 쌓이면 섬·다리·마을로 시각화'],
+            ['01', '내 상황에 맞는 지원 찾기', '설문과 저장한 나이·거주 지역·관심을 바탕으로 청년정책과 프로그램을 살펴봐요.'],
+            ['02', '신청할 내용 함께 준비하기', '공고의 신청 조건·방법·서류를 확인하고, 지원하는 신청서는 내용을 확인한 뒤 제출해요.'],
+            ['03', '주변 청년센터 알아보기', '입력한 거주지를 기준으로 가까운 센터를 찾고, 공간·운영 정보와 모집 중인 프로그램을 확인해요.'],
+            ['04', '준비할 일과 참여 일정 챙기기', '서류 준비, 문의할 일, 참여 일정을 달력과 리스트로 관리해요. 직접 등록하거나 조이와 정리할 수 있어요.'],
           ].map(([n, title, desc]) => <div className="about-step" key={n}><span>{n}</span><div><strong>{title}</strong><small>{desc}</small></div></div>)}
         </Panel>
         <Panel className="about-notes">
-          <h3>알아두면 좋아요</h3>
-          <p><Check size={15} /> 추천은 실제 공고와 출처를 확인해 제공해야 해요.</p>
-          <p><Check size={15} /> 고립 여부를 진단하거나 점수화하지 않아요.</p>
-          <p><Check size={15} /> 실제 신청과 예약은 사용자가 확인하고 진행해요.</p>
-          <p><Check size={15} /> 신청 데이터와 대화 이력은 본인이 관리할 수 있어야 해요.</p>
+          <h3>신청할 때도 내 선택대로</h3>
+          <p><Check size={15} /> 대상 조건과 모집 기간은 공식 공고에서 최종 확인해요.</p>
+          <p><Check size={15} /> 설문은 지금 필요한 지원과 관심을 알아보는 데 사용해요.</p>
+          <p><Check size={15} /> 신청 내용과 동의 항목을 확인하고, 제출은 내가 결정해요.</p>
+          <p><Check size={15} /> 문의가 필요하면 물어볼 내용을 정리하고, 확인할 일정을 남겨요.</p>
           <div className="about-art"><img src={planeImage} alt="종이비행기 캐릭터" /><img src={boatImage} alt="종이배 캐릭터" /></div>
         </Panel>
       </div>
