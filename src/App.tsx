@@ -1,3 +1,4 @@
+import TestDataReset from './TestDataReset'
 import HomeLanding from './HomeLanding'
 import { SchedulePage, ScheduleEditor } from './SchedulePages'
 import { localDate, dueReminders, type CalendarEvent } from './schedule'
@@ -382,8 +383,7 @@ export default function App() {
     <div className="app-shell">
       <Header screen={screen} onNavigate={setScreen} />
       <main className="main-container"><div style={{display:screen==='chat'?'block':'none'}} aria-hidden={screen!=='chat'}>{chatPage}</div>{['profile', 'profile-edit', 'activity-edit', 'state-check', 'records'].includes(screen) ? <AccountLayout screen={screen as AccountScreen} onNavigate={setScreen}>{page}</AccountLayout> : page}</main>
-      {import.meta.env.DEV && <button className="text-button" onClick={()=>{for(const key of ['personal','activity','setup'])localStorage.removeItem(`dos-tres.${key}.v1`);localStorage.removeItem(HISTORY_KEY);setPersonal({...initialPersonalInformation});setActivity({...initialActivityInformation});setCheckinHistory([]);setStateCheck(initialCurrentState);setSetup(readSetup());setChatProgram(undefined);setChatCenter(undefined);setChatSchedule(undefined);setMessages([]);setChatSession(value=>value+1);setScreen('home');notify('내 정보를 초기화했어요. 다시 입력할 수 있어요.')}}>내 정보만 초기화</button>}
-      {import.meta.env.DEV && <button className="text-button" style={{margin:'12px 24px'}} onClick={async()=>{for(const key of Object.keys(localStorage)){if(key.startsWith('dos-tres.'))localStorage.removeItem(key)}for(const key of Object.keys(sessionStorage)){if(key.startsWith('dos-tres.'))sessionStorage.removeItem(key)}if('caches' in window){for(const key of await caches.keys())await caches.delete(key)}window.location.reload()}}>시연 데이터 초기화</button>}
+      <TestDataReset />
       <Footer onAbout={() => setScreen('about')} />
       {storageError && <p role="alert">이 브라우저에 저장하지 못했어요. 새로고침하면 수정 내용이 사라질 수 있어요.</p>}
       {toast && <div className="toast"><Check size={16} /> {toast}</div>}
