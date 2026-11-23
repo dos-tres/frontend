@@ -81,11 +81,10 @@ export default function CurrentStateCheck({ value, profile, defaultInterests, pr
       if (!controller.signal.aborted) { saveResult(exampleSummary(answers)) }
     } finally { if (!controller.signal.aborted) setSending(false) }
   }
-  return <SettingsShell title="생활 점검" hideBack={onboarding} description="요즘의 일상과 관계를 돌아보고, 지금 필요한 도움을 확인해요." onBack={onBack}>
+  return <SettingsShell actions={history.length > 0 && !onboarding && <div className="button-row"><button type="button" className="btn btn-secondary" disabled={sending} onClick={() => setHistoryOpen(open => !open)}>{historyOpen ? '점검으로 돌아가기' : '이력 보기'}</button>{!editing && <button type="button" className="btn btn-secondary" onClick={restart}>다시 점검하기</button>}</div>} title="생활 점검" hideBack={onboarding} description="요즘의 일상과 관계를 돌아보고, 지금 필요한 도움을 확인해요." onBack={onBack}>
     {!editing && !historyOpen && serverSummary?.example && <p role="status">서버 연결 실패 또는 시간 초과로 답변 기반 로컬 결과를 표시해요. 서버 계산 결과가 아니에요.</p>}
     {loading && <p role="status">생활 점검 문항을 불러오고 있어요.</p>}
     {storageError && <p role="alert" className="checkin-storage-error">이 브라우저에 결과를 저장하지 못했어요. 현재 화면에서는 볼 수 있지만, 새로고침하면 이 결과가 남지 않을 수 있어요.</p>}
-    {history.length > 0 && !onboarding && <div className="button-row"><button type="button" className="btn btn-secondary" disabled={sending} onClick={() => setHistoryOpen(open => !open)}>{historyOpen ? '점검으로 돌아가기' : '이력 보기'}</button>{!editing && <button type="button" className="btn btn-secondary" onClick={restart}>다시 점검하기</button>}</div>}
     {historyOpen && history.length > 0 && <section className="panel checkin-history"><div className="section-head"><h2>생활 점검 이력</h2></div><div className="checkin-history-list">{history.map(record => <button type="button" key={record.id} aria-pressed={selectedId === record.id && !editing} disabled={sending} onClick={() => selectRecord(record)}><time dateTime={record.savedAt}>{new Date(record.savedAt).toLocaleString('ko-KR')}</time><strong>{record.result.title}</strong><span>결과 보기</span></button>)}</div></section>}
     {!loading && !historyOpen && catalog && (result && !editing ? <div className="checkin-result">
       <section className="panel settings-section"><span className="mini-label">점검 결과</span><h2 ref={heading} tabIndex={-1}>{result.title}</h2><p>{result.description}</p>
