@@ -13,8 +13,8 @@ import { loadQuestions, summarizeAnswers, type Answers, type Question, type Ques
 export type CurrentStateValue = { answers: Answers; ratings?: Record<string, number>; completed: boolean; summary?: Summary; result?: StateResult; id?: string; savedAt?: string }
 export const initialCurrentState: CurrentStateValue = { answers: {}, completed: false }
 
-export default function CurrentStateCheck({ value, profile, defaultInterests, preferProfile = false, onboarding = false, startInSurvey = false, decisions = {}, onDecision, onOpenPolicy, onEditProfile, history, storageError, onSave, onBack, onChat }: {
-  startInSurvey?: boolean; onboarding?: boolean; preferProfile?: boolean; decisions?: Record<string, AnswerDecision>; onDecision?: (id: string, decision: AnswerDecision) => void; value: CurrentStateValue; profile: PolicyProfile; defaultInterests: string[]; onOpenPolicy: (program: Program) => void; onEditProfile: () => void; history: CheckinRecord[]; storageError: boolean; onSave: (value: CheckinRecord) => void; onBack: () => void; onChat: () => void
+export default function CurrentStateCheck({ onFinished, value, profile, defaultInterests, preferProfile = false, onboarding = false, startInSurvey = false, decisions = {}, onDecision, onOpenPolicy, onEditProfile, history, storageError, onSave, onBack, onChat }: {
+  onFinished?:(record:CheckinRecord)=>void; startInSurvey?: boolean; onboarding?: boolean; preferProfile?: boolean; decisions?: Record<string, AnswerDecision>; onDecision?: (id: string, decision: AnswerDecision) => void; value: CurrentStateValue; profile: PolicyProfile; defaultInterests: string[]; onOpenPolicy: (program: Program) => void; onEditProfile: () => void; history: CheckinRecord[]; storageError: boolean; onSave: (value: CheckinRecord) => void; onBack: () => void; onChat: () => void
 }) {
   const [catalog, setCatalog] = useState<Questions>()
   const [answers, setAnswers] = useState<Answers>(() => Object.fromEntries(Object.entries(mergeRecommendationAnswers(startInSurvey ? {} : value.answers, defaultInterests, preferProfile)).filter(([id, answer]) =>
@@ -65,7 +65,7 @@ export default function CurrentStateCheck({ value, profile, defaultInterests, pr
     const nextResult = buildStateResult(answers, summary)
     setServerSummary(summary)
     const record: CheckinRecord = { id: crypto.randomUUID(), savedAt: new Date().toISOString(), answers: { ...answers }, ratings: { ...ratings }, completed: true, summary, result: nextResult }
-    setResult(nextResult); setSelectedId(record.id); setEditing(false); onSave(record)
+    setResult(nextResult); setSelectedId(record.id); setEditing(false); onSave(record); onFinished?.(record)
   }
   const restart = () => { setAnswers({}); setRatings({}); setResult(undefined); setServerSummary(undefined); setSelectedId(undefined); setEditing(true); setHistoryOpen(false) }
   const selectRecord = (record: CheckinRecord) => { setAnswers({ ...record.answers }); setRatings({ ...record.ratings }); setResult(record.result); setServerSummary(record.summary); setSelectedId(record.id); setEditing(false); setHistoryOpen(false) }

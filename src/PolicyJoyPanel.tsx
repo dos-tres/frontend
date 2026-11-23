@@ -1,3 +1,4 @@
+import type {CheckinRecord} from './checkin-result'
 import {shouldOfferCheckin} from './checkin-intent'
 import PhoneScript from './PhoneScript'
 import {wantsApplicationForm} from './application-intent'
@@ -23,7 +24,7 @@ import type { ActivityInformationValue } from './ActivityInformation'
 import { ageFromBirthDate, applicationLabel, periodLabel, requestCatalogItem, safePolicyUrl } from './policy-api'
 
 type Turn = { role: 'assistant' | 'user'; text: string; calendarDate?:string; reviewed?:boolean; phoneScript?:boolean; checkinOffer?:boolean; actions?:{label:string;text:string}[]; recommendations?:NonNullable<ChatReply['results']> }
-type Props = { renderCheckin?:(onDone:()=>void,onCancel:()=>void)=>ReactNode; onCheck?:()=>void; restoreRequest?:{id:string;nonce:number}; startFresh?: boolean; checkinAnswers?: Answers; answerDecisions?: Record<string,string>; preferProfile?: boolean; scheduleContext?: {date:string}; center?: PublicCenter; schedule?: ScheduleBridge; program?: Program; personal: PersonalInformation; activity: ActivityInformationValue; initialMessages: Turn[]; onBack: () => void; onSavePersonal: (value: PersonalInformation) => void; onSaveActivity: (value: ActivityInformationValue) => void; onNew: () => void; onSave: () => void; saved: boolean }
+type Props = { renderCheckin?:(onDone:(record:CheckinRecord)=>void,onCancel:()=>void)=>ReactNode; onCheck?:()=>void; restoreRequest?:{id:string;nonce:number}; startFresh?: boolean; checkinAnswers?: Answers; answerDecisions?: Record<string,string>; preferProfile?: boolean; scheduleContext?: {date:string}; center?: PublicCenter; schedule?: ScheduleBridge; program?: Program; personal: PersonalInformation; activity: ActivityInformationValue; initialMessages: Turn[]; onBack: () => void; onSavePersonal: (value: PersonalInformation) => void; onSaveActivity: (value: ActivityInformationValue) => void; onNew: () => void; onSave: () => void; saved: boolean }
 type SavedChat = {id:string;title:string;updatedAt:string;turns:Turn[];draft:string;reply:ChatReply|null;answers:Answers;detail?:Program;profileStep?:number|null;profileQueue?:number[];selectedInterests?:string[];completedApplication?:ApplicationCompletion}
 const CHAT_KEY='dos-tres.chat-history.v1'
 function readChats():{activeId:string;entries:SavedChat[]} {
@@ -198,6 +199,7 @@ export default function PolicyJoyPanel({ renderCheckin, onCheck, restoreRequest,
     if (scheduler.handle(value)) { setDraft('');setChatReply(null); return }
     if (/내\s*정보.*(입력|수정|등록)/.test(value)) { beginProfile(); return }
     if (busy) return
+    if(value==='자가진단 결과로 맞춤 정책 추천해줘'&&!context.profile){beginProfile();return}
     if ((activeRecommendation||detail) && wantsApplicationForm(value,turns.filter(t=>t.role==='assistant').slice(-1)[0]?.text||'')) {if(activeRecommendation)setDetail(toProgram(activeRecommendation));setCatalogMode(null);setPolicyExample(false);setApplying(true);setDraft('');return}
     void sendChat(value)
   }
@@ -242,7 +244,7 @@ export default function PolicyJoyPanel({ renderCheckin, onCheck, restoreRequest,
         {chatReply?.results && !turns.some(t=>t.recommendations) && <ChatRecommendations key={turns.length} items={[...chatReply.results.programs,...chatReply.results.policies]} onActive={setActiveRecommendation} onAction={(action,item)=>void actOnRecommendation(action,item)} busy={busy||chatBusy} />}
         {catalogMode && <AssistantCatalog mode={catalogMode} query={catalogQuery} criteria={{age:context.local.age,region:context.profile?.sigungu_cd||'',job:context.local.employment,school:context.local.school}} answers={context.checkin} onSelect={selectCatalogItem} />}
         {policyExample && <PolicyApplicationExample personal={personal} onClose={()=>setPolicyExample(false)} onSchedule={()=>{setPolicyExample(false);answer('월세 지원 조건·서류 확인 일정 등록')}} />}
-        {checking&&renderCheckin&&<section className="chat-checkin-panel" aria-label="대화 안에서 자가진단">{renderCheckin(()=>{setChecking(false);if(!context.profile)beginProfile();else void sendChat('자가진단 결과를 바탕으로 맞춤 정책을 추천해줘',{},context,turns,true)},()=>setChecking(false))}</section>}
+        {checking&&renderCheckin&&<section className="chat-checkin-panel" aria-label="대화 안에서 자가진단">{renderCheckin(record=>{setChecking(false);setChatReply(null);setTurns(prev=>[...prev,{role:'assistant',text:[record.result.title+'예요.',record.result.description,record.summary?.example?'응답을 바탕으로 기기에서 정리한 결과예요.':'점검한 내용을 바탕으로 맞춤 정책을 찾아볼게요.'].join('\n'),actions:[{label:'맞춤 정책 추천받기',text:'자가진단 결과로 맞춤 정책 추천해줘'}]}])},()=>setChecking(false))}</section>}
         {applying && detail && <ApplyFlow key={detail.id} itemId={detail.id} demoFor={!detail.id.startsWith('demo:')&&/docs\.google\.com\/forms|forms\.gle/.test(detail.applyUrl||'')?detail.title:undefined} personal={personal} motivationContext={[...new Set(turns.filter(t=>t.role==='user'&&!/신청|일정|찾아|추천|알려|어떤|여기|이 상담/.test(t.text)).map(t=>t.text))].slice(-3).join(' ').slice(0,600)} officialUrl={detail.applyUrl||detail.referenceUrl} onTest={()=>{setDetail({id:"demo:career",type:"프로그램",title:"[둘셋 테스트] 자소서·면접 피드백 클래스",summary:"가상 취업 클래스 신청 시연이에요.",region:"온라인 · 가상",target:"취업 준비 청년(시연)",period:"테스트",method:"테스트 폼",place:"온라인(가상)",source:"둘셋 테스트"});setApplying(true)}} onComplete={r=>{schedule?.recordDraft?.(detail,r.answers,true,r.sourceUrl);setCompletedApplication({itemId:detail.id,title:detail.title,at:r.submitted_at,simulation:r.status==='simulated'})}} onReviewed={(answers,sourceUrl)=>{schedule?.recordDraft?.(detail,answers,false,sourceUrl);setChatReply(null);setTurns(prev=>[...prev,{role:'assistant',reviewed:true,text:'신청서 작성과 확인이 완료됐어요. 실제 기관에 제출하지는 않았어요. 더 궁금한 점이 있으면 편하게 물어보세요.'}])}} onClose={()=>setApplying(false)} onSchedule={r=>{if(r)recordApplicationSchedule({itemId:detail.id,title:detail.title,at:r.submitted_at,simulation:r.status==='simulated'});else{setApplying(false);answer('일정 등록')}}} />}
         {!profileField && scheduler.preview}{!profileField && scheduler.editor}
         {busy && <p role="status">선택한 공고를 읽고 있어요…</p>}
