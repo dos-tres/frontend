@@ -224,15 +224,17 @@ function ApplicationsPage({ applications, onChangeStatus, onCalendar }: { applic
 }
 
 function RecordsPage({ saved, applications, events, history, onSelect, onCheck, experiences, onExperiences, loading, failed }: { loading: boolean; failed: boolean; experiences: ActivityInformationValue['experiences']; onExperiences: (next: ActivityInformationValue['experiences']) => void; saved: Program[]; applications: Application[]; events: CalendarEvent[]; history: CheckinRecord[]; onSelect: (program: Program) => void; onCheck: () => void }) {
-  return <>
+  return <div className="records-page">
     <PageTitle title="마이페이지 · 내 기록" description="이 브라우저에 저장한 관심 정보, 신청 준비와 일정, 생활 점검을 확인해요. 서버 계정과 동기화되지 않아요." />
     {loading && <p role="status">저장한 공고를 확인하고 있어요.</p>}{failed && <p role="alert">저장한 공고를 불러오지 못했어요. 관심 ID와 다른 로컬 기록은 보존돼 있어요.</p>}
     <ActivityExperiences value={experiences} onChange={onExperiences} />
+    <div className="records-summary-grid">
     <Panel><h2>관심 정책·프로그램 · {saved.length}건</h2>{saved.map(p => <button className="record-entry" key={p.id} onClick={() => onSelect(p)}>{p.title}<ChevronRight size={18} /></button>)}{!saved.length && <p>관심 저장한 정보가 없어요.</p>}</Panel>
     <Panel><h2>신청·참여 기록 · {applications.length}건</h2>{applications.map(a => <p key={a.id}>{a.title} · {a.status} · {a.date}</p>)}{!applications.length && <p>등록한 신청 기록이 없어요.</p>}</Panel>
     <Panel><h2>내 일정 · {events.length}건</h2>{events.map(e => <p key={e.id}>{e.date} · {e.title}</p>)}{!events.length && <p>등록한 일정이 없어요.</p>}</Panel>
     <Panel><h2>생활 점검 · {history.length}건</h2>{history.map(r => <p key={r.id}>{new Date(r.savedAt).toLocaleString('ko-KR')} · {r.result.title}</p>)}<Button variant="secondary" onClick={onCheck}>점검 이력 보기</Button></Panel>
-  </>
+    </div>
+  </div>
 }
 
 function AboutPage() {
