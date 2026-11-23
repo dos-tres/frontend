@@ -1,3 +1,4 @@
+import ApplicationScheduleNav from './ApplicationScheduleNav'
 import TestDataReset from './TestDataReset'
 import HomeLanding from './HomeLanding'
 import { SchedulePage, ScheduleEditor } from './SchedulePages'
@@ -48,7 +49,7 @@ const navItems = [
   { id: 'assistant', label: 'AI 비서', icon: Bot },
   { id: 'policies', label: '정책·활동 찾기', icon: Search },
   { id: 'centers', label: '주변센터', icon: MapPin },
-  { id: 'schedule', label: '내 일정', icon: CalendarDays },
+  { id: 'schedule', label: '신청·일정 관리', icon: CalendarDays },
 ] as const
 
 function sectionFor(screen: Screen) {
@@ -187,7 +188,8 @@ function ApplicationsPage({ applications, onChangeStatus, onCalendar }: { applic
   const active = filtered.find(a => a.id === selected) ?? filtered[0]
   return (
     <>
-      <PageTitle title="내 일정 · 신청 이력 관리" description="정책 신청부터 참여까지 기록하고, 추후 필요한 행동을 확인하는 곳이에요." />
+      <PageTitle title="신청·일정 관리" description="정책 신청부터 참여까지 기록하고, 추후 필요한 행동을 확인하는 곳이에요." />
+      <ApplicationScheduleNav active="applications" onApplications={()=>{}} onCalendar={onCalendar} />
       <div className="application-layout">
         <Panel tone="gray" className="application-list-panel">
           <div className="filter-row">
